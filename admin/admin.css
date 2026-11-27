@@ -77,7 +77,19 @@ body.guardando { cursor: progress; }
 progress { width: 100%; height: 18px; accent-color: var(--acento); }
 .errores { margin: 0; padding-left: 20px; font-size: .9rem; color: var(--mal); max-height: 160px; overflow: auto; } .errores:empty { display: none; }
 #f-seg { display: grid; gap: 12px; } #d-seg h3, #d-ver h3 { margin: 18px 0 4px; font-size: 1rem; } #d-seg > .nota { margin-top: 0; }
-.cab #seguridad { margin-left: auto; } .cab #seguridad + #salir { margin-left: 8px; }
 .cab { flex-wrap: wrap; }
 @media (max-width: 600px) { .cab { gap: 8px 10px; padding: 10px 14px; } .cab .logo { width: 120px; } .cab h1 { order: 3; flex-basis: 100%; margin: 0; } .cab .sec { min-height: 40px; padding: 4px 12px; } }
 #f-entrar .cut { flex-wrap: wrap; } #f-entrar .cut small { flex-basis: 100%; margin-left: 34px; }
+
+/* Firebase: pestañas, cupones y enlaces de la cabecera */
+.enlace { margin-left: auto; font-weight: 800; color: var(--acento); } .enlace + #salir { margin-left: 8px; }
+.cab .enlace + .sec { margin-left: 8px; }
+.pestanas { display: flex; gap: 8px; margin: 0 0 16px; border-bottom: 2px solid var(--borde); } .pestanas[hidden] { display: none; }
+.pestanas button { min-height: 44px; padding: 6px 14px; background: none; border: 2px solid transparent; border-bottom: 0; border-radius: 10px 10px 0 0; color: var(--gris); }
+.pestanas button[aria-current="page"] { color: var(--acento); border-color: var(--borde); background: #fff; margin-bottom: -2px; }
+.tarjeta-form { display: grid; gap: 12px; margin-bottom: 18px; } .tarjeta-form h2 { margin: 0; }
+.cd { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border: 2px solid #ead7ee; border-radius: 10px; margin-bottom: 8px; list-style: none; }
+.cd.oculto { opacity: .65; } .cd p { margin: 2px 0 0; color: var(--gris); font-size: .9rem; } .cd strong { font-size: 1.1rem; letter-spacing: .04em; }
+#codigos .lista { padding: 0; margin: 0; }
+#e-entrar { margin-top: 8px; } #f-entrar { display: grid; gap: 12px; max-width: 420px; }
+#falta { max-width: 640px; } #falta code { background: #f6e9f8; padding: 1px 6px; border-radius: 4px; }

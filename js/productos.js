@@ -32,13 +32,14 @@ function render() {
         <div class="pic${alt ? ' has-alt' : ''}${main ? '' : p.ejemplo ? ' empty' : ' sinfoto'}">
           <span class="badge">${i + 1}</span>
           ${p.agotado ? '<span class="sold">Agotado</span>' : enOferta(p) ? `<span class="sale">-${descuento(p)}%</span>` : ''}
-          ${main ? `<img class="main" src="${esc(main)}" alt="${esc(p.nombre)}" loading="lazy">` : p.ejemplo ? 'tu imagen aquí' : ''}
-          ${alt ? `<img class="alt" src="${esc(alt)}" alt="" loading="lazy">` : ''}
+          ${main ? `<img class="main" data-foto="${esc(main)}" alt="${esc(p.nombre)}">` : p.ejemplo ? 'tu imagen aquí' : ''}
+          ${alt ? `<img class="alt" data-foto="${esc(alt)}" alt="">` : ''}
         </div>
         <div class="cap"><p class="name">${esc(p.nombre)}</p><p class="price">${precioHtml(p)}</p></div>
       </div></div>
       <button type="button" class="abrir" data-i="${i}" aria-label="Ver ${esc(p.nombre)}"></button>`;
     catalog.appendChild(li);
+    li.querySelectorAll('img[data-foto]').forEach((img) => DB.pintarFoto(img, img.dataset.foto));   // las fotos se bajan de Firebase de a una
   });
   shown = Math.min(shown + PAGE, vista.length);
   more.hidden = shown >= vista.length;
@@ -79,23 +80,39 @@ function aplicar() {
     document.querySelector('#limpiar-f').addEventListener('click', () => { Object.assign(f, { cat: '', sub: '', q: '', oferta: false }); buscar.value = ''; aplicar(); });
   } else mensaje('Pronto vas a ver los productos acá.');
 }
-function mostrar(items) { todos = items; Object.assign(f, { cat: '', sub: '', q: '', oferta: false }); buscar.value = ''; aplicar(); }
+let cargado = false;
+function mostrar(items) { cargado = true; todos = items; Object.assign(f, { cat: '', sub: '', q: '', oferta: false }); buscar.value = ''; aplicar(); }
 
 // ---------- Popup del producto ----------
 const popup = document.querySelector('#popup');
 const $p = (s) => popup.querySelector(s);
-function fichas(ul, lista, agotadas = []) {
+// Talles y colores: los que hay se pueden elegir (una sola opción); los agotados quedan tachados
+function fichas(ul, lista, agotadas = [], elegir = null) {
   ul.hidden = ul.previousElementSibling.hidden = !lista.length;
-  ul.innerHTML = lista.map((t) => agotadas.includes(t) ? `<li class="ficha agotado">${esc(t)}<span class="sr-only"> (agotado)</span></li>` : `<li class="ficha">${esc(t)}</li>`).join('');
+  ul.innerHTML = lista.map((t) => agotadas.includes(t) ? `<li class="ficha agotado">${esc(t)}<span class="sr-only"> (agotado)</span></li>`
+    : `<li><button type="button" class="ficha elegible" aria-pressed="false" data-v="${esc(t)}">${esc(t)}</button></li>`).join('');
+  ul.onclick = (e) => {
+    const b = e.target.closest('button.ficha'); if (!b) return;
+    ul.querySelectorAll('button.ficha').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    elegir(b.dataset.v);
+    $p('#pp-msg').textContent = '';
+  };
 }
 function abrir(p) {
+  const elegido = { talle: '', color: '' };
   const foto = (k) => {
     const cont = $p('#pp-foto');
     cont.className = 'pp-foto' + (p.imgs[k] ? '' : ' sinfoto');
-    cont.innerHTML = p.imgs[k] ? `<img src="${esc(p.imgs[k])}" alt="${esc(p.nombre)}, foto ${k + 1}">` : '';
+    cont.innerHTML = p.imgs[k] ? `<img alt="${esc(p.nombre)}, foto ${k + 1}">` : '';
+    const img = cont.querySelector('img');
+    if (img) {                                    // primero la miniatura (ya está en el dispositivo), después la foto grande
+      if (p.thumbs[k]) DB.fotoSrc(p.thumbs[k]).then((s) => { if (!img.dataset.grande) img.src = s; }).catch(() => {});
+      DB.fotoSrc(p.imgs[k]).then((s) => { img.dataset.grande = '1'; img.src = s; }).catch(() => {});
+    }
     $p('#pp-minis').querySelectorAll('button').forEach((b, n) => b.setAttribute('aria-current', n === k));
   };
-  $p('#pp-minis').innerHTML = p.imgs.length > 1 ? p.imgs.map((u, k) => `<button type="button" aria-label="Ver foto ${k + 1}"><img src="${esc(p.thumbs[k] || u)}" alt=""></button>`).join('') : '';
+  $p('#pp-minis').innerHTML = p.imgs.length > 1 ? p.imgs.map((u, k) => `<button type="button" aria-label="Ver foto ${k + 1}"><img alt="" data-foto="${esc(p.thumbs[k] || u)}"></button>`).join('') : '';
+  $p('#pp-minis').querySelectorAll('img[data-foto]').forEach((img) => DB.pintarFoto(img, img.dataset.foto));
   $p('#pp-minis').onclick = (e) => { const b = e.target.closest('button'); if (b) foto([...$p('#pp-minis').children].indexOf(b)); };
   foto(0);
   $p('#pp-ruta').textContent = [p.cat, p.sub].filter(Boolean).join(' › ');
@@ -103,8 +120,18 @@ function abrir(p) {
   $p('#pp-precio').innerHTML = precioHtml(p) + (enOferta(p) ? ` <span class="sale-txt">-${descuento(p)}%</span>` : '');
   $p('#pp-agotado').hidden = !p.agotado;
   $p('#pp-desc').textContent = p.desc;
-  fichas($p('#pp-talles'), p.talles, p.tallesAgotados);
-  fichas($p('#pp-colores'), p.colores);
+  fichas($p('#pp-talles'), p.talles, p.tallesAgotados, (v) => { elegido.talle = v; });
+  fichas($p('#pp-colores'), p.colores, [], (v) => { elegido.color = v; });
+  $p('#pp-msg').textContent = '';
+  const agregar = $p('#pp-agregar');
+  agregar.hidden = p.agotado;
+  agregar.onclick = () => {
+    const hayTalles = p.talles.some((t) => !p.tallesAgotados.includes(t));
+    if (hayTalles && !elegido.talle) { $p('#pp-msg').textContent = 'Elegí un talle.'; return; }
+    if (p.colores.length && !elegido.color) { $p('#pp-msg').textContent = 'Elegí un color.'; return; }
+    Carrito.agregar({ id: p.id, nombre: p.nombre, precio: p.precio, talle: elegido.talle, color: elegido.color, foto: p.thumbs[0] || p.imgs[0] || '' });
+    $p('#pp-msg').textContent = 'Agregado al carrito ♡';
+  };
   popup.showModal();
   popup.scrollTop = 0;
 }
@@ -123,19 +150,19 @@ const deApi = (items) => items.map((p) => {
   };
 });
 
-// Los productos vienen del panel (/api/productos). Si falla, se muestra la última lista que se vio bien;
+// Los productos vienen de Firebase: un solo documento con los visibles (1 lectura por visita). Si falla, se muestra la última lista que se vio bien;
 // si no hay ninguna, un aviso con "Reintentar". Los productos de ejemplo no se muestran nunca en el sitio publicado.
 async function cargar() {
   mensaje('Cargando productos…');
   try {
-    const r = await fetch('/api/productos');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    try { localStorage.setItem(CACHE, JSON.stringify(d.items)); } catch {}
-    mostrar(deApi(d.items));
+    if (!DB.enabled()) throw new Error('Firebase sin conectar');
+    const d = await DB.leer('catalogo', 'publico');
+    const items = d && d.json ? JSON.parse(d.json) : [];
+    try { localStorage.setItem(CACHE, JSON.stringify(items)); } catch { /* sin almacenamiento */ }
+    mostrar(deApi(items));
   } catch {
     let guardados = null;
-    try { guardados = JSON.parse(localStorage.getItem(CACHE)); } catch {}
+    try { guardados = JSON.parse(localStorage.getItem(CACHE)); } catch { /* nada guardado */ }
     if (guardados?.length) mostrar(deApi(guardados));
     else if (EJEMPLOS) mostrar(deApi(PRODUCTS.map((p) => ({ ...p, ejemplo: true }))));
     else {
@@ -144,6 +171,7 @@ async function cargar() {
     }
   }
 }
+window.Tienda = { porId: (id) => todos.find((p) => p.id === id) || null, listo: () => cargado };
 cargar();
 
 // Celular: el botón de arriba del juego abre los productos (flotando) y vuelve al dress up

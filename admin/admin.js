@@ -1,35 +1,19 @@
 const $ = (s) => document.querySelector(s);
-const KEY = 'mimi-admin-token';
-// La sesión se guarda en esta pestaña; con «Recordarme», en el dispositivo (30 días). Si el navegador no deja guardar, solo se pierde la comodidad.
-const lee = (a) => { try { return a.getItem(KEY) || ''; } catch { return ''; } };
-const borra = (a) => { try { a.removeItem(KEY); } catch {} };
-function guardaToken(t, recordar) {
-  borra(sessionStorage); borra(localStorage);
-  try { (recordar ? localStorage : sessionStorage).setItem(KEY, t); } catch {}
-}
-let token = lee(sessionStorage) || lee(localStorage);
-const recordado = () => !!lee(localStorage);
 let rev = 0;
 let items = [];
 let edit = null;          // copia del producto que se está editando
 let editandoIdx = -1;     // -1 = producto nuevo
 
-// ---------- Comunicación con el servidor ----------
+// ---------- Comunicación con Firebase (datos.js) ----------
 async function api(accion, datos = {}) {
-  let r;
   try {
-    r = await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-      body: JSON.stringify({ accion, ...datos }),
-    });
-  } catch {
-    throw new Error('No hay conexión con el servidor. Revisá tu internet y volvé a intentar.');
+    if (accion === 'ver') return await Datos.ver();
+    if (accion === 'cambios') return await Datos.cambios(datos);
+    throw new Error('Acción desconocida.');
+  } catch (e) {
+    if (e.autenticacion) salir();                 // la sesión venció: vuelve a la pantalla de entrar
+    throw e;
   }
-  const d = await r.json().catch(() => ({}));
-  if (r.status === 401 && accion !== 'entrar') { salir(); throw new Error(d.error || 'Sesión vencida: volvé a entrar.'); }
-  if (!r.ok) throw Object.assign(new Error(d.error || (r.status >= 500 ? 'El servidor no respondió bien. Probá de nuevo en un minuto.' : 'No se pudo completar la acción.')), { status: r.status });
-  return d;
 }
 
 let tAviso;
@@ -46,19 +30,27 @@ function aviso(msg, mal = false, accion = null) {
 }
 
 // ---------- Entrar / salir ----------
+let pestana = 'productos';
 function mostrar(sesion) {
-  $('#entrar').hidden = sesion; $('#panel').hidden = !sesion; $('#salir').hidden = !sesion; $('#seguridad').hidden = !sesion;
+  const hay = DB.enabled();
+  $('#falta').hidden = hay; $('#entrar').hidden = !hay || sesion;
+  $('#pestanas').hidden = !sesion; $('#panel').hidden = !sesion || pestana !== 'productos'; $('#codigos').hidden = !sesion || pestana !== 'codigos';
+  $('#salir').hidden = !sesion; $('#ver-tienda').hidden = !sesion;
+  document.querySelectorAll('#pestanas button').forEach((b) => b.setAttribute('aria-current', b.dataset.pestana === pestana ? 'page' : 'false'));
 }
-function salir() { token = ''; borra(sessionStorage); borra(localStorage); mostrar(false); }
+function salir() { DB.salir(); mostrar(false); }
 $('#salir').addEventListener('click', salir);
 $('#ver-clave').addEventListener('change', (e) => { $('#clave').type = e.target.checked ? 'text' : 'password'; });
 $('#f-entrar').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  try {
-    token = (await api('entrar', { clave: $('#clave').value, recordar: $('#recordar').checked })).token;
-    guardaToken(token, $('#recordar').checked); $('#clave').value = '';
-    await cargar();
-  } catch (err) { aviso(err.message, true); }
+  e.preventDefault(); $('#e-entrar').textContent = '';
+  try { await DB.entrar($('#email').value.trim(), $('#clave').value); $('#clave').value = ''; await cargar(); }
+  catch (err) { $('#e-entrar').textContent = err.message; }
+});
+$('#olvide').addEventListener('click', async () => {
+  const email = $('#email').value.trim();
+  if (!email) { $('#e-entrar').textContent = 'Escribí tu email arriba y volvé a tocar «Olvidé mi clave».'; return; }
+  try { await DB.recuperarClave(email); $('#e-entrar').textContent = ''; aviso('Te mandamos un mail para poner una clave nueva. Mirá también el correo no deseado.'); }
+  catch (err) { $('#e-entrar').textContent = err.message; }
 });
 
 async function cargar() {
@@ -71,36 +63,25 @@ const recargarLista = async () => { const d = await api('ver'); rev = d.rev; ite
 let ocupado = false;
 function bloquear(on) {
   document.body.classList.toggle('guardando', on);
-  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-ver button, #d-seg button, #d-seg input, #seguridad, #d-import button, #masivo button, #salir').forEach((b) => {
+  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-import button, #masivo button, #codigos button, #codigos input, #pestanas button, #salir').forEach((b) => {
     if (on) { b.dataset.estaba = b.disabled ? '1' : ''; b.disabled = true; } else { b.disabled = b.dataset.estaba === '1'; delete b.dataset.estaba; }
   });
 }
 // Solo se manda lo que cambió (no los 200 productos): cambios = [{op:'poner', productos}, {op:'quitar', ids}, {op:'orden', ids}]
-// nota = qué se cambió (queda en "Volver atrás"); deshacer = muestra el botón "Deshacer" 10 s; vacio = confirma que la lista puede quedar vacía
+// vacio = confirma que la lista puede quedar vacía
 const poner = (productos) => productos.length ? [{ op: 'poner', productos }] : [];
-async function guardarTodo(msg, { cambios, nota = '', deshacer = false, vacio = false } = {}) {
+async function guardarTodo(msg, { cambios, vacio = false } = {}) {
   if (ocupado) throw new Error('Todavía se está guardando. Esperá un momento.');
   ocupado = true; bloquear(true); aviso('Guardando…');
   try {
-    const d = await api('cambios', { rev, cambios, nota, confirmarVacio: vacio });
-    const anterior = rev; rev = d.rev;
+    const d = await api('cambios', { rev, cambios, confirmarVacio: vacio });
+    rev = d.rev;
     const porId = new Map(items.filter((p) => p.id != null).map((p) => [p.id, p]));
-    for (const p of d.puestos) porId.set(p.id, p);          // lo que llegó del servidor ya viene limpio y con su número
+    for (const p of d.puestos) porId.set(p.id, p);          // lo que se guardó ya viene limpio y con su número
     const nuevos = d.orden.map((id) => porId.get(id));
     if (nuevos.every(Boolean)) items = nuevos; else await recargarLista();
-    if (msg) aviso(msg, false, deshacer ? { texto: 'Deshacer', hacer: () => volverA(anterior) } : null);
+    if (msg) aviso(msg);
   } finally { ocupado = false; bloquear(false); pintar(); }
-}
-// Vuelve a la versión guardada antes de un cambio (el cambio queda como otra versión: también se puede recuperar)
-async function volverA(version) {
-  if (ocupado) return;
-  ocupado = true; bloquear(true); aviso('Volviendo atrás…');
-  try {
-    const d = await api('restaurar', { rev, version });
-    rev = d.rev; items = d.items; aviso('Listo: volvió a como estaba.');
-    return true;
-  } catch (err) { aviso(err.message, true); }
-  finally { ocupado = false; bloquear(false); pintar(); }
 }
 
 // ---------- Lista ----------
@@ -137,7 +118,8 @@ function pintar() {
 
 function fila(p, vistos, k) {
   const i = items.indexOf(p);
-  const foto = p.imgs[0] ? el('img', { src: p.thumbs?.[0] || p.imgs[0], alt: '', width: 64, height: 64, loading: 'lazy', decoding: 'async' }) : el('div', { className: 'sinfoto', textContent: 'sin foto' });
+  const foto = p.imgs[0] ? el('img', { alt: '', width: 64, height: 64, decoding: 'async' }) : el('div', { className: 'sinfoto', textContent: 'sin foto' });
+  if (p.imgs[0]) DB.pintarFoto(foto, p.thumbs?.[0] || p.imgs[0]);
   const etq = [];
   if (p.agotado) etq.push(el('span', { className: 'etq mal', textContent: 'Agotado' }));
   if (enOferta(p)) etq.push(el('span', { className: 'etq', textContent: `Oferta -${Math.round((1 - p.precio / p.precioAntes) * 100)}%` }));
@@ -180,10 +162,10 @@ function mover(p, vecino) {
   return reordenar(copia);
 }
 async function eliminar(p) {
-  if (!confirm(`¿Eliminar "${p.nombre}"? Después vas a poder deshacerlo con el botón "Deshacer" o desde "Volver atrás".`)) return;
+  if (!confirm(`¿Eliminar "${p.nombre}"? No se puede deshacer.`)) return;
   const antes = items;
   items = items.filter((x) => x !== p);
-  try { await guardarTodo('Producto eliminado.', { cambios: [{ op: 'quitar', ids: [p.id] }], nota: `Eliminó «${p.nombre}»`, deshacer: true, vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Producto eliminado.', { cambios: [{ op: 'quitar', ids: [p.id] }], vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 $('#buscar').addEventListener('input', () => { mostrados = PAGINA; pintar(); });
 $('#f-cat').addEventListener('change', () => { mostrados = PAGINA; pintar(); });
@@ -195,7 +177,7 @@ $('#m-quitar').addEventListener('click', () => { sel.clear(); pintar(); });
 async function masivo(cambia, nota, msg) {
   const antes = structuredClone(items), n = marcados().length, tocados = marcados();
   tocados.forEach(cambia);
-  try { await guardarTodo(`${msg} (${n})`, { cambios: poner(tocados), nota: `${nota} en ${n} producto${n === 1 ? '' : 's'}`, deshacer: true }); sel.clear(); pintar(); }
+  try { await guardarTodo(`${msg} (${n})`, { cambios: poner(tocados), nota }); sel.clear(); pintar(); }
   catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 let modoMasivo = '';
@@ -233,41 +215,11 @@ $('#masivo').addEventListener('click', (e) => {
   else if (m === 'cat' || m === 'of') abrirMasivo(m);
   else if (m === 'eliminar') {
     const n = sel.size;
-    if (!confirm(`¿Eliminar ${n} producto${n === 1 ? '' : 's'}? Después vas a poder deshacerlo.`)) return;
+    if (!confirm(`¿Eliminar ${n} producto${n === 1 ? '' : 's'}? No se puede deshacer.`)) return;
     const antes = items, ids = [...sel]; items = items.filter((p) => !sel.has(p.id));
-    guardarTodo(`Eliminados (${n})`, { cambios: [{ op: 'quitar', ids }], nota: `Eliminó ${n} producto${n === 1 ? '' : 's'}`, deshacer: true, vacio: !items.length }).then(() => { sel.clear(); pintar(); }, (err) => { items = antes; pintar(); aviso(err.message, true); });
+    guardarTodo(`Eliminados (${n})`, { cambios: [{ op: 'quitar', ids }], vacio: !items.length }).then(() => { sel.clear(); pintar(); }, (err) => { items = antes; pintar(); aviso(err.message, true); });
   }
 });
-
-// ---------- Volver atrás ----------
-const cuando = (ms) => new Date(ms).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
-const filaVuelta = (titulo, detalle, textoBoton, confirmar, hacer) => {
-  const b = el('button', { type: 'button', textContent: textoBoton });
-  b.addEventListener('click', async () => { if (confirm(confirmar) && await hacer()) $('#d-ver').close(); });
-  return el('li', {}, el('div', {}, el('strong', { textContent: titulo }), el('small', { textContent: detalle })), b);
-};
-$('#versiones').addEventListener('click', async () => {
-  try {
-    const { versiones, copias = [] } = await api('versiones');
-    const nada = (txt) => [el('li', {}, txt)];
-    $('#v-lista').replaceChildren(...(versiones.length ? versiones.map((v) => filaVuelta(`Antes de: ${v.nota}`, `${cuando(v.fecha)} · ${v.cantidad} productos`, 'Volver a esta',
-      `¿Volver a como estaba ANTES de: ${v.nota}?\n\nLo que hiciste después también queda guardado: lo podés recuperar desde esta misma lista.`, () => volverA(v.rev))) : nada('Todavía no hay versiones anteriores.')));
-    $('#c-lista').replaceChildren(...(copias.length ? copias.map((c) => filaVuelta(new Date(`${c.dia}T12:00:00`).toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }), `${c.cantidad} productos`, 'Volver a esta copia',
-      `¿Volver a la copia del ${c.dia}?\n\nLo que hay ahora también queda guardado en «Volver atrás».`, () => volverACopia(c.dia))) : nada('Todavía no hay copias: la primera se hace esta noche.')));
-    $('#d-ver').showModal();
-  } catch (err) { aviso(err.message, true); }
-});
-async function volverACopia(dia) {
-  if (ocupado) return;
-  ocupado = true; bloquear(true); aviso('Volviendo a la copia…');
-  try {
-    const d = await api('restaurarCopia', { rev, dia });
-    rev = d.rev; items = d.items; aviso(`Listo: volvió a la copia del ${dia}.`);
-    return true;
-  } catch (err) { aviso(err.message, true); }
-  finally { ocupado = false; bloquear(false); pintar(); }
-}
-$('#v-cerrar').addEventListener('click', () => $('#d-ver').close());
 
 // ---------- Editor ----------
 const vacio = () => ({ id: null, nombre: '', precio: '', precioAntes: '', cat: '', sub: '', desc: '', talles: [], tallesAgotados: [], colores: [], agotado: false, activo: true, imgs: [], thumbs: [] });
@@ -331,7 +283,8 @@ function fotos() {
     const x = el('button', { type: 'button', className: 'sec', textContent: '×' }); x.setAttribute('aria-label', 'Quitar foto');
     izq.addEventListener('click', () => mover(-1)); der.addEventListener('click', () => mover(1));
     x.addEventListener('click', () => { edit.imgs.splice(i, 1); edit.thumbs.splice(i, 1); fotos(); });
-    return el('li', {}, el('img', { src: edit.thumbs[i] || u, alt: `Foto ${i + 1}` }), el('div', { className: 'principal', textContent: i === 0 ? 'Principal' : i === 1 ? 'Al pasar el mouse' : '' }), el('div', { className: 'mov' }, izq, der, x));
+    const img = el('img', { alt: `Foto ${i + 1}` }); DB.pintarFoto(img, edit.thumbs[i] || u);
+    return el('li', {}, img, el('div', { className: 'principal', textContent: i === 0 ? 'Principal' : i === 1 ? 'Al pasar el mouse' : '' }), el('div', { className: 'mov' }, izq, der, x));
   }));
 }
 // Las fotos se achican y se les quita el fondo en un Worker (la página no se traba con muchas fotos);
@@ -353,12 +306,17 @@ async function procesar(archivo, cortar) {
   return window.procesarFoto(archivo, cortar);
 }
 const aBase64 = (blob) => new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = () => mal(new Error('no se pudo leer la foto')); r.readAsDataURL(blob); });
-// Procesa una foto y la sube (la foto y su miniatura). Devuelve { url, mini, aviso }
+// Procesa una foto y la sube (la foto y su miniatura son dos documentos de Firebase). Devuelve { url, mini, aviso } con los números de foto
 async function subirFoto(archivo, cortar) {
   const { foto, mini, aviso } = await procesar(archivo, cortar);
-  const [url, urlMini] = [(await api('subir', { datos: await aBase64(foto) })).url, (await api('subir', { datos: await aBase64(mini) })).url];
-  return { url, mini: urlMini, aviso };
+  try {
+    const url = await Datos.subir(await aBase64(foto), foto.type), urlMini = await Datos.subir(await aBase64(mini), mini.type);
+    return { url, mini: urlMini, aviso };
+  } catch (e) { if (e.autenticacion) salir(); throw e; }
 }
+// Fotos subidas en el editor: si se cierra sin guardar, se borran
+const nuevasFotos = new Set();
+$('#editor').addEventListener('close', () => { const ids = [...nuevasFotos]; nuevasFotos.clear(); if (ids.length) Datos.limpiarFotos(ids); });
 let subiendo = 0;
 $('#subir').addEventListener('change', async (e) => {
   const archivos = [...e.target.files]; e.target.value = '';
@@ -369,7 +327,7 @@ $('#subir').addEventListener('change', async (e) => {
       try {
         aviso(`Procesando ${f.name}…`);
         const r = await subirFoto(f, $('#p-cut').checked);
-        edit.imgs.push(r.url); edit.thumbs.push(r.mini); fotos(); aviso(r.aviso ? `${f.name}: ${r.aviso}` : 'Foto subida', !!r.aviso);
+        nuevasFotos.add(r.url); nuevasFotos.add(r.mini); edit.imgs.push(r.url); edit.thumbs.push(r.mini); fotos(); aviso(r.aviso ? `${f.name}: ${r.aviso}` : 'Foto subida', !!r.aviso);
       }
       catch (err) { aviso(`${f.name}: ${err.message}`, true); }
     }
@@ -412,31 +370,10 @@ $('#f-ren').addEventListener('submit', async (e) => {
   try { await guardarTodo('Nombre cambiado', { cambios: poner(tocados), nota: `Renombró «${sub || cat}» a «${nuevo}»` }); $('#d-ren').close(); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 });
 
-// ---------- Seguridad: cambiar la clave y cerrar todas las sesiones ----------
-$('#seguridad').addEventListener('click', () => {
-  $('#f-seg').reset(); $('#s-error').textContent = ''; for (const id of ['#s-actual', '#s-nueva', '#s-nueva2']) $(id).type = 'password';
-  $('#d-seg').showModal(); $('#s-actual').focus();
-});
-$('#s-cerrar').addEventListener('click', () => $('#d-seg').close());
-$('#s-ver').addEventListener('change', (e) => { for (const id of ['#s-actual', '#s-nueva', '#s-nueva2']) $(id).type = e.target.checked ? 'text' : 'password'; });
-$('#f-seg').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if ($('#s-nueva').value !== $('#s-nueva2').value) { $('#s-error').textContent = 'Las dos claves nuevas no son iguales.'; return; }
-  try {
-    const d = await api('cambiarClave', { actual: $('#s-actual').value, nueva: $('#s-nueva').value, recordar: recordado() });
-    token = d.token; guardaToken(token, recordado());
-    $('#d-seg').close(); aviso('Clave cambiada. Las demás sesiones se cerraron.');
-  } catch (err) { $('#s-error').textContent = err.message; }
-});
-$('#s-todos').addEventListener('click', async () => {
-  if (!confirm('¿Cerrar el panel en todos los dispositivos (también en este)? Después tenés que volver a entrar con tu clave.')) return;
-  try { await api('salirTodos'); $('#d-seg').close(); salir(); aviso('Se cerraron todas las sesiones.'); } catch (err) { $('#s-error').textContent = err.message; }
-});
-
 // ---------- Planilla (Excel / CSV): cargar o actualizar muchos productos ----------
 const bajar = (nombre, texto, tipo) => { const a = el('a', { href: URL.createObjectURL(new Blob([texto], { type: tipo })), download: nombre }); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
 const hoy = () => new Date().toISOString().slice(0, 10);
-const RE_URL = /^\/api\/imagen\//;
+const RE_URL = Datos.RE_FOTO;                  // un número de foto que ya está en Firebase (viene de «Bajar mis productos»)
 let plan = null, archivosFotos = new Map(), cancelaImport = false, importando = false;
 const linea = (txt) => el('li', { textContent: txt });
 const clave = (n) => n.toLowerCase();
@@ -517,7 +454,7 @@ $('#i-importar').addEventListener('click', async () => {
         subidas.set(nombre, r); seguidos = 0;
         if (r.aviso) fallos.push(`${nombre}: ${r.aviso}`);
       } catch (err) {
-        if (err.status === 401) { cancelaImport = true; break; }
+        if (err.autenticacion) { cancelaImport = true; break; }
         fallos.push(`${nombre}: ${err.message}`);
         if (++seguidos >= 5) { cancelaImport = true; $('#i-error').textContent = 'Se cortó la conexión: revisá tu internet y volvé a intentar.'; }
       }
@@ -526,17 +463,17 @@ $('#i-importar').addEventListener('click', async () => {
   };
   try {
     await Promise.all([carril(), carril()]);
-    if (cancelaImport) { estado($('#i-error').textContent ? 'No se importó nada.' : 'Importación cancelada: no se cambió ningún producto.'); return; }
+    if (cancelaImport) { Datos.limpiarFotos([...subidas.values()].flatMap((x) => [x.url, x.mini])); estado($('#i-error').textContent ? 'No se importó nada.' : 'Importación cancelada: no se cambió ningún producto.'); return; }
     estado('Guardando los productos…');
     for (let intento = 0; ; intento++) {
-      try { await guardarTodo(`Importó ${n} producto${n === 1 ? '' : 's'}`, { cambios: armarCambios(subidas), nota: `Importó ${n} producto${n === 1 ? '' : 's'} desde una planilla`, deshacer: true }); break; }
+      try { await guardarTodo(`Importó ${n} producto${n === 1 ? '' : 's'}`, { cambios: armarCambios(subidas) }); break; }
       catch (err) { if (err.status === 409 && !intento) { await recargarLista(); continue; } throw err; }
     }
     estado(`Listo: se importaron ${n} producto${n === 1 ? '' : 's'}.${fallos.length ? ` Ojo con ${fallos.length} foto${fallos.length === 1 ? '' : 's'}:` : ''}`);
     $('#i-fallos').replaceChildren(...fallos.slice(0, 12).map(linea));
     barra.value = barra.max;
-    if (!fallos.length) $('#d-import').close();      // sin problemas: se cierra y queda a la vista el aviso con «Deshacer»
-  } catch (err) { $('#i-error').textContent = err.message; estado('No se pudo guardar. Los productos no cambiaron.'); }
+    if (!fallos.length) $('#d-import').close();      // sin problemas: se cierra solo
+  } catch (err) { Datos.limpiarFotos([...subidas.values()].flatMap((x) => [x.url, x.mini])); $('#i-error').textContent = err.message; estado('No se pudo guardar. Los productos no cambiaron.'); }
   finally { importando = false; $('#i-cerrar').textContent = 'Cerrar'; }
 });
 
@@ -546,5 +483,33 @@ $('#copia').addEventListener('click', () => {
   a.click(); URL.revokeObjectURL(a.href);
 });
 
+// ---------- Cupones (códigos de descuento) ----------
+let codigos = [];
+const fechaLinda = (iso) => iso.split('-').reverse().join('/');
+async function cargarCodigos() { codigos = await Datos.codigos(); pintarCodigos(); }
+function pintarCodigos() {
+  const boton = (texto, clase, fn) => { const b = el('button', { type: 'button', className: clase, textContent: texto }); b.addEventListener('click', fn); return b; };
+  $('#cd-lista').replaceChildren(...(codigos.length ? codigos.map((c) => el('li', { className: 'cd' + (c.activo === false ? ' oculto' : '') },
+    el('div', {}, el('strong', { textContent: c.id }), el('p', { textContent: `${c.porcentaje}% de descuento · ${c.vence ? `vence el ${fechaLinda(c.vence)}` : 'sin vencimiento'}${c.activo === false ? ' · apagado' : ''}` })),
+    el('div', { className: 'acciones' },
+      boton(c.activo === false ? 'Activar' : 'Apagar', 'sec', () => cambiarCodigo(async () => { await Datos.guardarCodigo({ ...c, activo: c.activo === false }); })),
+      boton('Eliminar', 'sec', () => { if (confirm(`¿Eliminar el código ${c.id}?`)) cambiarCodigo(() => Datos.borrarCodigo(c.id)); })))) : [el('li', { className: 'cd', textContent: 'Todavía no hay códigos. Creá el primero arriba.' })]));
+}
+async function cambiarCodigo(accion) {
+  try { await accion(); await cargarCodigos(); } catch (err) { if (err.autenticacion) salir(); aviso(err.message, true); }
+}
+$('#f-codigo').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('#cd-error').textContent = '';
+  try {
+    const v = await Datos.guardarCodigo({ id: $('#cd-nombre').value, porcentaje: $('#cd-pct').value, vence: $('#cd-vence').value });
+    $('#f-codigo').reset(); await cargarCodigos(); aviso(`Código ${v.id} creado`);
+  } catch (err) { if (err.autenticacion) salir(); $('#cd-error').textContent = err.message; }
+});
+$('#pestanas').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-pestana]'); if (!b || b.dataset.pestana === pestana) return;
+  pestana = b.dataset.pestana; sel.clear(); mostrar(true); pintar();
+  if (pestana === 'codigos') { try { await cargarCodigos(); } catch (err) { aviso(err.message, true); } }
+});
+
 // ---------- Inicio ----------
-if (token) cargar().catch(() => salir()); else mostrar(false);
+if (DB.enabled() && DB.haySesion()) cargar().catch(() => salir()); else mostrar(false);

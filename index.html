@@ -218,17 +218,46 @@
         <p class="pp-desc" id="pp-desc"></p>
         <h3>Talles</h3><ul id="pp-talles" class="pp-fichas"></ul>
         <h3>Colores</h3><ul id="pp-colores" class="pp-fichas"></ul>
+        <p id="pp-msg" class="pp-msg" role="status"></p>
+        <button type="button" id="pp-agregar" class="pp-agregar">Agregar al carrito</button>
       </div>
     </div>
   </dialog>
 
+  <!-- Carrito: pedido por WhatsApp, con código de descuento -->
+  <dialog id="carrito" aria-labelledby="car-t">
+    <div class="car">
+      <button type="button" class="pp-x" id="car-cerrar" aria-label="Cerrar">×</button>
+      <h2 id="car-t">Tu pedido</h2>
+      <p id="car-vacio" class="car-vacio">Todavía no agregaste nada. Elegí algo de la tienda ♡</p>
+      <ul id="car-lineas" class="car-lineas"></ul>
+      <form id="car-cupon" class="car-cupon">
+        <label for="car-codigo">¿Tenés un código de descuento?</label>
+        <div><input id="car-codigo" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Ej: HOLA10"><button type="submit">Aplicar</button></div>
+        <p id="car-cupon-msg" class="car-cupon-msg" role="status"></p>
+        <button type="button" id="car-quitar-cupon" class="car-link" hidden>Quitar el código</button>
+      </form>
+      <dl id="car-totales" class="car-totales" hidden>
+        <div><dt>Subtotal</dt><dd id="car-sub"></dd></div>
+        <div id="car-desc-fila" hidden><dt id="car-desc-nombre"></dt><dd id="car-desc"></dd></div>
+        <div class="total"><dt>Total</dt><dd id="car-total"></dd></div>
+      </dl>
+      <a id="car-pedir" class="car-pedir" href="#" target="_blank" rel="noopener" aria-disabled="true">Pedir por WhatsApp</a>
+      <p id="car-sin-numero" class="car-nota" hidden>Falta cargar el número de WhatsApp de la tienda (data/config.js).</p>
+      <p class="car-nota">Te abre WhatsApp con tu pedido ya armado. El pago y el envío se coordinan por ahí.</p>
+    </div>
+  </dialog>
+
   <script src="data/config.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/pedido.js"></script>
   <script src="data/canciones.js"></script>
   <script src="data/dressup.js"></script>
   <script src="data/productos.js"></script>
   <script src="js/splash.js"></script>
   <script src="js/player.js"></script>
   <script src="js/dressup.js"></script>
+  <script src="js/carrito.js"></script>
   <script src="js/productos.js"></script>
   <script src="js/reloj.js"></script>
 </body>

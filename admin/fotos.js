@@ -102,10 +102,10 @@
     let blob, max = 1100;
     for (let t = 0; t < 4; t++) {                                  // si pesa mucho, se achica más
       blob = await aBlob(t === 0 ? c : achicado(c, max), 0.88);
-      if (blob.size < 1.2 * 1024 * 1024) break;
+      if (blob.size < 550 * 1024) break;            // Firebase guarda hasta 1 MB por documento (la foto va en base64: pesa 1/3 más)
       max = Math.round(max * 0.8);
     }
-    if (blob.size > 1.4 * 1024 * 1024) throw new Error('la foto es demasiado pesada');
+    if (blob.size > 700 * 1024) throw new Error('la foto es demasiado pesada');
     return { foto: blob, mini: await aBlob(achicado(c, 360), 0.8), aviso };
   }
   g.procesarFoto = procesarFoto;

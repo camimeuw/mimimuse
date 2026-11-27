@@ -1,22 +1,21 @@
 import crypto from 'node:crypto';
 
 export const json = (obj, status = 200, extra = {}) =>
-  new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extra } });
+  new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...extra } });
 
 export class ErrorHttp extends Error { constructor(msg, status = 400) { super(msg); this.status = status; } }
 
-// ---- Clave de la clienta (variable ADMIN_PASSWORD en Netlify) y sesión firmada de 12 horas ----
-const sha = (s) => crypto.createHash('sha256').update(String(s)).digest();
+// ---- Sesión firmada "vence.versión.firma" (el secreto sale de ADMIN_SECRET o, si no hay, de ADMIN_PASSWORD) ----
+// Subir la versión (cerrar sesión en todos los dispositivos, cambiar la clave) invalida todas las sesiones anteriores.
 const secreto = () => process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD || '';
 const firma = (p) => crypto.createHmac('sha256', secreto()).update(p).digest('base64url');
 
-export const claveOk = (pass) => !!process.env.ADMIN_PASSWORD && crypto.timingSafeEqual(sha(pass), sha(process.env.ADMIN_PASSWORD));
-export function nuevaSesion() { const p = String(Date.now() + 12 * 3600e3); return `${p}.${firma(p)}`; }
-export function sesionOk(t) {
-  const [p, f] = String(t || '').split('.');
-  if (!p || !f || !secreto()) return false;
-  const esperado = Buffer.from(firma(p)), recibido = Buffer.from(f);
-  return esperado.length === recibido.length && crypto.timingSafeEqual(esperado, recibido) && Number(p) > Date.now();
+export function nuevaSesion(version = 0, horas = 12) { const p = `${Date.now() + horas * 3600e3}.${version}`; return `${p}.${firma(p)}`; }
+export function sesionOk(t, version = 0) {
+  const [exp, v, f] = String(t || '').split('.');
+  if (!exp || v === undefined || !f || !secreto()) return false;
+  const esperado = Buffer.from(firma(`${exp}.${v}`)), recibido = Buffer.from(f);
+  return esperado.length === recibido.length && crypto.timingSafeEqual(esperado, recibido) && Number(exp) > Date.now() && Number(v) === version;
 }
 export const tokenDe = (req) => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
 

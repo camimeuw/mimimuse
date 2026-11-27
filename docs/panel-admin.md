@@ -18,7 +18,8 @@ Las fotos se achican solas en el navegador (máx. 1100 px, WEBP con transparenci
 2. Volver a desplegar el sitio. Netlify instala `@netlify/blobs` (ahí se guardan productos y fotos, sin cuentas extra) y publica las funciones de `netlify/functions/`.
 3. Entrar a `/admin/` con la clave.
 
-Si cambiás la clave, las sesiones abiertas dejan de servir y hay que volver a entrar.
+4. La dueña puede cambiar su clave desde el panel (botón **Seguridad**). Ahí se guarda solo su *hash* (scrypt, con sal), nunca la clave. La clave de `ADMIN_PASSWORD` **sigue sirviendo siempre**: es la llave de la desarrolladora por si la dueña olvida la suya (se entra con esa y se pone una nueva). Si no querés ese acceso, no la compartas y usá `ADMIN_SECRET` aparte.
+5. Las **copias diarias** las hace la función programada `netlify/functions/respaldo.mjs` (`@daily`). Netlify las programa solo al desplegar; se ven en Netlify → **Logs → Functions**.
 
 ## Probarlo en tu compu
 ```bash
@@ -64,9 +65,20 @@ Guarda en la carpeta `.almacen-local/` (no se sube al repositorio).
 - Sin internet o con el servidor caído, el panel avisa en español y **no pierde lo escrito** en el editor.
 - La tienda guarda la última lista que vio bien: si el servidor falla, muestra esa; si nunca vio ninguna, muestra "No pudimos cargar los productos" con un botón Reintentar. Los productos de ejemplo solo se ven al abrir `index.html` como archivo. Un producto sin foto muestra la mona.
 
+## Seguridad
+- **Intentos de clave:** máximo 5 cada 10 minutos **por conexión** (IP, la que informa Netlify en `x-nf-client-connection-ip`; no se puede falsear con otras cabeceras). El intento se cuenta *antes* de mirar la clave y con escritura condicionada: 30 intentos a la vez dejan pasar exactamente 5 (los otros 25 reciben 429). Alguien desde otra conexión **no** puede bloquear a la dueña. Una entrada buena borra los intentos. Cambiar la clave también cuenta los intentos fallidos (una sesión robada no puede adivinar la clave actual).
+- **Sesiones:** el token lleva su vencimiento y una *versión*. «Cerrar todas las sesiones» y cambiar la clave suben la versión: los tokens anteriores dejan de servir, también los de «Recordarme» (30 días, guardados en el dispositivo; sin eso, 12 horas y solo en la pestaña). Los tokens manipulados, vencidos o del formato anterior dan 401.
+- **Clave:** pantalla de entrada con «Mostrar la clave»; la clave nueva pide 10 caracteres o más.
+- **Cabeceras (`netlify.toml`):** `Content-Security-Policy` (scripts, conexiones y workers solo del propio sitio; nada de scripts en línea ni `eval`; sin `unsafe-inline` en scripts), `X-Frame-Options: DENY` y `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` y HSTS. Para poder aplicarlo, el script de la intro pasó de la página a `js/intro.js`. Los estilos en línea siguen permitidos (la tienda usa `style="…"` en los dibujitos). Las respuestas de `/api/…` llevan `nosniff` (Netlify no aplica `[[headers]]` a las funciones).
+- Comprobado con Playwright contra el CSP real (`npm run dev` aplica las cabeceras de `netlify.toml`): ni la tienda ni el panel dan violaciones, y un script inyectado, un `fetch` y una imagen a otro dominio quedan bloqueados.
+
+## Copias diarias
+- Cada día se guarda una copia completa de los productos (`respaldo/AAAA-MM-DD`) y se conservan las últimas 14; si no hubo cambios desde la última, no se repite. Se ven en **Volver atrás → Copias de cada día**; «Volver a esta copia» restaura y queda como un cambio más (se puede deshacer). Las fotos de las copias no se borran. Aparte de las 30 versiones, que se gastan con cada cambio, estas sirven si un error se descubre varios días después.
+- No incluye las fotos como archivos: las fotos se conservan mientras alguna copia las use. **Descargar copia** sigue bajando un JSON con los productos.
+
 ## Límites a tener presentes
 - Un solo usuario (una clave). Si dos personas editan a la vez, la segunda recibe un aviso y tiene que recargar.
-- Después de 5 claves incorrectas el panel se bloquea 10 minutos (y cada intento fallido espera 0,8 s). Igual conviene una clave larga.
+- El bloqueo es por conexión: varias personas detrás de la misma conexión (misma oficina) comparten los 5 intentos.
 - Máximo 1000 productos y 1,5 MB por foto.
 
 ## ¿Netlify Blobs o Firebase?

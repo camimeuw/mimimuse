@@ -61,3 +61,4 @@ legend { padding: 0 6px; font-size: 1.05rem; }
 .cut { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 600; } .cut small { color: var(--gris); }
 .orden { display: flex; gap: 4px; } .orden button { min-width: 40px; padding: 4px 8px; }
 .pos { font-weight: 800; color: var(--acento); }
+body.guardando { cursor: progress; }

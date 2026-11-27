@@ -8,14 +8,19 @@ let editandoIdx = -1;     // -1 = producto nuevo
 
 // ---------- Comunicación con el servidor ----------
 async function api(accion, datos = {}) {
-  const r = await fetch('/api/admin', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-    body: JSON.stringify({ accion, ...datos }),
-  });
+  let r;
+  try {
+    r = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+      body: JSON.stringify({ accion, ...datos }),
+    });
+  } catch {
+    throw new Error('No hay conexión con el servidor. Revisá tu internet y volvé a intentar.');
+  }
   const d = await r.json().catch(() => ({}));
-  if (r.status === 401 && accion !== 'entrar') { salir(); throw new Error(d.error || 'Sesión vencida.'); }
-  if (!r.ok) throw new Error(d.error || 'No se pudo completar la acción.');
+  if (r.status === 401 && accion !== 'entrar') { salir(); throw new Error(d.error || 'Sesión vencida: volvé a entrar.'); }
+  if (!r.ok) throw new Error(d.error || (r.status >= 500 ? 'El servidor no respondió bien. Probá de nuevo en un minuto.' : 'No se pudo completar la acción.'));
   return d;
 }
 
@@ -45,9 +50,22 @@ async function cargar() {
   const d = await api('ver');
   rev = d.rev; items = d.items; mostrar(true); pintar();
 }
+// Mientras se guarda, los botones quedan apagados: así un doble toque no manda dos guardados a la vez
+let ocupado = false;
+function bloquear(on) {
+  document.body.classList.toggle('guardando', on);
+  document.querySelectorAll('#panel button, #editor button, #d-ren button, #salir').forEach((b) => {
+    if (on) { b.dataset.estaba = b.disabled ? '1' : ''; b.disabled = true; } else { b.disabled = b.dataset.estaba === '1'; delete b.dataset.estaba; }
+  });
+}
 async function guardarTodo(msg) {
-  const d = await api('guardar', { rev, items });
-  rev = d.rev; items = d.items; pintar(); if (msg) aviso(msg);
+  if (ocupado) throw new Error('Todavía se está guardando. Esperá un momento.');
+  ocupado = true; bloquear(true); aviso('Guardando…');
+  try {
+    const d = await api('guardar', { rev, items });
+    rev = d.rev; items = d.items;
+    if (msg) aviso(msg);
+  } finally { ocupado = false; bloquear(false); pintar(); }
 }
 
 // ---------- Lista ----------
@@ -281,13 +299,17 @@ async function procesar(archivo, cortar) {
   let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(bin);
 }
+let subiendo = 0;
 $('#subir').addEventListener('change', async (e) => {
   const archivos = [...e.target.files]; e.target.value = '';
-  for (const f of archivos) {
-    if (edit.imgs.length >= 8) { aviso('Máximo 8 fotos por producto.', true); break; }
-    try { aviso(`Procesando ${f.name}…`); edit.imgs.push((await api('subir', { datos: await procesar(f, $('#p-cut').checked) })).url); fotos(); aviso('Foto subida'); }
-    catch (err) { aviso(`${f.name}: ${err.message}`, true); }
-  }
+  subiendo++; $('#guardar').disabled = true;   // no se puede guardar el producto con una foto a medio subir
+  try {
+    for (const f of archivos) {
+      if (edit.imgs.length >= 8) { aviso('Máximo 8 fotos por producto.', true); break; }
+      try { aviso(`Procesando ${f.name}…`); edit.imgs.push((await api('subir', { datos: await procesar(f, $('#p-cut').checked) })).url); fotos(); aviso('Foto subida'); }
+      catch (err) { aviso(`${f.name}: ${err.message}`, true); }
+    }
+  } finally { if (!--subiendo) $('#guardar').disabled = false; }
 });
 
 // Guardar el producto
@@ -300,12 +322,11 @@ $('#f-prod').addEventListener('submit', async (e) => {
     cat: $('#p-cat').value, sub: $('#p-sub').value, desc: $('#p-desc').value,
     agotado: $('#p-agotado').checked, activo: $('#p-activo').checked,
   });
+  if (subiendo) { $('#e-error').textContent = 'Esperá a que termine de subir la foto y volvé a guardar.'; return; }
   const antes = items.slice();
   if (editandoIdx < 0) items.push(edit); else items[editandoIdx] = edit;
-  $('#guardar').disabled = true;
   try { await guardarTodo('Producto guardado'); $('#editor').close(); }
   catch (err) { items = antes; $('#e-error').textContent = err.message; pintar(); }
-  finally { $('#guardar').disabled = false; }
 });
 
 // ---------- Renombrar categoría / subcategoría ----------

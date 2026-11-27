@@ -33,6 +33,12 @@ Guarda en la carpeta `.almacen-local/` (no se sube al repositorio).
 - Los cambios del panel tardan hasta 30 segundos en verse en la tienda (caché).
 - Un producto cuenta como agotado si se marca entero o si todos sus talles están agotados.
 
+## Para que no se pierda nada al guardar
+- El servidor guarda con **escritura condicionada** (`onlyIfMatch` de Netlify Blobs) y lee con **consistencia fuerte**: si dos guardados se cruzan, entra uno y el otro recibe un aviso (409) en vez de pisarlo.
+- Mientras se guarda, los botones del panel quedan apagados (un doble toque no manda dos guardados) y no se puede guardar un producto con una foto subiéndose.
+- Sin internet o con el servidor caído, el panel avisa en español y **no pierde lo escrito** en el editor.
+- La tienda guarda la última lista que vio bien: si el servidor falla, muestra esa; si nunca vio ninguna, muestra "No pudimos cargar los productos" con un botón Reintentar. Los productos de ejemplo solo se ven al abrir `index.html` como archivo. Un producto sin foto muestra la mona.
+
 ## Límites a tener presentes
 - Un solo usuario (una clave). Si dos personas editan a la vez, la segunda recibe un aviso y tiene que recargar.
 - Después de 5 claves incorrectas el panel se bloquea 10 minutos (y cada intento fallido espera 0,8 s). Igual conviene una clave larga.

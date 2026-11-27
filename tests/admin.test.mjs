@@ -79,3 +79,13 @@ test('5 claves malas bloquean la entrada, incluso con la buena', async () => {
   await fs.rm(path.join(process.env.ALMACEN_LOCAL, 'intentos'), { force: true });   // fin del bloqueo
   assert.equal((await post({ accion: 'entrar', clave: 'clave-de-prueba' })).status, 200);
 });
+
+test('dos guardados a la vez con la misma versión: uno entra y el otro recibe 409 (no se pisan)', async () => {
+  const d = await (await post({ accion: 'ver' }, token)).json();
+  const items = (n) => d.items.map((p, i) => (i === 0 ? { ...p, nombre: n } : p));
+  const [a, b] = await Promise.all([post({ accion: 'guardar', rev: d.rev, items: items('Primero') }, token), post({ accion: 'guardar', rev: d.rev, items: items('Segundo') }, token)]);
+  assert.deepEqual([a.status, b.status].sort(), [200, 409]);
+  const final = await (await post({ accion: 'ver' }, token)).json();
+  assert.equal(final.rev, d.rev + 1);
+  assert.equal(final.items[0].nombre, a.status === 200 ? 'Primero' : 'Segundo');
+});

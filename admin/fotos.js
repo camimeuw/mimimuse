@@ -64,17 +64,22 @@
   }
   function quitarFondo(c) {
     const w = c.width, h = c.height, n = w * h, cx = ctx(c), im = cx.getImageData(0, 0, w, h), d = im.data;
-    let bar = new Uint8Array(n);                                   // "no es blanco" = prenda o sombra
-    for (let i = 0; i < n; i++) { const o = i * 4; bar[i] = Math.min(d[o], d[o + 1], d[o + 2]) < 250 ? 1 : 0; }
+    const borde = [];                                              // el fondo no siempre es blanco puro: se toma el color del borde (mediana)
+    for (let x = 0; x < w; x++) borde.push(x, (h - 1) * w + x);
+    for (let y = 0; y < h; y++) borde.push(y * w, y * w + w - 1);
+    const fondo = [0, 1, 2].map((k) => { const v = borde.map((i) => d[i * 4 + k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let bar = new Uint8Array(n);                                   // "no es fondo" = prenda o sombra
+    for (let i = 0; i < n; i++) { const o = i * 4; bar[i] = Math.max(Math.abs(d[o] - fondo[0]), Math.abs(d[o + 1] - fondo[1]), Math.abs(d[o + 2] - fondo[2])) > 6 ? 1 : 0; }
     bar = morph(bar, w, h, 2, true);                               // cierra huequitos del borde
     const bg = new Uint8Array(n), q = new Int32Array(n); let qs = 0, qe = 0;
     const push = (i) => { if (!bar[i] && !bg[i]) { bg[i] = 1; q[qe++] = i; } };
     for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
     for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
     while (qs < qe) { const i = q[qs++], x = i % w, y = (i / w) | 0; if (x > 0) push(i - 1); if (x < w - 1) push(i + 1); if (y > 0) push(i - w); if (y < h - 1) push(i + w); }
+    if (qe < n * 0.02) return null;                                // casi no hay fondo liso (foto sobre una persona, fondo con dibujos…)
     let fg = new Uint8Array(n);
     for (let i = 0; i < n; i++) fg[i] = bg[i] ? 0 : 1;
-    fg = mayor(morph(fg, w, h, 2, false), w, h);
+    fg = mayor(morph(fg, w, h, 3, false), w, h);                  // 3 px hacia adentro: no queda un contorno del fondo
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {      // borde suave
       let s = 0, k = 0;
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx >= 0 && xx < w && yy >= 0 && yy < h) { s += fg[yy * w + xx]; k++; } }
@@ -97,7 +102,7 @@
     if (cortar && !tieneAlfa(original)) {
       const copia = achicado(original, 1100);
       c = quitarFondo(copia);
-      if (opacoPct(c) < 0.1) { c = original; aviso = 'no se pudo separar la prenda del fondo, se subió sin quitarlo'; }   // la prenda "desapareció": mejor dejarla como estaba
+      if (!c || opacoPct(c) < 0.1) { c = original; aviso = 'no se pudo separar la prenda del fondo, se subió sin quitarlo'; }   // la prenda "desapareció": mejor dejarla como estaba
     }
     let blob, max = 1100;
     for (let t = 0; t < 4; t++) {                                  // si pesa mucho, se achica más

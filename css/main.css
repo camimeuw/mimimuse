@@ -46,7 +46,7 @@ a { color: var(--color-acento); }
 
 /* ---------- Cabecera: banner grande + tira de 88x31 ---------- */
 .banner { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; min-height: 290px; padding: 4px 10px;
-  background: #eba0bb url("../assets/fondo-header.gif"); }   /* gif de corazones y estrellas de 100×100 que se repite */
+  background: #fed0d6 url("../assets/fondo-header.gif"); }   /* gif de corazones de 100×120 que se repite */
 .banner .logo { --s: 3; grid-column: 2; margin: 0; }   /* logo más grande en compu (3 px por pixel) */
 .cart { position: absolute; top: 8px; right: 8px; z-index: 30; width: 44px; height: 44px; display: grid; place-items: center;
   border: 2px ridge var(--color-borde); border-radius: 50%; background: var(--color-caja); color: var(--color-acento); cursor: pointer; }

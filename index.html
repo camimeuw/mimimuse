@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mimi Muse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap">
+  <link rel="stylesheet" href="css/splash.css">
+  <link rel="stylesheet" href="css/main.css">
+  <script>
+    // Sin splash si la persona pidió menos movimiento
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('splash-on');
+  </script>
+</head>
+<body>
+  <div class="splash" aria-hidden="true"></div>
+
+  <div class="page">
+
+    <aside class="side" aria-hidden="true">
+      <div class="card">
+        <h2>Closet</h2>
+        <div class="slots"><div class="slot">TOP</div><div class="slot">BOTTOM</div><div class="slot">SHOES</div><div class="slot">ACC</div></div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="top">
+        <h1 class="logo">
+          <img src="assets/logo.png" alt="Mimi Muse" width="866" height="620">
+          <svg class="wink" viewBox="0 0 100 100" aria-hidden="true">
+            <ellipse cx="50" cy="50" rx="46" ry="46" fill="#fbecf3"/>
+            <path d="M14 62 Q50 20 86 62" fill="none" stroke="#411d4b" stroke-width="10" stroke-linecap="round"/>
+          </svg>
+        </h1>
+        <button class="cart" type="button" aria-label="Carrito, 0 productos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg>
+          <span class="cart-count" aria-hidden="true">0</span>
+        </button>
+      </header>
+
+      <section class="player" aria-label="Reproductor de música">
+        <button class="play" type="button" aria-label="Reproducir o pausar" aria-pressed="false">
+          <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+          <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+        </button>
+        <p class="song">Canción de Mimi Muse</p>
+        <input class="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Progreso de la canción">
+        <audio id="audio" src="assets/cancion.mp3" preload="none" loop></audio>
+      </section>
+    <nav class="tabs" aria-label="Secciones">
+      <a class="tab" href="index.html" aria-current="page">Dress Up ✧</a>
+      <a class="tab" href="productos.html">ver todos los productos →</a>
+    </nav>
+      <div class="stage"><p>acá va la modelo con el look</p></div>
+    </div>
+
+    <aside class="side" aria-hidden="true">
+      <div class="card">
+        <h2>Mimi Mode</h2>
+        <div class="room"></div>
+        <div class="arrows"><span>◂</span><span>▸</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="js/splash.js"></script>
+  <script src="js/player.js"></script>
+</body>
+</html>

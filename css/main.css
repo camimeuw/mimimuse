@@ -1,13 +1,13 @@
 @font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-400.woff") format("woff"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-700.woff") format("woff"); font-weight: 700; font-display: swap; }
 
-/* Colores: se cambian solo acá. Son los de la hoja de la marca: rosa de fondo, crema por dentro, violeta oscuro y magenta del logo. */
+/* Colores: se cambian solo acá. De la hoja de la marca: rosas y lila, con el magenta del logo (sin amarillo ni violeta oscuro). */
 :root {
   --color-fondo: #f4a3ec;
-  --color-caja: #fcf3bb;
+  --color-caja: #fff1fb;
   --color-borde: #d843a8;
   --color-texto: #331040;
-  --color-acento: #7f2b85;
+  --color-acento: #a8247a;
   --rosa: #fcc3f3; --lila: #dca2e4;                    /* rellenos de apoyo */
   --crema: var(--color-fondo); --fucsia: var(--color-borde); --uva: var(--color-acento); --tinta: var(--color-texto);
   --titulo: "Pixelify Sans", "Nunito", sans-serif;
@@ -144,7 +144,7 @@ a { color: var(--color-acento); }
 .mp3-btn:hover { opacity: .85; }
 .mp3-btn:active { border-color: var(--uva) #fff #fff var(--uva); }
 .mp3-btn:disabled, .vol:disabled, .seek:disabled, .mute:disabled { opacity: .45; cursor: default; }
-.mp3-play { min-width: 46px; background: var(--uva); color: #fff; border-color: #c58ad6 #3d1247 #3d1247 #c58ad6; }
+.mp3-play { min-width: 46px; background: var(--uva); color: #fff; border-color: #f3a4d8 #6e1450 #6e1450 #f3a4d8; }
 .mp3-play .i-pause, .mp3-play[aria-pressed="true"] .i-play { display: none; }
 .mp3-play[aria-pressed="true"] .i-pause { display: block; }
 
@@ -158,7 +158,7 @@ a { color: var(--color-acento); }
 .dressup[data-scene="2"] { --escena: radial-gradient(var(--color-caja) 2px, transparent 2.5px) 0 0 / 18px 18px, var(--lila); }
 .closet { display: grid; align-content: start; gap: 8px; }
 .closet h2, .mimi-mode h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
-.fila { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(123, 42, 142, .5); }
+.fila { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(168, 36, 122, .5); }
 .parte { font-family: var(--titulo); font-size: 1.15rem; color: var(--uva); line-height: 1; }
 .prenda { min-height: 2.3em; font-size: .75rem; font-weight: 800; line-height: 1.15; }
 .pasos { display: flex; gap: 6px; }
@@ -224,7 +224,7 @@ a { color: var(--color-acento); }
 .mimi-mode .room { rotate: 2.5deg; }
 
 .model { isolation: isolate; }
-.photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(123, 42, 142, .55); }
+.photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(168, 36, 122, .55); }
 .asoma { position: absolute; z-index: 0; top: -34px; right: 12%; width: 73px; height: 76px; rotate: 6deg; pointer-events: none;
   background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated;
   animation: asoma 2.6s ease-in-out infinite alternate; }

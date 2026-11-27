@@ -25,10 +25,16 @@ async function api(accion, datos = {}) {
 }
 
 let tAviso;
-function aviso(msg, mal = false) {
+function aviso(msg, mal = false, accion = null) {
   const a = $('#aviso');
-  a.textContent = msg; a.classList.toggle('mal', mal); a.classList.add('ver');
-  clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove('ver'), 3500);
+  a.replaceChildren(msg);
+  if (accion) {
+    const b = el('button', { type: 'button', textContent: accion.texto });
+    b.addEventListener('click', () => { a.classList.remove('ver', 'conaccion'); accion.hacer(); });
+    a.append(' ', b);
+  }
+  a.classList.toggle('mal', mal); a.classList.toggle('conaccion', !!accion); a.classList.add('ver');
+  clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove('ver', 'conaccion'), accion ? 10000 : 3500);
 }
 
 // ---------- Entrar / salir ----------
@@ -50,22 +56,35 @@ async function cargar() {
   const d = await api('ver');
   rev = d.rev; items = d.items; mostrar(true); pintar();
 }
+
 // Mientras se guarda, los botones quedan apagados: así un doble toque no manda dos guardados a la vez
 let ocupado = false;
 function bloquear(on) {
   document.body.classList.toggle('guardando', on);
-  document.querySelectorAll('#panel button, #editor button, #d-ren button, #salir').forEach((b) => {
+  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-ver button, #masivo button, #salir').forEach((b) => {
     if (on) { b.dataset.estaba = b.disabled ? '1' : ''; b.disabled = true; } else { b.disabled = b.dataset.estaba === '1'; delete b.dataset.estaba; }
   });
 }
-async function guardarTodo(msg) {
+// nota = qué se cambió (queda en "Volver atrás"); deshacer = muestra el botón "Deshacer" 10 s; vacio = confirma que la lista puede quedar vacía
+async function guardarTodo(msg, { nota = '', deshacer = false, vacio = false } = {}) {
   if (ocupado) throw new Error('Todavía se está guardando. Esperá un momento.');
   ocupado = true; bloquear(true); aviso('Guardando…');
   try {
-    const d = await api('guardar', { rev, items });
-    rev = d.rev; items = d.items;
-    if (msg) aviso(msg);
+    const d = await api('guardar', { rev, items, nota, confirmarVacio: vacio });
+    const anterior = rev; rev = d.rev; items = d.items;
+    if (msg) aviso(msg, false, deshacer ? { texto: 'Deshacer', hacer: () => volverA(anterior) } : null);
   } finally { ocupado = false; bloquear(false); pintar(); }
+}
+// Vuelve a la versión guardada antes de un cambio (el cambio queda como otra versión: también se puede recuperar)
+async function volverA(version) {
+  if (ocupado) return;
+  ocupado = true; bloquear(true); aviso('Volviendo atrás…');
+  try {
+    const d = await api('restaurar', { rev, version });
+    rev = d.rev; items = d.items; aviso('Listo: volvió a como estaba.');
+    return true;
+  } catch (err) { aviso(err.message, true); }
+  finally { ocupado = false; bloquear(false); pintar(); }
 }
 
 // ---------- Lista ----------
@@ -74,15 +93,25 @@ const soles = (n) => `S/ ${Number(n).toFixed(2)}`;
 const cats = () => [...new Set(items.map((p) => p.cat).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
 const subsDe = (c) => [...new Set(items.filter((p) => p.cat === c).map((p) => p.sub).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
 const el = (tag, props = {}, ...hijos) => { const e = Object.assign(document.createElement(tag), props); e.append(...hijos); return e; };
+const enOferta = (p) => p.precioAntes != null && p.precioAntes > p.precio;
+const sel = new Set();                                   // ids de los productos marcados
+const marcados = () => items.filter((p) => sel.has(p.id));
 
+function visibles() {
+  const q = sinTildes($('#buscar').value.trim()), c = $('#f-cat').value;
+  return items.filter((p) => (!c || p.cat === c) && (!q || sinTildes(`${p.nombre} ${p.cat} ${p.sub}`).includes(q)));
+}
 function pintar() {
   const filtro = $('#f-cat'), actual = filtro.value;
   filtro.replaceChildren(el('option', { value: '', textContent: 'Todas' }), ...cats().map((c) => el('option', { value: c, textContent: c })));
   filtro.value = cats().includes(actual) ? actual : '';
-  const q = sinTildes($('#buscar').value.trim());
-  const vistos = items.filter((p) => (!filtro.value || p.cat === filtro.value) && (!q || sinTildes(`${p.nombre} ${p.cat} ${p.sub}`).includes(q)));
+  for (const id of [...sel]) if (!items.some((p) => p.id === id)) sel.delete(id);
+  const vistos = visibles();
   $('#resumen').textContent = `${vistos.length} de ${items.length} productos`;
   $('#lista').replaceChildren(...vistos.map((p, k) => fila(p, vistos, k)));
+  $('#todos').checked = vistos.length > 0 && vistos.every((p) => sel.has(p.id));
+  $('#masivo').hidden = !sel.size;
+  $('#m-cuantos').textContent = `${sel.size} seleccionado${sel.size === 1 ? '' : 's'}`;
 }
 
 function fila(p, vistos, k) {
@@ -90,41 +119,39 @@ function fila(p, vistos, k) {
   const foto = p.imgs[0] ? el('img', { src: p.imgs[0], alt: '' }) : el('div', { className: 'sinfoto', textContent: 'sin foto' });
   const etq = [];
   if (p.agotado) etq.push(el('span', { className: 'etq mal', textContent: 'Agotado' }));
+  if (enOferta(p)) etq.push(el('span', { className: 'etq', textContent: `Oferta -${Math.round((1 - p.precio / p.precioAntes) * 100)}%` }));
   if (!p.activo) etq.push(el('span', { className: 'etq', textContent: 'Oculto' }));
-  const tAg = p.tallesAgotados.length;
-  if (tAg) etq.push(el('span', { className: 'etq mal', textContent: `Talles agotados: ${p.tallesAgotados.join(', ')}` }));
+  if (p.tallesAgotados.length) etq.push(el('span', { className: 'etq mal', textContent: `Talles agotados: ${p.tallesAgotados.join(', ')}` }));
   const ruta = [p.cat, p.sub].filter(Boolean).join(' › ') || 'Sin categoría';
   const info = el('div', {},
     el('h3', { textContent: p.nombre }),
-    el('p', {}, el('span', { className: 'pos', textContent: `N° ${i + 1}` }), ` · ${soles(p.precio)} · ${ruta}`),
+    el('p', {}, el('span', { className: 'pos', textContent: `N° ${i + 1}` }), ` · ${soles(p.precio)}${enOferta(p) ? ` (antes ${soles(p.precioAntes)})` : ''} · ${ruta}`),
     el('p', { textContent: [p.talles.length ? `Talles: ${p.talles.join(', ')}` : '', p.colores.length ? `Colores: ${p.colores.join(', ')}` : ''].filter(Boolean).join(' · ') }),
     el('p', {}, ...etq));
-  const bAg = el('button', { type: 'button', className: 'sec', textContent: p.agotado ? 'Hay stock' : 'Marcar agotado' });
-  bAg.addEventListener('click', () => rapido(p, { agotado: !p.agotado }));
-  const bVis = el('button', { type: 'button', className: 'sec', textContent: p.activo ? 'Ocultar' : 'Mostrar' });
-  bVis.addEventListener('click', () => rapido(p, { activo: !p.activo }));
-  const bEd = el('button', { type: 'button', textContent: 'Editar' });
-  bEd.addEventListener('click', () => abrirEditor(i));
-  const bDel = el('button', { type: 'button', className: 'sec', textContent: 'Eliminar' });
-  bDel.addEventListener('click', () => eliminar(p));
-  const bUp = el('button', { type: 'button', className: 'sec', textContent: '▲', disabled: k === 0 }); bUp.setAttribute('aria-label', `Subir ${p.nombre}`);
-  const bDown = el('button', { type: 'button', className: 'sec', textContent: '▼', disabled: k === vistos.length - 1 }); bDown.setAttribute('aria-label', `Bajar ${p.nombre}`);
-  const bTop = el('button', { type: 'button', className: 'sec', textContent: 'Primero', disabled: i === 0 });
-  bUp.addEventListener('click', () => mover(p, vistos[k - 1]));
-  bDown.addEventListener('click', () => mover(p, vistos[k + 1]));
-  bTop.addEventListener('click', () => reordenar([p, ...items.filter((x) => x !== p)]));
-  return el('li', { className: 'item' + (p.activo ? '' : ' oculto') }, foto, info, el('div', { className: 'acciones' }, el('span', { className: 'orden' }, bUp, bDown, bTop), bAg, bVis, bEd, bDel));
+  const marca = el('input', { type: 'checkbox', className: 'marca', checked: sel.has(p.id) }); marca.setAttribute('aria-label', `Seleccionar ${p.nombre}`);
+  marca.addEventListener('change', () => { marca.checked ? sel.add(p.id) : sel.delete(p.id); pintar(); });
+  const boton = (texto, clase, fn, extra = {}) => { const b = el('button', { type: 'button', className: clase, textContent: texto, ...extra }); b.addEventListener('click', fn); return b; };
+  const bUp = boton('▲', 'sec', () => mover(p, vistos[k - 1]), { disabled: k === 0 }); bUp.setAttribute('aria-label', `Subir ${p.nombre}`);
+  const bDown = boton('▼', 'sec', () => mover(p, vistos[k + 1]), { disabled: k === vistos.length - 1 }); bDown.setAttribute('aria-label', `Bajar ${p.nombre}`);
+  const bTop = boton('Primero', 'sec', () => reordenar([p, ...items.filter((x) => x !== p)]), { disabled: i === 0 });
+  return el('li', { className: 'item' + (p.activo ? '' : ' oculto') }, marca, foto, info, el('div', { className: 'acciones' },
+    el('span', { className: 'orden' }, bUp, bDown, bTop),
+    boton(p.agotado ? 'Hay stock' : 'Marcar agotado', 'sec', () => rapido(p, { agotado: !p.agotado }, p.agotado ? 'Marcó con stock' : 'Marcó agotado')),
+    boton(p.activo ? 'Ocultar' : 'Mostrar', 'sec', () => rapido(p, { activo: !p.activo }, p.activo ? 'Ocultó' : 'Mostró')),
+    boton('Duplicar', 'sec', () => abrirEditor(-1, { ...structuredClone(p), id: null, nombre: `${p.nombre} (copia)` })),
+    boton('Editar', '', () => abrirEditor(i)),
+    boton('Eliminar', 'sec', () => eliminar(p))));
 }
 
-async function rapido(p, cambios) {
+async function rapido(p, cambios, que) {
   const antes = { ...p };
   Object.assign(p, cambios);
-  try { await guardarTodo('Guardado'); } catch (err) { Object.assign(p, antes); pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Guardado', { nota: `${que} «${p.nombre}»` }); } catch (err) { Object.assign(p, antes); pintar(); aviso(err.message, true); }
 }
 // El orden de la lista es el orden en la tienda
 async function reordenar(nuevo) {
   const antes = items; items = nuevo;
-  try { await guardarTodo('Orden guardado'); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Orden guardado', { nota: 'Cambió el orden' }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 function mover(p, vecino) {
   const copia = items.slice(), a = copia.indexOf(p), b = copia.indexOf(vecino);
@@ -132,21 +159,88 @@ function mover(p, vecino) {
   return reordenar(copia);
 }
 async function eliminar(p) {
-  if (!confirm(`¿Eliminar "${p.nombre}"? No se puede deshacer.`)) return;
+  if (!confirm(`¿Eliminar "${p.nombre}"? Después vas a poder deshacerlo con el botón "Deshacer" o desde "Volver atrás".`)) return;
   const antes = items;
   items = items.filter((x) => x !== p);
-  try { await guardarTodo('Producto eliminado'); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Producto eliminado.', { nota: `Eliminó «${p.nombre}»`, deshacer: true, vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 $('#buscar').addEventListener('input', pintar);
 $('#f-cat').addEventListener('change', pintar);
 
+// ---------- Varios productos a la vez ----------
+$('#todos').addEventListener('change', (e) => { for (const p of visibles()) e.target.checked ? sel.add(p.id) : sel.delete(p.id); pintar(); });
+$('#m-quitar').addEventListener('click', () => { sel.clear(); pintar(); });
+async function masivo(cambia, nota, msg) {
+  const antes = structuredClone(items), n = marcados().length;
+  marcados().forEach(cambia);
+  try { await guardarTodo(`${msg} (${n})`, { nota: `${nota} en ${n} producto${n === 1 ? '' : 's'}`, deshacer: true }); sel.clear(); pintar(); }
+  catch (err) { items = antes; pintar(); aviso(err.message, true); }
+}
+let modoMasivo = '';
+function abrirMasivo(modo) {
+  modoMasivo = modo;
+  $('#m-titulo').textContent = modo === 'cat' ? `Cambiar categoría de ${sel.size} producto${sel.size === 1 ? '' : 's'}` : `Aplicar oferta a ${sel.size} producto${sel.size === 1 ? '' : 's'}`;
+  $('#m-cat').hidden = modo !== 'cat'; $('#m-of').hidden = modo !== 'of';
+  $('#m-c').value = ''; $('#m-s').value = ''; $('#m-p').value = ''; $('#m-error').textContent = '';
+  $('#d-cats').replaceChildren(...cats().map((c) => el('option', { value: c })));
+  $('#d-masiva').showModal(); ($(modo === 'cat' ? '#m-c' : '#m-p')).focus();
+}
+$('#m-c').addEventListener('input', () => $('#d-subs').replaceChildren(...subsDe($('#m-c').value.trim()).map((s) => el('option', { value: s }))));
+$('#m-cancelar').addEventListener('click', () => $('#d-masiva').close());
+$('#f-masiva').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (modoMasivo === 'cat') {
+    const c = $('#m-c').value.trim(), s = $('#m-s').value.trim();
+    if (!c) { $('#m-error').textContent = 'Escribí la categoría.'; return; }
+    $('#d-masiva').close();
+    return masivo((p) => { p.cat = c; p.sub = s; }, `Cambió la categoría a «${c}»`, 'Categoría cambiada');
+  }
+  const pct = Number($('#m-p').value);
+  if (!Number.isInteger(pct) || pct < 1 || pct > 90) { $('#m-error').textContent = 'Poné un número entero del 1 al 90.'; return; }
+  $('#d-masiva').close();
+  masivo((p) => { const base = enOferta(p) ? p.precioAntes : p.precio; p.precioAntes = base; p.precio = Math.round(base * (100 - pct)) / 100; }, `Aplicó ${pct}% de oferta`, 'Oferta aplicada');
+});
+$('#masivo').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-m]'); if (!b) return;
+  const m = b.dataset.m;
+  if (m === 'agotado') masivo((p) => { p.agotado = true; }, 'Marcó agotado', 'Marcados como agotados');
+  else if (m === 'stock') masivo((p) => { p.agotado = false; p.tallesAgotados = []; }, 'Marcó con stock', 'Marcados con stock');
+  else if (m === 'ocultar') masivo((p) => { p.activo = false; }, 'Ocultó', 'Ocultados');
+  else if (m === 'mostrar') masivo((p) => { p.activo = true; }, 'Mostró', 'Mostrados');
+  else if (m === 'sinoferta') masivo((p) => { if (enOferta(p)) { p.precio = p.precioAntes; p.precioAntes = null; } }, 'Quitó la oferta', 'Oferta quitada');
+  else if (m === 'cat' || m === 'of') abrirMasivo(m);
+  else if (m === 'eliminar') {
+    const n = sel.size;
+    if (!confirm(`¿Eliminar ${n} producto${n === 1 ? '' : 's'}? Después vas a poder deshacerlo.`)) return;
+    const antes = items; items = items.filter((p) => !sel.has(p.id));
+    guardarTodo(`Eliminados (${n})`, { nota: `Eliminó ${n} producto${n === 1 ? '' : 's'}`, deshacer: true, vacio: !items.length }).then(() => { sel.clear(); pintar(); }, (err) => { items = antes; pintar(); aviso(err.message, true); });
+  }
+});
+
+// ---------- Volver atrás ----------
+$('#versiones').addEventListener('click', async () => {
+  try {
+    const { versiones } = await api('versiones');
+    $('#v-lista').replaceChildren(...(versiones.length ? versiones.map((v) => {
+      const b = el('button', { type: 'button', textContent: 'Volver a esta' });
+      b.addEventListener('click', async () => {
+        if (!confirm(`¿Volver a como estaba ANTES de: ${v.nota}?\n\nLo que hiciste después también queda guardado: lo podés recuperar desde esta misma lista.`)) return;
+        if (await volverA(v.rev)) $('#d-ver').close();
+      });
+      return el('li', {}, el('div', {}, el('strong', { textContent: `Antes de: ${v.nota}` }), el('small', { textContent: `${new Date(v.fecha).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })} · ${v.cantidad} productos` })), b);
+    }) : [el('li', {}, 'Todavía no hay versiones anteriores.')]));
+    $('#d-ver').showModal();
+  } catch (err) { aviso(err.message, true); }
+});
+$('#v-cerrar').addEventListener('click', () => $('#d-ver').close());
+
 // ---------- Editor ----------
 const vacio = () => ({ id: null, nombre: '', precio: '', precioAntes: '', cat: '', sub: '', desc: '', talles: [], tallesAgotados: [], colores: [], agotado: false, activo: true, imgs: [] });
 
-function abrirEditor(i) {
+function abrirEditor(i, base = null) {
   editandoIdx = i;
-  edit = i < 0 ? vacio() : structuredClone(items[i]);
-  $('#t-editor').textContent = i < 0 ? 'Nuevo producto' : 'Editar producto';
+  edit = base ? structuredClone(base) : i < 0 ? vacio() : structuredClone(items[i]);
+  $('#t-editor').textContent = base ? 'Duplicar producto: revisá el nombre y las fotos' : i < 0 ? 'Nuevo producto' : 'Editar producto';
   $('#p-nombre').value = edit.nombre; $('#p-precio').value = edit.precio; $('#p-antes').value = edit.precioAntes ?? '';
   $('#p-cat').value = edit.cat; $('#p-sub').value = edit.sub; $('#p-desc').value = edit.desc;
   $('#p-agotado').checked = edit.agotado; $('#p-activo').checked = edit.activo;
@@ -325,7 +419,7 @@ $('#f-prod').addEventListener('submit', async (e) => {
   if (subiendo) { $('#e-error').textContent = 'Esperá a que termine de subir la foto y volvé a guardar.'; return; }
   const antes = items.slice();
   if (editandoIdx < 0) items.push(edit); else items[editandoIdx] = edit;
-  try { await guardarTodo('Producto guardado'); $('#editor').close(); }
+  try { await guardarTodo('Producto guardado', { nota: `${editandoIdx < 0 ? 'Creó' : 'Editó'} «${edit.nombre}»` }); $('#editor').close(); }
   catch (err) { items = antes; $('#e-error').textContent = err.message; pintar(); }
 });
 
@@ -344,7 +438,7 @@ $('#f-ren').addEventListener('submit', async (e) => {
   if (!nuevo) return;
   const antes = structuredClone(items);
   items.forEach((p) => { if (p.cat === cat) { if (!sub) p.cat = nuevo; else if (p.sub === sub) p.sub = nuevo; } });
-  try { await guardarTodo('Nombre cambiado'); $('#d-ren').close(); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Nombre cambiado', { nota: `Renombró «${sub || cat}» a «${nuevo}»` }); $('#d-ren').close(); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 });
 
 // ---------- Copia de seguridad ----------

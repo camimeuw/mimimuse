@@ -1,10 +1,41 @@
 // Panel de la clienta: entrar, ver, guardar y subir fotos. Todo por POST a /api/admin.
 import crypto from 'node:crypto';
 import { almacen } from './_lib/almacen.mjs';
-import { json, ErrorHttp, claveOk, nuevaSesion, sesionOk, tokenDe, limpiar, tipoImagen, RE_IMG } from './_lib/comun.mjs';
+import { json, ErrorHttp, claveOk, nuevaSesion, sesionOk, tokenDe, limpiar, tipoImagen, txt, RE_IMG } from './_lib/comun.mjs';
 
 const MAX_FOTO = 1.5 * 1024 * 1024;
 const UNA_HORA = 3600e3;
+const MAX_VERSIONES = 30;   // cuántas versiones anteriores se pueden recuperar
+const claveVersion = (rev) => 'ver/' + String(rev).padStart(8, '0');
+const fotosDe = (items) => items.flatMap((p) => p.imgs.map((u) => 'img/' + RE_IMG.exec(u)[1]));
+
+// Guarda `items` como la versión nueva. Antes de pisar, deja la versión anterior en el historial.
+async function guardarDoc(db, doc, etag, items, nota, confirmarVacio) {
+  if (!items.length && doc.items.length && !confirmarVacio) throw new ErrorHttp('Esto dejaría la tienda sin ningún producto. Si es lo que querés, confirmalo.');
+  let siguiente = Math.max(doc.nextId || 1, ...items.map((p) => (p.id || 0) + 1));
+  items.forEach((p) => { if (!p.id) p.id = siguiente++; });
+  const nuevo = { rev: doc.rev + 1, nextId: siguiente, items };
+  if (doc.items.length) {
+    const entrada = { rev: doc.rev, fecha: Date.now(), nota: txt(nota, 120) || 'Cambio', cantidad: doc.items.length };
+    await db.setJSON(claveVersion(doc.rev), { ...entrada, items: doc.items, nextId: doc.nextId });
+    const indice = [entrada, ...((await db.getJSON('versiones')) || []).filter((v) => v.rev !== entrada.rev)];
+    for (const v of indice.slice(MAX_VERSIONES)) await db.del(claveVersion(v.rev));
+    await db.setJSON('versiones', indice.slice(0, MAX_VERSIONES));
+  }
+  // Escritura condicionada: si otro guardado se coló entre la lectura y esta línea, no se pisa
+  if (!(await db.setDocSi('productos', nuevo, etag))) throw new ErrorHttp('Se cruzaron dos guardados. Esperá unos segundos y volvé a intentar.', 409);
+  await borrarFotosSueltas(db, items);
+  return nuevo;
+}
+
+// Borra las fotos que no usa ningún producto ni ninguna versión guardada (y tienen más de 1 hora: pueden estar en edición)
+async function borrarFotosSueltas(db, items) {
+  const usadas = new Set(fotosDe(items));
+  const sueltas = (await db.keys('img/')).filter((k) => !usadas.has(k) && Date.now() - parseInt(k.slice(4).split('-')[0], 36) > UNA_HORA);
+  if (!sueltas.length) return;
+  for (const v of (await db.getJSON('versiones')) || []) { const d = await db.getJSON(claveVersion(v.rev)); if (d) fotosDe(d.items).forEach((k) => usadas.add(k)); }
+  for (const k of sueltas) if (!usadas.has(k)) await db.del(k);
+}
 
 export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'Método no permitido' }, 405);
@@ -34,18 +65,19 @@ export default async (req) => {
       const { valor, etag } = await db.getDoc('productos');
       const doc = valor || { rev: 0, nextId: 1, items: [] };
       if (body.rev !== doc.rev) throw new ErrorHttp('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409);
-      const items = limpiar(body.items);
-      let siguiente = Math.max(doc.nextId || 1, ...items.map((p) => (p.id || 0) + 1));
-      items.forEach((p) => { if (!p.id) p.id = siguiente++; });
-      const nuevo = { rev: doc.rev + 1, nextId: siguiente, items };
-      // Escritura condicionada: si otro guardado se coló entre la lectura y esta línea, no se pisa
-      if (!(await db.setDocSi('productos', nuevo, etag))) throw new ErrorHttp('Se cruzaron dos guardados. Esperá unos segundos y volvé a intentar.', 409);
-      // Borra fotos que ya no usa ningún producto (las de menos de 1 hora se respetan: pueden estar en edición)
-      const usadas = new Set(items.flatMap((p) => p.imgs.map((u) => 'img/' + RE_IMG.exec(u)[1])));
-      for (const k of await db.keys('img/')) {
-        const subida = parseInt(k.slice(4).split('-')[0], 36);
-        if (!usadas.has(k) && Date.now() - subida > UNA_HORA) await db.del(k);
-      }
+      const nuevo = await guardarDoc(db, doc, etag, limpiar(body.items), body.nota, body.confirmarVacio === true);
+      return json({ rev: nuevo.rev, items: nuevo.items });
+    }
+
+    if (body.accion === 'versiones') return json({ versiones: (await db.getJSON('versiones')) || [] });
+
+    if (body.accion === 'restaurar') {
+      const v = await db.getJSON(claveVersion(Number(body.version)));
+      if (!v) throw new ErrorHttp('Esa versión ya no existe.', 404);
+      const { valor, etag } = await db.getDoc('productos');
+      const doc = valor || { rev: 0, nextId: 1, items: [] };
+      if (body.rev !== doc.rev) throw new ErrorHttp('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409);
+      const nuevo = await guardarDoc(db, doc, etag, limpiar(v.items), `Volvió atrás (antes de: ${v.nota})`, true);
       return json({ rev: nuevo.rev, items: nuevo.items });
     }
 

@@ -89,3 +89,54 @@ test('dos guardados a la vez con la misma versión: uno entra y el otro recibe 4
   assert.equal(final.rev, d.rev + 1);
   assert.equal(final.items[0].nombre, a.status === 200 ? 'Primero' : 'Segundo');
 });
+
+// ---------- versiones anteriores ----------
+const ver = async () => (await (await post({ accion: 'ver' }, token)).json());
+const guardar = (items, extra = {}) => ver().then((d) => post({ accion: 'guardar', rev: d.rev, items, ...extra }, token));
+
+test('guardar con lista vacía exige confirmación explícita', async () => {
+  const d = await ver();
+  assert.ok(d.items.length > 0);
+  const sin = await post({ accion: 'guardar', rev: d.rev, items: [] }, token);
+  assert.equal(sin.status, 400);
+  assert.equal((await ver()).items.length, d.items.length);   // no se tocó nada
+});
+
+test('cada guardado deja la versión anterior; se puede volver atrás tras borrar', async () => {
+  const antes = (await ver()).items;
+  const r = await guardar([], { nota: 'Eliminó todo', confirmarVacio: true });
+  assert.equal(r.status, 200);
+  assert.equal((await ver()).items.length, 0);
+  const { versiones } = await (await post({ accion: 'versiones' }, token)).json();
+  assert.equal(versiones[0].nota, 'Eliminó todo');
+  assert.equal(versiones[0].cantidad, antes.length);
+  const rest = await post({ accion: 'restaurar', rev: (await ver()).rev, version: versiones[0].rev }, token);
+  assert.equal(rest.status, 200);
+  assert.deepEqual((await rest.json()).items.map((p) => p.nombre), antes.map((p) => p.nombre));
+  assert.equal((await post({ accion: 'restaurar', rev: (await ver()).rev, version: 999999 }, token)).status, 404);
+});
+
+test('solo quedan las últimas 30 versiones', async () => {
+  for (let i = 0; i < 33; i++) await guardar([{ nombre: 'P' + i, precio: 1 }], { nota: 'n' + i });
+  const { versiones } = await (await post({ accion: 'versiones' }, token)).json();
+  assert.equal(versiones.length, 30);
+  const archivos = (await fs.readdir(process.env.ALMACEN_LOCAL)).filter((f) => f.startsWith('ver__'));
+  assert.equal(archivos.length, 30);
+});
+
+test('fotos: se borran las sueltas viejas, pero no las que usa un producto ni una versión', async () => {
+  const dir = process.env.ALMACEN_LOCAL, hace2h = (Date.now() - 2 * 3600e3).toString(36);
+  const foto = async (n) => { const k = `${hace2h}-${n.repeat(12)}.png`; await fs.writeFile(path.join(dir, 'img__' + k), 'x'); await fs.writeFile(path.join(dir, 'img__' + k + '.tipo'), 'image/png'); return k; };
+  const [usada, enVersion, suelta] = [await foto('a'), await foto('b'), await foto('c')];
+  await guardar([{ nombre: 'Con fotos', precio: 1, imgs: ['/api/imagen/' + usada, '/api/imagen/' + enVersion] }]);
+  await guardar([{ nombre: 'Con fotos', precio: 1, imgs: ['/api/imagen/' + usada] }]);   // enVersion queda solo en la versión anterior
+  const existe = (k) => fs.stat(path.join(dir, 'img__' + k)).then(() => true, () => false);
+  assert.equal(await existe(usada), true);
+  assert.equal(await existe(enVersion), true);
+  assert.equal(await existe(suelta), false);
+});
+
+test('precio anterior debe ser mayor que el precio (oferta)', async () => {
+  assert.equal((await guardar([{ nombre: 'X', precio: 50, precioAntes: 40 }])).status, 400);
+  assert.equal((await guardar([{ nombre: 'X', precio: 50, precioAntes: 80 }])).status, 200);
+});

@@ -21,7 +21,7 @@ export function sesionOk(t) {
 export const tokenDe = (req) => (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
 
 // ---- Limpieza de los productos que llegan del panel (no se confía en el navegador) ----
-const txt = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+export const txt = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 const lista = (v, max, n) => [...new Set((Array.isArray(v) ? v : []).map((x) => txt(x, max)).filter(Boolean))].slice(0, n);
 const sinTildes = (s) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 export const RE_IMG = /^\/api\/imagen\/([a-z0-9]{6,12}-[a-f0-9]{12}\.(?:webp|png|jpg))$/;
@@ -38,6 +38,7 @@ export function limpiar(items) {
     if (!Number.isFinite(precio) || precio < 0) throw new ErrorHttp(`"${nombre}": precio inválido.`);
     const antes = p.precioAntes === '' || p.precioAntes == null ? null : Math.round(Number(p.precioAntes) * 100) / 100;
     if (antes !== null && (!Number.isFinite(antes) || antes < 0)) throw new ErrorHttp(`"${nombre}": precio anterior inválido.`);
+    if (antes !== null && antes <= precio) throw new ErrorHttp(`"${nombre}": el precio anterior tiene que ser mayor que el precio actual (si no hay oferta, dejalo vacío).`);
     const cat = txt(p.cat, 40), sub = cat ? txt(p.sub, 40) : '';
     const talles = lista(p.talles, 20, 30);
     return {

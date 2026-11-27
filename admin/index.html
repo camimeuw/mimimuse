@@ -34,9 +34,10 @@
         <label>Categoría <select id="f-cat"><option value="">Todas</option></select></label>
         <button type="button" id="nuevo">+ Nuevo producto</button>
         <button type="button" id="renombrar" class="sec">Renombrar categoría</button>
+        <button type="button" id="versiones" class="sec">Volver atrás</button>
         <button type="button" id="copia" class="sec">Descargar copia</button>
       </div>
-      <p id="resumen" class="nota" aria-live="polite"></p>
+      <div class="resumen"><label class="todos"><input type="checkbox" id="todos"> Seleccionar todos los que se ven</label><p id="resumen" class="nota" aria-live="polite"></p></div>
       <ul id="lista" class="lista"></ul>
     </section>
   </main>
@@ -48,7 +49,7 @@
       <div class="fila2">
         <label>Nombre <input id="p-nombre" maxlength="120" required></label>
         <label>Precio (S/) <input id="p-precio" type="number" min="0" step="0.01" required></label>
-        <label>Precio anterior (S/) <small>opcional, para ofertas</small> <input id="p-antes" type="number" min="0" step="0.01"></label>
+        <label>Precio anterior (S/) <small>opcional: si hay oferta, tiene que ser mayor que el precio</small> <input id="p-antes" type="number" min="0" step="0.01"></label>
       </div>
       <div class="fila2">
         <label>Categoría <small>escribí una nueva o elegí una</small> <input id="p-cat" list="d-cats" maxlength="40" autocomplete="off"></label>
@@ -101,6 +102,32 @@
       <p class="nota">Se cambia en todos los productos que la usan.</p>
       <div class="botones"><button type="submit">Renombrar</button><button type="button" class="sec" id="r-cancelar">Cancelar</button></div>
     </form>
+  </dialog>
+
+  <!-- Barra de acciones para varios productos -->
+  <section id="masivo" class="masivo" hidden aria-label="Acciones para los productos seleccionados">
+    <strong id="m-cuantos"></strong>
+    <button type="button" data-m="agotado" class="sec">Agotado</button><button type="button" data-m="stock" class="sec">Hay stock</button>
+    <button type="button" data-m="ocultar" class="sec">Ocultar</button><button type="button" data-m="mostrar" class="sec">Mostrar</button>
+    <button type="button" data-m="cat" class="sec">Categoría…</button><button type="button" data-m="of" class="sec">Oferta…</button><button type="button" data-m="sinoferta" class="sec">Quitar oferta</button>
+    <button type="button" data-m="eliminar" class="sec">Eliminar</button><button type="button" id="m-quitar">Quitar selección</button>
+  </section>
+
+  <dialog id="d-masiva" aria-labelledby="m-titulo">
+    <form id="f-masiva" method="dialog">
+      <h2 id="m-titulo"></h2>
+      <div id="m-cat" hidden><label>Categoría <input id="m-c" list="d-cats" maxlength="40" autocomplete="off"></label><label>Subcategoría <input id="m-s" list="d-subs" maxlength="40" autocomplete="off"></label></div>
+      <div id="m-of" hidden><label>Descuento (%) <input id="m-p" type="number" min="1" max="90" step="1"></label><p class="nota">El precio actual pasa a ser el "precio anterior" y se baja el precio. Si ya estaba en oferta, el descuento se calcula sobre el precio anterior.</p></div>
+      <p id="m-error" class="error" role="alert"></p>
+      <div class="botones"><button type="submit">Aplicar</button><button type="button" class="sec" id="m-cancelar">Cancelar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="d-ver" aria-labelledby="t-ver">
+    <h2 id="t-ver">Volver atrás</h2>
+    <p class="nota">Cada cambio guarda cómo estaba antes. Elegí hasta cuándo querés volver (se guardan los últimos 30 cambios).</p>
+    <ul id="v-lista" class="versiones"></ul>
+    <div class="botones"><button type="button" class="sec" id="v-cerrar">Cerrar</button></div>
   </dialog>
 
   <p id="aviso" class="aviso" role="status" aria-live="polite"></p>

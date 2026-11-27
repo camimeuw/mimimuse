@@ -33,6 +33,13 @@ Guarda en la carpeta `.almacen-local/` (no se sube al repositorio).
 - Los cambios del panel tardan hasta 30 segundos en verse en la tienda (caché).
 - Un producto cuenta como agotado si se marca entero o si todos sus talles están agotados.
 
+## Volver atrás, varios productos a la vez y ofertas
+- **Volver atrás:** cada cambio guarda cómo estaba antes (los últimos 30). Después de eliminar o de una acción en varios productos aparece **Deshacer** durante 10 segundos, y el botón **Volver atrás** lista los cambios para volver a cualquiera ("Antes de: Eliminó «Falda»"). Volver atrás también queda como un cambio: se puede recuperar. Las fotos no se borran mientras las use algún producto o alguna de esas 30 versiones.
+- **Lista vacía:** si un guardado dejaría la tienda sin productos, el servidor lo rechaza salvo que se confirme (eliminar el último producto o "Eliminar" a todos).
+- **Duplicar:** abre el editor con una copia (mismas fotos) para cambiarle nombre y datos; no se guarda hasta apretar Guardar.
+- **Varios a la vez:** se marcan productos (o "seleccionar todos los que se ven" tras buscar o filtrar) y aparece una barra: agotado / hay stock, ocultar / mostrar, cambiar categoría, oferta y eliminar.
+- **Oferta:** un producto está en oferta si su *precio anterior* es mayor que el precio. "Oferta…" aplica un % (el precio actual pasa a ser el anterior; si ya había oferta, se calcula sobre el anterior) y "Quitar oferta" lo deja como estaba. El servidor rechaza un precio anterior menor o igual al precio.
+
 ## Para que no se pierda nada al guardar
 - El servidor guarda con **escritura condicionada** (`onlyIfMatch` de Netlify Blobs) y lee con **consistencia fuerte**: si dos guardados se cruzan, entra uno y el otro recibe un aviso (409) en vez de pisarlo.
 - Mientras se guarda, los botones del panel quedan apagados (un doble toque no manda dos guardados) y no se puede guardar un producto con una foto subiéndose.

@@ -35,6 +35,7 @@
         <button type="button" id="nuevo">+ Nuevo producto</button>
         <button type="button" id="renombrar" class="sec">Renombrar categoría</button>
         <button type="button" id="versiones" class="sec">Volver atrás</button>
+        <button type="button" id="planilla" class="sec">Planilla (Excel)</button>
         <button type="button" id="copia" class="sec">Descargar copia</button>
       </div>
       <div class="resumen"><label class="todos"><input type="checkbox" id="todos"> <span id="todos-txt">Seleccionar todos</span></label><p id="resumen" class="nota" aria-live="polite"></p></div>
@@ -131,7 +132,31 @@
     <div class="botones"><button type="button" class="sec" id="v-cerrar">Cerrar</button></div>
   </dialog>
 
+  <!-- Cargar o actualizar muchos productos con una planilla -->
+  <dialog id="d-import" aria-labelledby="t-imp">
+    <h2 id="t-imp">Planilla de productos (Excel)</h2>
+    <div id="i-paso1">
+      <p class="nota">Para cargar muchos productos juntos: bajá la planilla de ejemplo, completala (una fila por producto) en Excel o Google Sheets y guardala como <strong>CSV</strong>. Para cambiar precios o stock de muchos a la vez: bajá «mis productos», cambiá lo que quieras y volvé a subirla (no toques la columna <em>id</em>).</p>
+      <div class="botones"><button type="button" class="sec" id="i-bajar">Bajar mis productos</button><button type="button" class="sec" id="i-ejemplo">Bajar planilla de ejemplo</button></div>
+      <label class="subir">Elegir la planilla (CSV) <input type="file" id="i-csv" accept=".csv,.txt,text/csv,text/plain"></label>
+    </div>
+    <div id="i-resumen" hidden>
+      <p id="i-txt"></p>
+      <ul id="i-errores" class="errores"></ul>
+      <div id="i-fotos-paso" hidden>
+        <label class="subir">Elegir las fotos <small>(todas juntas; se buscan por el nombre del archivo que pusiste en la columna «fotos»)</small> <input type="file" id="i-fotos" accept="image/png,image/jpeg,image/webp" multiple></label>
+        <p id="i-faltan" class="nota"></p>
+        <label class="cut"><input type="checkbox" id="i-cut" checked> Quitar el fondo blanco automáticamente <small>(solo si la foto no es PNG transparente)</small></label>
+      </div>
+    </div>
+    <div id="i-progreso" hidden><progress id="i-barra" max="1" value="0"></progress><p id="i-estado" class="nota" aria-live="polite"></p><ul id="i-fallos" class="errores"></ul></div>
+    <p id="i-error" class="error" role="alert"></p>
+    <div class="botones"><button type="button" id="i-importar" hidden>Importar</button><button type="button" class="sec" id="i-cerrar">Cerrar</button></div>
+  </dialog>
+
   <p id="aviso" class="aviso" role="status" aria-live="polite"></p>
+  <script src="csv.js"></script>
+  <script src="fotos.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

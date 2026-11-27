@@ -152,3 +152,30 @@ test('miniaturas: van alineadas con las fotos, se descartan las inválidas y no 
   const existe = (u) => fs.stat(path.join(dir, 'img__' + u.split('/').pop())).then(() => true, () => false);
   assert.equal(await existe(m1), true);        // la miniatura cuenta como "en uso"
 });
+
+// ---------- cambios chicos ----------
+const cambios = (rev, lista, extra = {}) => post({ accion: 'cambios', rev, cambios: lista, ...extra }, token);
+
+test('cambios: poner (nuevo y existente), quitar y orden sin reenviar toda la lista', async () => {
+  const base = await ver();
+  await guardar([{ nombre: 'A', precio: 1, cat: 'Faldas' }, { nombre: 'B', precio: 2 }, { nombre: 'C', precio: 3 }]);
+  let d = await ver(); const [a, b, c] = d.items;
+  // existente + nuevo (con categoría escrita distinto: se unifica con la existente)
+  let r = await (await cambios(d.rev, [{ op: 'poner', productos: [{ ...b, precio: 20 }, { nombre: 'D', precio: 4, cat: 'faldas' }] }])).json();
+  assert.deepEqual(r.puestos.map((p) => [p.nombre, p.precio, p.cat]), [['B', 20, ''], ['D', 4, 'Faldas']]);
+  assert.ok(Number.isInteger(r.puestos[1].id));
+  assert.deepEqual(r.orden.length, 4);
+  d = await ver(); assert.deepEqual(d.items.map((p) => p.nombre), ['A', 'B', 'C', 'D']);
+  // orden y quitar
+  r = await (await cambios(d.rev, [{ op: 'orden', ids: [d.items[3].id, c.id] }, { op: 'quitar', ids: [a.id] }])).json();
+  d = await ver(); assert.deepEqual(d.items.map((p) => p.nombre), ['D', 'C', 'B']);
+  assert.equal(r.rev, d.rev);
+  // validación y versión vieja
+  assert.equal((await cambios(d.rev, [{ op: 'poner', productos: [{ nombre: '', precio: 1 }] }])).status, 400);
+  assert.equal((await cambios(d.rev - 1, [{ op: 'orden', ids: [] }])).status, 409);
+  assert.equal((await cambios(d.rev, [{ op: 'raro' }])).status, 400);
+  assert.equal((await cambios(d.rev, [])).status, 400);
+  // dejar la tienda vacía exige confirmación
+  assert.equal((await cambios(d.rev, [{ op: 'quitar', ids: d.items.map((p) => p.id) }])).status, 400);
+  assert.equal((await cambios(d.rev, [{ op: 'quitar', ids: d.items.map((p) => p.id) }], { confirmarVacio: true })).status, 200);
+});

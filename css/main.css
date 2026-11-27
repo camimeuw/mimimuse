@@ -183,6 +183,7 @@ a { color: var(--color-acento); }
 .scene-btns svg { width: 20px; height: 20px; }
 
 /* ---------- Productos ---------- */
+#catalog .vacio { grid-column: 1 / -1; text-align: center; padding: 24px 8px; font-weight: 800; }
 #catalog { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
 .tarjeta { position: relative; padding: 4px; text-align: center; background: var(--color-caja); border: 3px ridge var(--color-borde); transition: translate .2s var(--ease); }
 .tarjeta:hover { translate: 0 -3px; }

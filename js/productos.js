@@ -3,6 +3,7 @@ const more = document.querySelector('#ver-mas');
 const SIZES = [470, 330, 380, 290, 440, 320, 480, 295, 400, 400]; // anchos base del modo flotante (celular), se repiten
 const PAGE = 12;
 let shown = 0;
+let lista = PRODUCTS;   // productos de ejemplo (data/productos.js) hasta que responda el panel
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Aleatorio estable (misma disposición cada vez) por id de producto
@@ -11,7 +12,7 @@ const between = (r, a, b) => a + r() * (b - a);
 const money = (n) => (n == null ? 'S/ —' : `S/ ${Number(n).toFixed(2)}`);
 
 function render() {
-  PRODUCTS.slice(shown, shown + PAGE).forEach((p, k) => {
+  lista.slice(shown, shown + PAGE).forEach((p, k) => {
     const i = shown + k, w = SIZES[i % SIZES.length], r = rng(p.id * 7919 + 13);
     const [main, alt] = p.imgs;
     const li = document.createElement('li');
@@ -29,12 +30,26 @@ function render() {
       </div></div>`;
     catalog.appendChild(li);
   });
-  shown = Math.min(shown + PAGE, PRODUCTS.length);
-  more.hidden = shown >= PRODUCTS.length;
+  shown = Math.min(shown + PAGE, lista.length);
+  more.hidden = shown >= lista.length;
 }
 
 more.addEventListener('click', render);
-render();
+
+// Los productos reales vienen del panel (/api/productos). Si no hay servidor (por ejemplo abriendo el archivo
+// en tu compu), se quedan los de ejemplo.
+fetch('/api/productos')
+  .then((r) => (r.ok ? r.json() : Promise.reject()))
+  .then((d) => {
+    lista = d.items.map((p) => ({
+      id: p.id, nombre: p.nombre, precio: p.precio, imgs: p.imgs,
+      // agotado si lo marcó entero o si no queda ningún talle disponible
+      agotado: p.agotado || (p.talles.length > 0 && p.talles.every((t) => p.tallesAgotados.includes(t))),
+    }));
+    if (!lista.length) catalog.innerHTML = '<li class="vacio">Pronto vas a ver los productos acá.</li>';
+  })
+  .catch(() => {})
+  .finally(() => { if (lista.length) render(); });
 
 // Celular: el botón de arriba del juego abre los productos (flotando) y vuelve al dress up
 const btn = document.querySelector('#btn-productos');

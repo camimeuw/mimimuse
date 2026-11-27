@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Panel · Mimi Muse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="cab">
+    <img class="logo" src="../assets/titulo-pixel.png" alt="Mimi Muse" width="130" height="24">
+    <h1>Panel de productos</h1>
+    <button type="button" id="salir" class="sec" hidden>Salir</button>
+  </header>
+
+  <main>
+    <!-- Entrar -->
+    <section id="entrar" aria-labelledby="t-entrar">
+      <h2 id="t-entrar">Entrar</h2>
+      <form id="f-entrar">
+        <label>Clave <input type="password" id="clave" autocomplete="current-password" required></label>
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Lista -->
+    <section id="panel" hidden aria-label="Productos">
+      <div class="barra">
+        <label class="buscar">Buscar <input type="search" id="buscar" placeholder="nombre, categoría…"></label>
+        <label>Categoría <select id="f-cat"><option value="">Todas</option></select></label>
+        <button type="button" id="nuevo">+ Nuevo producto</button>
+        <button type="button" id="renombrar" class="sec">Renombrar categoría</button>
+        <button type="button" id="copia" class="sec">Descargar copia</button>
+      </div>
+      <p id="resumen" class="nota" aria-live="polite"></p>
+      <ul id="lista" class="lista"></ul>
+    </section>
+  </main>
+
+  <!-- Editor de un producto -->
+  <dialog id="editor" aria-labelledby="t-editor">
+    <form id="f-prod" method="dialog">
+      <h2 id="t-editor">Producto</h2>
+      <div class="fila2">
+        <label>Nombre <input id="p-nombre" maxlength="120" required></label>
+        <label>Precio (S/) <input id="p-precio" type="number" min="0" step="0.01" required></label>
+        <label>Precio anterior (S/) <small>opcional, para ofertas</small> <input id="p-antes" type="number" min="0" step="0.01"></label>
+      </div>
+      <div class="fila2">
+        <label>Categoría <small>escribí una nueva o elegí una</small> <input id="p-cat" list="d-cats" maxlength="40" autocomplete="off"></label>
+        <label>Subcategoría <input id="p-sub" list="d-subs" maxlength="40" autocomplete="off"></label>
+      </div>
+      <datalist id="d-cats"></datalist><datalist id="d-subs"></datalist>
+
+      <label>Descripción <textarea id="p-desc" rows="4" maxlength="2000"></textarea></label>
+
+      <fieldset>
+        <legend>Talles <small>tocá un talle para marcarlo agotado</small></legend>
+        <div class="chips" id="c-talles"></div>
+        <div class="agregar"><input id="n-talle" maxlength="20" placeholder="Ej: S, 38, Único" aria-label="Nuevo talle"><button type="button" class="sec" id="a-talle">Agregar</button>
+          <button type="button" class="sec" data-preset="XS,S,M,L,XL">XS–XL</button><button type="button" class="sec" data-preset="Único">Único</button></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Colores</legend>
+        <div class="chips" id="c-colores"></div>
+        <div class="agregar"><input id="n-color" maxlength="30" placeholder="Ej: rosa, negro" aria-label="Nuevo color"><button type="button" class="sec" id="a-color">Agregar</button></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Fotos <small>la primera es la principal; la segunda aparece al pasar el mouse</small></legend>
+        <ul class="fotos" id="fotos"></ul>
+        <label class="subir">Agregar fotos <input type="file" id="subir" accept="image/png,image/jpeg,image/webp" multiple></label>
+      </fieldset>
+
+      <div class="checks">
+        <label><input type="checkbox" id="p-agotado"> Agotado (todo el producto)</label>
+        <label><input type="checkbox" id="p-activo" checked> Visible en la tienda</label>
+      </div>
+
+      <p id="e-error" class="error" role="alert"></p>
+      <div class="botones">
+        <button type="submit" id="guardar">Guardar producto</button>
+        <button type="button" class="sec" id="cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Renombrar categoría o subcategoría -->
+  <dialog id="d-ren" aria-labelledby="t-ren">
+    <form id="f-ren" method="dialog">
+      <h2 id="t-ren">Renombrar categoría</h2>
+      <label>Categoría <select id="r-cat"></select></label>
+      <label>Subcategoría <select id="r-sub"><option value="">(la categoría entera)</option></select></label>
+      <label>Nuevo nombre <input id="r-nuevo" maxlength="40" required></label>
+      <p class="nota">Se cambia en todos los productos que la usan.</p>
+      <div class="botones"><button type="submit">Renombrar</button><button type="button" class="sec" id="r-cancelar">Cancelar</button></div>
+    </form>
+  </dialog>
+
+  <p id="aviso" class="aviso" role="status" aria-live="polite"></p>
+  <script src="admin.js"></script>
+</body>
+</html>

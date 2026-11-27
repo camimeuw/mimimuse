@@ -20,7 +20,7 @@ async function api(accion, datos = {}) {
   }
   const d = await r.json().catch(() => ({}));
   if (r.status === 401 && accion !== 'entrar') { salir(); throw new Error(d.error || 'Sesión vencida: volvé a entrar.'); }
-  if (!r.ok) throw new Error(d.error || (r.status >= 500 ? 'El servidor no respondió bien. Probá de nuevo en un minuto.' : 'No se pudo completar la acción.'));
+  if (!r.ok) throw Object.assign(new Error(d.error || (r.status >= 500 ? 'El servidor no respondió bien. Probá de nuevo en un minuto.' : 'No se pudo completar la acción.')), { status: r.status });
   return d;
 }
 
@@ -56,22 +56,29 @@ async function cargar() {
   const d = await api('ver');
   rev = d.rev; items = d.items; mostrar(true); pintar();
 }
+const recargarLista = async () => { const d = await api('ver'); rev = d.rev; items = d.items; };
 
 // Mientras se guarda, los botones quedan apagados: así un doble toque no manda dos guardados a la vez
 let ocupado = false;
 function bloquear(on) {
   document.body.classList.toggle('guardando', on);
-  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-ver button, #masivo button, #salir').forEach((b) => {
+  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-ver button, #d-import button, #masivo button, #salir').forEach((b) => {
     if (on) { b.dataset.estaba = b.disabled ? '1' : ''; b.disabled = true; } else { b.disabled = b.dataset.estaba === '1'; delete b.dataset.estaba; }
   });
 }
+// Solo se manda lo que cambió (no los 200 productos): cambios = [{op:'poner', productos}, {op:'quitar', ids}, {op:'orden', ids}]
 // nota = qué se cambió (queda en "Volver atrás"); deshacer = muestra el botón "Deshacer" 10 s; vacio = confirma que la lista puede quedar vacía
-async function guardarTodo(msg, { nota = '', deshacer = false, vacio = false } = {}) {
+const poner = (productos) => productos.length ? [{ op: 'poner', productos }] : [];
+async function guardarTodo(msg, { cambios, nota = '', deshacer = false, vacio = false } = {}) {
   if (ocupado) throw new Error('Todavía se está guardando. Esperá un momento.');
   ocupado = true; bloquear(true); aviso('Guardando…');
   try {
-    const d = await api('guardar', { rev, items, nota, confirmarVacio: vacio });
-    const anterior = rev; rev = d.rev; items = d.items;
+    const d = await api('cambios', { rev, cambios, nota, confirmarVacio: vacio });
+    const anterior = rev; rev = d.rev;
+    const porId = new Map(items.filter((p) => p.id != null).map((p) => [p.id, p]));
+    for (const p of d.puestos) porId.set(p.id, p);          // lo que llegó del servidor ya viene limpio y con su número
+    const nuevos = d.orden.map((id) => porId.get(id));
+    if (nuevos.every(Boolean)) items = nuevos; else await recargarLista();
     if (msg) aviso(msg, false, deshacer ? { texto: 'Deshacer', hacer: () => volverA(anterior) } : null);
   } finally { ocupado = false; bloquear(false); pintar(); }
 }
@@ -151,12 +158,12 @@ function fila(p, vistos, k) {
 async function rapido(p, cambios, que) {
   const antes = { ...p };
   Object.assign(p, cambios);
-  try { await guardarTodo('Guardado', { nota: `${que} «${p.nombre}»` }); } catch (err) { Object.assign(p, antes); pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Guardado', { cambios: poner([p]), nota: `${que} «${p.nombre}»` }); } catch (err) { Object.assign(p, antes); pintar(); aviso(err.message, true); }
 }
 // El orden de la lista es el orden en la tienda
 async function reordenar(nuevo) {
   const antes = items; items = nuevo;
-  try { await guardarTodo('Orden guardado', { nota: 'Cambió el orden' }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Orden guardado', { cambios: [{ op: 'orden', ids: nuevo.map((p) => p.id) }], nota: 'Cambió el orden' }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 function mover(p, vecino) {
   const copia = items.slice(), a = copia.indexOf(p), b = copia.indexOf(vecino);
@@ -167,7 +174,7 @@ async function eliminar(p) {
   if (!confirm(`¿Eliminar "${p.nombre}"? Después vas a poder deshacerlo con el botón "Deshacer" o desde "Volver atrás".`)) return;
   const antes = items;
   items = items.filter((x) => x !== p);
-  try { await guardarTodo('Producto eliminado.', { nota: `Eliminó «${p.nombre}»`, deshacer: true, vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  try { await guardarTodo('Producto eliminado.', { cambios: [{ op: 'quitar', ids: [p.id] }], nota: `Eliminó «${p.nombre}»`, deshacer: true, vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 $('#buscar').addEventListener('input', () => { mostrados = PAGINA; pintar(); });
 $('#f-cat').addEventListener('change', () => { mostrados = PAGINA; pintar(); });
@@ -177,9 +184,9 @@ $('#mas').addEventListener('click', () => { mostrados += PAGINA; pintar(); });
 $('#todos').addEventListener('change', (e) => { for (const p of visibles()) e.target.checked ? sel.add(p.id) : sel.delete(p.id); pintar(); });
 $('#m-quitar').addEventListener('click', () => { sel.clear(); pintar(); });
 async function masivo(cambia, nota, msg) {
-  const antes = structuredClone(items), n = marcados().length;
-  marcados().forEach(cambia);
-  try { await guardarTodo(`${msg} (${n})`, { nota: `${nota} en ${n} producto${n === 1 ? '' : 's'}`, deshacer: true }); sel.clear(); pintar(); }
+  const antes = structuredClone(items), n = marcados().length, tocados = marcados();
+  tocados.forEach(cambia);
+  try { await guardarTodo(`${msg} (${n})`, { cambios: poner(tocados), nota: `${nota} en ${n} producto${n === 1 ? '' : 's'}`, deshacer: true }); sel.clear(); pintar(); }
   catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
 let modoMasivo = '';
@@ -218,8 +225,8 @@ $('#masivo').addEventListener('click', (e) => {
   else if (m === 'eliminar') {
     const n = sel.size;
     if (!confirm(`¿Eliminar ${n} producto${n === 1 ? '' : 's'}? Después vas a poder deshacerlo.`)) return;
-    const antes = items; items = items.filter((p) => !sel.has(p.id));
-    guardarTodo(`Eliminados (${n})`, { nota: `Eliminó ${n} producto${n === 1 ? '' : 's'}`, deshacer: true, vacio: !items.length }).then(() => { sel.clear(); pintar(); }, (err) => { items = antes; pintar(); aviso(err.message, true); });
+    const antes = items, ids = [...sel]; items = items.filter((p) => !sel.has(p.id));
+    guardarTodo(`Eliminados (${n})`, { cambios: [{ op: 'quitar', ids }], nota: `Eliminó ${n} producto${n === 1 ? '' : 's'}`, deshacer: true, vacio: !items.length }).then(() => { sel.clear(); pintar(); }, (err) => { items = antes; pintar(); aviso(err.message, true); });
   }
 });
 
@@ -305,105 +312,30 @@ function fotos() {
     return el('li', {}, el('img', { src: edit.thumbs[i] || u, alt: `Foto ${i + 1}` }), el('div', { className: 'principal', textContent: i === 0 ? 'Principal' : i === 1 ? 'Al pasar el mouse' : '' }), el('div', { className: 'mov' }, izq, der, x));
   }));
 }
-// Quitar el fondo blanco: mismo método que el panel de Bunny Club (se queda con la prenda más grande y suaviza el borde)
-function scaled(src, max) {
-  const s = Math.min(1, max / Math.max(src.width, src.height)), w = Math.max(1, Math.round(src.width * s)), h = Math.max(1, Math.round(src.height * s));
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  c.getContext('2d', { willReadFrequently: true }).drawImage(src, 0, 0, w, h);
-  return c;
-}
-function tieneAlfa(c) {
-  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, c.width, c.height).data;
-  for (let i = 3; i < d.length; i += 12) if (d[i] < 250) return true;
-  return false;
-}
-function morph(src, w, h, iters, grow) {   // agranda (grow) o achica la máscara 1 px por vuelta
-  let a = src;
-  for (let t = 0; t < iters; t++) {
-    const out = new Uint8Array(a.length);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      let v = grow ? 0 : 1;
-      for (let dy = -1; dy <= 1; dy++) {
-        const yy = y + dy;
-        if (yy < 0 || yy >= h) { if (!grow) v = 0; continue; }
-        for (let dx = -1; dx <= 1; dx++) {
-          const xx = x + dx;
-          if (xx < 0 || xx >= w) { if (!grow) v = 0; continue; }
-          const s = a[yy * w + xx];
-          if (grow) { if (s) v = 1; } else if (!s) v = 0;
-        }
-      }
-      out[y * w + x] = v;
+// Las fotos se achican y se les quita el fondo en un Worker (la página no se traba con muchas fotos);
+// si el navegador no lo permite, se hace en la propia página (procesarFoto viene de fotos.js)
+let worker = null, enWorker = typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined', seq = 0;
+const esperando = new Map();
+function tareaWorker(archivo, cortar) {
+  return new Promise((ok, mal) => {
+    if (!worker) {
+      worker = new Worker('foto-worker.js');
+      worker.onmessage = ({ data }) => { const t = esperando.get(data.id); esperando.delete(data.id); if (t) data.error ? t.mal(new Error(data.error)) : t.ok(data); };
+      worker.onerror = () => { enWorker = false; worker = null; for (const t of esperando.values()) t.mal(Object.assign(new Error('worker'), { reintentar: true })); esperando.clear(); };
     }
-    a = out;
-  }
-  return a;
+    const id = ++seq; esperando.set(id, { ok, mal }); worker.postMessage({ id, archivo, cortar });
+  });
 }
-function mayor(fg, w, h) {                  // deja solo la mancha más grande (saca motas y marcas de agua)
-  const n = w * h, lab = new Int32Array(n), q = new Int32Array(n);
-  let best = 0, bestSize = 0, id = 0;
-  for (let s = 0; s < n; s++) {
-    if (!fg[s] || lab[s]) continue;
-    id++; let qs = 0, qe = 0; q[qe++] = s; lab[s] = id;
-    while (qs < qe) {
-      const i = q[qs++], x = i % w, y = (i / w) | 0;
-      if (x > 0 && fg[i - 1] && !lab[i - 1]) { lab[i - 1] = id; q[qe++] = i - 1; }
-      if (x < w - 1 && fg[i + 1] && !lab[i + 1]) { lab[i + 1] = id; q[qe++] = i + 1; }
-      if (y > 0 && fg[i - w] && !lab[i - w]) { lab[i - w] = id; q[qe++] = i - w; }
-      if (y < h - 1 && fg[i + w] && !lab[i + w]) { lab[i + w] = id; q[qe++] = i + w; }
-    }
-    if (qe > bestSize) { bestSize = qe; best = id; }
-  }
-  const out = new Uint8Array(n);
-  for (let i = 0; i < n; i++) out[i] = lab[i] === best ? 1 : 0;
-  return out;
-}
-function quitarFondo(c) {
-  const w = c.width, h = c.height, n = w * h, ctx = c.getContext('2d', { willReadFrequently: true }), im = ctx.getImageData(0, 0, w, h), d = im.data;
-  let bar = new Uint8Array(n);                                   // "no es blanco" = prenda o sombra
-  for (let i = 0; i < n; i++) { const o = i * 4; bar[i] = Math.min(d[o], d[o + 1], d[o + 2]) < 250 ? 1 : 0; }
-  bar = morph(bar, w, h, 2, true);                               // cierra huequitos del borde
-  const bg = new Uint8Array(n), q = new Int32Array(n); let qs = 0, qe = 0;
-  const push = (i) => { if (!bar[i] && !bg[i]) { bg[i] = 1; q[qe++] = i; } };
-  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
-  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
-  while (qs < qe) { const i = q[qs++], x = i % w, y = (i / w) | 0; if (x > 0) push(i - 1); if (x < w - 1) push(i + 1); if (y > 0) push(i - w); if (y < h - 1) push(i + w); }
-  let fg = new Uint8Array(n);
-  for (let i = 0; i < n; i++) fg[i] = bg[i] ? 0 : 1;
-  fg = mayor(morph(fg, w, h, 2, false), w, h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {      // borde suave
-    let s = 0, k = 0;
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx >= 0 && xx < w && yy >= 0 && yy < h) { s += fg[yy * w + xx]; k++; } }
-    d[(y * w + x) * 4 + 3] = Math.round(Math.min(1, Math.max(0, (s / k - 0.15) / 0.7)) * 255);
-  }
-  ctx.putImageData(im, 0, 0);
-  let x0 = w, y0 = h, x1 = 0, y1 = 0;                            // recorta los bordes transparentes
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 20) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-  if (x1 <= x0 || y1 <= y0) return c;
-  const pad = Math.round(Math.max(x1 - x0, y1 - y0) * 0.04), o = document.createElement('canvas');
-  o.width = x1 - x0 + 1 + pad * 2; o.height = y1 - y0 + 1 + pad * 2;
-  o.getContext('2d').drawImage(c, x0, y0, x1 - x0 + 1, y1 - y0 + 1, pad, pad, x1 - x0 + 1, y1 - y0 + 1);
-  return o;
-}
-const aBase64 = async (blob) => {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(bin);
-};
-// Devuelve la foto (máx. 1100 px) y una miniatura (máx. 360 px) en WEBP, que mantiene la transparencia
 async function procesar(archivo, cortar) {
-  const bmp = await createImageBitmap(archivo).catch(() => { throw new Error('no es una imagen válida'); });
-  let c = scaled(bmp, 1100);
-  if (cortar && !tieneAlfa(c)) c = quitarFondo(c);
-  let blob, max = 1100;
-  for (let t = 0; t < 4; t++) {                                  // si pesa mucho, se achica más
-    blob = await new Promise((ok) => (t === 0 ? c : scaled(c, max)).toBlob(ok, 'image/webp', 0.88));
-    if (blob.size < 1.2 * 1024 * 1024) break;
-    max = Math.round(max * 0.8);
-  }
-  if (blob.size > 1.4 * 1024 * 1024) throw new Error('la foto es demasiado pesada');
-  const mini = await new Promise((ok) => scaled(c, 360).toBlob(ok, 'image/webp', 0.8));
-  return { foto: await aBase64(blob), mini: await aBase64(mini) };
+  if (enWorker) { try { return await tareaWorker(archivo, cortar); } catch (e) { if (!e.reintentar) throw e; } }
+  return window.procesarFoto(archivo, cortar);
+}
+const aBase64 = (blob) => new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = () => mal(new Error('no se pudo leer la foto')); r.readAsDataURL(blob); });
+// Procesa una foto y la sube (la foto y su miniatura). Devuelve { url, mini, aviso }
+async function subirFoto(archivo, cortar) {
+  const { foto, mini, aviso } = await procesar(archivo, cortar);
+  const [url, urlMini] = [(await api('subir', { datos: await aBase64(foto) })).url, (await api('subir', { datos: await aBase64(mini) })).url];
+  return { url, mini: urlMini, aviso };
 }
 let subiendo = 0;
 $('#subir').addEventListener('change', async (e) => {
@@ -414,9 +346,8 @@ $('#subir').addEventListener('change', async (e) => {
       if (edit.imgs.length >= 8) { aviso('Máximo 8 fotos por producto.', true); break; }
       try {
         aviso(`Procesando ${f.name}…`);
-        const { foto, mini } = await procesar(f, $('#p-cut').checked);
-        const url = (await api('subir', { datos: foto })).url, urlMini = (await api('subir', { datos: mini })).url;
-        edit.imgs.push(url); edit.thumbs.push(urlMini); fotos(); aviso('Foto subida');
+        const r = await subirFoto(f, $('#p-cut').checked);
+        edit.imgs.push(r.url); edit.thumbs.push(r.mini); fotos(); aviso(r.aviso ? `${f.name}: ${r.aviso}` : 'Foto subida', !!r.aviso);
       }
       catch (err) { aviso(`${f.name}: ${err.message}`, true); }
     }
@@ -436,7 +367,7 @@ $('#f-prod').addEventListener('submit', async (e) => {
   if (subiendo) { $('#e-error').textContent = 'Esperá a que termine de subir la foto y volvé a guardar.'; return; }
   const antes = items.slice();
   if (editandoIdx < 0) items.push(edit); else items[editandoIdx] = edit;
-  try { await guardarTodo('Producto guardado', { nota: `${editandoIdx < 0 ? 'Creó' : 'Editó'} «${edit.nombre}»` }); $('#editor').close(); }
+  try { await guardarTodo('Producto guardado', { cambios: poner([edit]), nota: `${editandoIdx < 0 ? 'Creó' : 'Editó'} «${edit.nombre}»` }); $('#editor').close(); }
   catch (err) { items = antes; $('#e-error').textContent = err.message; pintar(); }
 });
 
@@ -454,8 +385,116 @@ $('#f-ren').addEventListener('submit', async (e) => {
   const cat = $('#r-cat').value, sub = $('#r-sub').value, nuevo = $('#r-nuevo').value.trim();
   if (!nuevo) return;
   const antes = structuredClone(items);
-  items.forEach((p) => { if (p.cat === cat) { if (!sub) p.cat = nuevo; else if (p.sub === sub) p.sub = nuevo; } });
-  try { await guardarTodo('Nombre cambiado', { nota: `Renombró «${sub || cat}» a «${nuevo}»` }); $('#d-ren').close(); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+  const tocados = [];
+  items.forEach((p) => { if (p.cat === cat) { if (!sub) { p.cat = nuevo; tocados.push(p); } else if (p.sub === sub) { p.sub = nuevo; tocados.push(p); } } });
+  try { await guardarTodo('Nombre cambiado', { cambios: poner(tocados), nota: `Renombró «${sub || cat}» a «${nuevo}»` }); $('#d-ren').close(); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+});
+
+// ---------- Planilla (Excel / CSV): cargar o actualizar muchos productos ----------
+const bajar = (nombre, texto, tipo) => { const a = el('a', { href: URL.createObjectURL(new Blob([texto], { type: tipo })), download: nombre }); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+const hoy = () => new Date().toISOString().slice(0, 10);
+const RE_URL = /^\/api\/imagen\//;
+let plan = null, archivosFotos = new Map(), cancelaImport = false, importando = false;
+const linea = (txt) => el('li', { textContent: txt });
+const clave = (n) => n.toLowerCase();
+const nombresFotos = () => new Set(plan.filas.flatMap((f) => (f.campos.fotos || []).filter((n) => !RE_URL.test(n)).map(clave)));
+
+function resumirPlan() {
+  const ids = new Set(items.map((p) => p.id)), nombres = new Set(items.map((p) => sinTildes(p.nombre)));
+  const filas = plan.filas, actualizan = filas.filter((f) => f.campos.id != null && ids.has(f.campos.id)).length;
+  const idsRaros = filas.filter((f) => f.campos.id != null && !ids.has(f.campos.id)).length;
+  const repetidos = filas.filter((f) => !(f.campos.id != null && ids.has(f.campos.id)) && nombres.has(sinTildes(f.campos.nombre))).length;
+  const pedidas = nombresFotos(), faltan = [...pedidas].filter((n) => !archivosFotos.has(n));
+  const partes = [`${filas.length} producto${filas.length === 1 ? '' : 's'} listo${filas.length === 1 ? '' : 's'} para importar: ${filas.length - actualizan} nuevo${filas.length - actualizan === 1 ? '' : 's'} y ${actualizan} que se actualiza${actualizan === 1 ? '' : 'n'}.`];
+  if (idsRaros) partes.push(`${idsRaros} tienen un id que no existe: se crean como nuevos.`);
+  if (repetidos) partes.push(`${repetidos} nuevos tienen el mismo nombre que un producto que ya está (se crean igual).`);
+  if (plan.errores.length) partes.push(`${plan.errores.length} fila${plan.errores.length === 1 ? '' : 's'} con errores no se importan.`);
+  $('#i-txt').textContent = partes.join(' ');
+  $('#i-errores').replaceChildren(...plan.errores.slice(0, 12).map((e) => linea(`Fila ${e.fila}: ${e.msg}`)), ...(plan.errores.length > 12 ? [linea(`…y ${plan.errores.length - 12} más.`)] : []));
+  $('#i-fotos-paso').hidden = !pedidas.size;
+  $('#i-faltan').textContent = !pedidas.size ? '' : faltan.length ? `Faltan ${faltan.length} de ${pedidas.size} fotos: ${faltan.slice(0, 5).join(', ')}${faltan.length > 5 ? '…' : ''}. Esos productos se importan sin esas fotos.` : `Están las ${pedidas.size} fotos.`;
+  $('#i-importar').hidden = !filas.length; $('#i-importar').textContent = `Importar ${filas.length} producto${filas.length === 1 ? '' : 's'}`;
+  $('#i-resumen').hidden = false;
+}
+$('#planilla').addEventListener('click', () => {
+  plan = null; archivosFotos = new Map(); $('#i-csv').value = ''; $('#i-fotos').value = '';
+  for (const id of ['#i-resumen', '#i-progreso', '#i-importar']) $(id).hidden = true;
+  $('#i-paso1').hidden = false; $('#i-error').textContent = ''; $('#d-import').showModal();
+});
+$('#i-bajar').addEventListener('click', () => bajar(`mimimuse-productos-${hoy()}.csv`, CSV.exportar(items), 'text/csv;charset=utf-8'));
+$('#i-ejemplo').addEventListener('click', () => bajar('mimimuse-planilla-ejemplo.csv', CSV.plantilla(), 'text/csv;charset=utf-8'));
+$('#i-csv').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; $('#i-error').textContent = ''; if (!f) return;
+  try {
+    if (f.size > 5 * 1024 * 1024) throw new Error('La planilla pesa demasiado: ¿es el archivo correcto?');
+    const r = CSV.aProductos(CSV.leer(CSV.decodificar(await f.arrayBuffer())));
+    if (r.productos.length > 500) throw new Error('Hay más de 500 filas: dividí la planilla en partes.');
+    plan = { filas: r.productos, errores: r.errores };
+    resumirPlan();
+    if (!r.productos.length) $('#i-error').textContent = r.errores.length === 1 && r.errores[0].fila === 1 ? '' : 'No hay ningún producto para importar.';
+  } catch (err) { plan = null; $('#i-resumen').hidden = true; $('#i-importar').hidden = true; $('#i-error').textContent = err.message; }
+});
+$('#i-fotos').addEventListener('change', (e) => { for (const f of e.target.files) archivosFotos.set(clave(f.name), f); e.target.value = ''; if (plan) resumirPlan(); });
+$('#i-cerrar').addEventListener('click', () => { if (importando) { cancelaImport = true; $('#i-estado').textContent = 'Cancelando…'; } else $('#d-import').close(); });
+$('#d-import').addEventListener('cancel', (e) => { if (importando) { e.preventDefault(); cancelaImport = true; $('#i-estado').textContent = 'Cancelando…'; } });
+
+// Arma los cambios con la lista tal como está AHORA (si alguien guardó mientras subían las fotos, se vuelve a armar)
+function armarCambios(subidas) {
+  const porId = new Map(items.map((p) => [p.id, p])), tocados = [];
+  for (const { campos } of plan.filas) {
+    const { fotos: nf, miniaturas: nm, ...resto } = campos;
+    const viejo = campos.id != null ? porId.get(campos.id) : null;
+    const p = viejo ? structuredClone(viejo) : vacio();
+    Object.assign(p, resto);
+    if (!viejo) p.id = null;
+    if (nf) {
+      const fs = nf.map((n, k) => (RE_URL.test(n) ? { url: n, mini: RE_URL.test(nm?.[k] || '') ? nm[k] : '' } : subidas.get(clave(n)))).filter(Boolean).slice(0, 8);
+      if (fs.length) { p.imgs = fs.map((x) => x.url); p.thumbs = fs.map((x) => x.mini); }
+    }
+    p.thumbs = p.imgs.map((_, k) => p.thumbs?.[k] || '');
+    tocados.push(p);
+  }
+  return poner(tocados);
+}
+$('#i-importar').addEventListener('click', async () => {
+  const cola = [...nombresFotos()].filter((n) => archivosFotos.has(n)), subidas = new Map(), fallos = [], cortar = $('#i-cut').checked;
+  const n = plan.filas.length;
+  importando = true; cancelaImport = false;
+  for (const id of ['#i-paso1', '#i-resumen', '#i-importar']) $(id).hidden = true;
+  $('#i-progreso').hidden = false; $('#i-fallos').replaceChildren(); $('#i-error').textContent = ''; $('#i-cerrar').textContent = 'Cancelar';
+  const total = cola.length, barra = $('#i-barra'); barra.max = Math.max(1, total); barra.value = 0;
+  let hechas = 0, seguidos = 0;
+  const estado = (t) => { $('#i-estado').textContent = t; };
+  estado(total ? `Preparando las fotos: 0 de ${total}…` : 'Guardando los productos…');
+  const carril = async () => {      // 2 carriles: mientras una foto se sube, la siguiente se procesa
+    while (!cancelaImport && cola.length) {
+      const nombre = cola.shift();
+      try {
+        const r = await subirFoto(archivosFotos.get(nombre), cortar);
+        subidas.set(nombre, r); seguidos = 0;
+        if (r.aviso) fallos.push(`${nombre}: ${r.aviso}`);
+      } catch (err) {
+        if (err.status === 401) { cancelaImport = true; break; }
+        fallos.push(`${nombre}: ${err.message}`);
+        if (++seguidos >= 5) { cancelaImport = true; $('#i-error').textContent = 'Se cortó la conexión: revisá tu internet y volvé a intentar.'; }
+      }
+      barra.value = ++hechas; estado(`Preparando las fotos: ${hechas} de ${total}…`);
+    }
+  };
+  try {
+    await Promise.all([carril(), carril()]);
+    if (cancelaImport) { estado($('#i-error').textContent ? 'No se importó nada.' : 'Importación cancelada: no se cambió ningún producto.'); return; }
+    estado('Guardando los productos…');
+    for (let intento = 0; ; intento++) {
+      try { await guardarTodo(`Importó ${n} producto${n === 1 ? '' : 's'}`, { cambios: armarCambios(subidas), nota: `Importó ${n} producto${n === 1 ? '' : 's'} desde una planilla`, deshacer: true }); break; }
+      catch (err) { if (err.status === 409 && !intento) { await recargarLista(); continue; } throw err; }
+    }
+    estado(`Listo: se importaron ${n} producto${n === 1 ? '' : 's'}.${fallos.length ? ` Ojo con ${fallos.length} foto${fallos.length === 1 ? '' : 's'}:` : ''}`);
+    $('#i-fallos').replaceChildren(...fallos.slice(0, 12).map(linea));
+    barra.value = barra.max;
+    if (!fallos.length) $('#d-import').close();      // sin problemas: se cierra y queda a la vista el aviso con «Deshacer»
+  } catch (err) { $('#i-error').textContent = err.message; estado('No se pudo guardar. Los productos no cambiaron.'); }
+  finally { importando = false; $('#i-cerrar').textContent = 'Cerrar'; }
 });
 
 // ---------- Copia de seguridad ----------

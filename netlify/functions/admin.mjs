@@ -71,6 +71,35 @@ export default async (req) => {
       return json({ rev: nuevo.rev, items: nuevo.items });
     }
 
+    // Cambios chicos (en vez de reenviar los 200 productos en cada toque): poner / quitar / orden
+    if (body.accion === 'cambios') {
+      const { valor, etag } = await db.getDoc('productos');
+      const doc = valor || { rev: 0, nextId: 1, items: [] };
+      if (body.rev !== doc.rev) throw new ErrorHttp('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409);
+      if (!Array.isArray(body.cambios) || !body.cambios.length || body.cambios.length > 50) throw new ErrorHttp('Pedido inválido.');
+      let items = doc.items.slice();
+      const puestos = [];                                   // los productos que llegaron, para devolverlos ya limpios
+      for (const c of body.cambios) {
+        if (c?.op === 'poner') {
+          if (!Array.isArray(c.productos) || c.productos.length > 500) throw new ErrorHttp('Pedido inválido.');
+          for (const raw of c.productos) {
+            const k = Number.isInteger(raw?.id) ? items.findIndex((p) => p.id === raw.id) : -1;
+            if (k >= 0) items[k] = raw; else items.push(raw);
+            puestos.push(raw);
+          }
+        } else if (c?.op === 'quitar') {
+          const ids = new Set(Array.isArray(c.ids) ? c.ids : []);
+          items = items.filter((p) => !ids.has(p.id));
+        } else if (c?.op === 'orden') {
+          const pos = new Map((Array.isArray(c.ids) ? c.ids : []).map((id, i) => [id, i]));
+          items = items.map((p, i) => [p, pos.has(p.id) ? pos.get(p.id) : 1e9 + i]).sort((x, y) => x[1] - y[1]).map((x) => x[0]);
+        } else throw new ErrorHttp('Pedido inválido.');
+      }
+      const limpios = limpiar(items);
+      const nuevo = await guardarDoc(db, doc, etag, limpios, body.nota, body.confirmarVacio === true);
+      return json({ rev: nuevo.rev, orden: nuevo.items.map((p) => p.id), puestos: puestos.map((r) => nuevo.items[items.indexOf(r)]).filter(Boolean) });
+    }
+
     if (body.accion === 'versiones') return json({ versiones: await listaVersiones(db) });
 
     if (body.accion === 'restaurar') {

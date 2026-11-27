@@ -4,8 +4,8 @@ if (root.classList.contains('splash-on')) {
   const logo = document.querySelector('.logo');
   const r = logo.getBoundingClientRect();
   const h = document.querySelector('.mona').getBoundingClientRect();
-  // La mona de la intro mide 2,5 px por pixel del dibujo (~183 px de ancho), sea cual sea su tamaño en el header (×2 en celu, ×3 en compu).
-  const k = 2.5 / (h.width / 73);
+  // La mona de la intro mide 2 px enteros por pixel del dibujo (146 px de ancho, nítida), sea cual sea su tamaño en el header (×2 en celu, ×3 en compu).
+  const k = 2 / (h.width / 73);
   const hx = h.left + h.width / 2 - r.left, hy = h.top + h.height / 2 - r.top;
   logo.style.transition = 'none';
   logo.style.transform = `translate(${innerWidth / 2 - r.left - hx * k}px, ${innerHeight / 2 - r.top - hy * k}px) scale(${k})`;

@@ -153,8 +153,8 @@ a { color: var(--color-acento); }
 
 /* ---------- Dress Up (mismo diseño de antes, en su versión angosta: closet | modelo | Mimi Mode) ---------- */
 .dressup {
-  --escena: #9e85ac url("../assets/fondo-modelo.gif");   /* escena 0: brillitos lila (gif de 60×30 que se repite) */
-  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 22px;
+  --escena: #e9cae1 url("../assets/fondo-modelo.gif");   /* escena 0: brillitos rosa (gif de 85×85 que se repite) */
+  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 10px;
 }
 /* Título del juego: pixel nítido solo a múltiplos de 10 px (la fuente está dibujada a 10 px) */
 .dressup-titulo { margin: 8px 0 0 4px; font-family: "Pixelpoiiz", var(--titulo); font-size: 40px; font-weight: 400; line-height: 1; color: var(--color-acento); }
@@ -278,7 +278,6 @@ a { color: var(--color-acento); }
   /* el juego en una columna: modelo, luego las 3 filas de ropa en hilera, luego Mimi Mode */
   .dressup { grid-template-columns: 1fr; grid-template-areas: "model" "closet" "mimi"; gap: 8px; }
   .dressup-titulo { margin-left: 0; font-size: 30px; text-align: center; }
-  .dressup-titulo + .dressup { margin-top: 40px; }   /* la monita que se asoma queda debajo del título */
   .model { grid-area: model; } .closet { grid-area: closet; grid-template-columns: repeat(3, 1fr); gap: 5px; } .mimi-mode { grid-area: mimi; grid-template-columns: 76px 1fr 1fr; align-items: center; }
   .scene-btns { display: contents; }
   .fila { padding: 6px 2px 8px; }
@@ -313,17 +312,13 @@ a { color: var(--color-acento); }
   #productos { overflow-x: clip; }
 }
 
-/* ---- Personalidad: capas de brillitos, pegatinas inclinadas, la mona que se asoma ---- */
+/* ---- Personalidad: capas de brillitos, pegatinas inclinadas ---- */
 @keyframes float { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 
 .mimi-mode .room { rotate: 2.5deg; }
 
 .model { isolation: isolate; }
 .photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(168, 36, 122, .55); }
-.asoma { position: absolute; z-index: 0; top: -34px; right: 12%; width: 73px; height: 76px; rotate: 6deg; pointer-events: none;
-  background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated;
-  animation: asoma 2.6s ease-in-out infinite alternate; }
-@keyframes asoma { to { translate: 0 -4px; } }
 
 /* Cambiar de look: la foto se acomoda y salen brillitos; cambiar de fondo: destello */
 .photo.swap { animation: swap .5s cubic-bezier(.22, 1, .36, 1); }
@@ -339,7 +334,7 @@ a { color: var(--color-acento); }
 
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
-  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
   .tab, .paso { transition: none; }
 }
 

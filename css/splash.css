@@ -26,7 +26,7 @@
 .splash { display: none; }
 .splash-on .splash {
   display: block; position: fixed; inset: 0; z-index: 10;
-  background: linear-gradient(#f6c9ee, #d9a8ea);
+  background: #ffdfef url("../assets/fondo-corazoncito.gif");   /* el mismo fondo que la página */
   transition: opacity 1.2s ease;
 }
 .splash-on:not(.open) body { overflow: hidden; }
@@ -41,6 +41,15 @@
 /* Versión calma (reducir animaciones): sin el salto de entrada; el guiño, el viaje al header y el título se mantienen (pedido de la dueña) */
 .calma .mona { animation: guino 2.1s step-end 1; }
 .calma.open .mona { animation: none; }
+
+/* Ropa de la intro: aparece de a una y, al abrir, sale disparada hacia su costado girando */
+.ropa-intro { display: none; }
+.splash-on .ropa-intro { display: block; position: fixed; inset: 0; z-index: 15; overflow: hidden; pointer-events: none; }
+.ropa-intro img { position: absolute; width: clamp(60px, calc(var(--w) * 1.3), 170px); height: auto; translate: -50% -50%; rotate: var(--r); image-rendering: pixelated;
+  animation: aparece .4s steps(4) var(--d) both; transition: transform .9s cubic-bezier(.55, 0, .8, .4); }
+.splash-on.open .ropa-intro img { animation: none; transform: translateX(var(--sale)) rotate(var(--giro)); }   /* salen de la pantalla, sin desvanecerse */
+.splash-on.open .ropa-intro { visibility: hidden; transition: visibility 0s 1s; }
+@keyframes aparece { from { opacity: 0; scale: .5; } }
 
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
 

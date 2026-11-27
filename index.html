@@ -143,6 +143,12 @@
 
         <section class="caja" id="productos" aria-label="Todos los productos">
           <h2 class="caja-titulo">todos los productos</h2>
+          <div class="filtros" id="filtros" hidden>
+            <label class="sr-only" for="buscar-tienda">Buscar productos</label>
+            <input id="buscar-tienda" type="search" placeholder="buscar un producto…" autocomplete="off">
+            <div class="chips-f" id="chips-cat" role="group" aria-label="Categorías"></div>
+            <div class="chips-f" id="chips-sub" role="group" aria-label="Subcategorías" hidden></div>
+          </div>
           <ul id="catalog"></ul>
           <button class="ver-mas" id="ver-mas" type="button" hidden>ver más</button>
         </section>
@@ -203,6 +209,22 @@
       </aside>
     </div>
   </div>
+
+  <dialog id="popup" aria-labelledby="pp-nombre">
+    <div class="pp">
+      <button type="button" class="pp-x" id="pp-cerrar" aria-label="Cerrar">×</button>
+      <div class="pp-galeria"><div class="pp-foto" id="pp-foto"></div><div class="pp-minis" id="pp-minis"></div></div>
+      <div class="pp-info">
+        <p class="pp-ruta" id="pp-ruta"></p>
+        <h2 id="pp-nombre"></h2>
+        <p class="pp-precio" id="pp-precio"></p>
+        <p class="pp-agotado" id="pp-agotado" hidden>Agotado</p>
+        <p class="pp-desc" id="pp-desc"></p>
+        <h3>Talles</h3><ul id="pp-talles" class="pp-fichas"></ul>
+        <h3>Colores</h3><ul id="pp-colores" class="pp-fichas"></ul>
+      </div>
+    </div>
+  </dialog>
 
   <script src="data/config.js"></script>
   <script src="data/canciones.js"></script>

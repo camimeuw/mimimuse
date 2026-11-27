@@ -96,6 +96,8 @@ const el = (tag, props = {}, ...hijos) => { const e = Object.assign(document.cre
 const enOferta = (p) => p.precioAntes != null && p.precioAntes > p.precio;
 const sel = new Set();                                   // ids de los productos marcados
 const marcados = () => items.filter((p) => sel.has(p.id));
+const PAGINA = 30;                                        // filas que se dibujan por vez (la lista de 200 no se carga de golpe)
+let mostrados = PAGINA;
 
 function visibles() {
   const q = sinTildes($('#buscar').value.trim()), c = $('#f-cat').value;
@@ -108,7 +110,10 @@ function pintar() {
   for (const id of [...sel]) if (!items.some((p) => p.id === id)) sel.delete(id);
   const vistos = visibles();
   $('#resumen').textContent = `${vistos.length} de ${items.length} productos`;
-  $('#lista').replaceChildren(...vistos.map((p, k) => fila(p, vistos, k)));
+  $('#lista').replaceChildren(...vistos.slice(0, mostrados).map((p, k) => fila(p, vistos, k)));
+  $('#mas').hidden = vistos.length <= mostrados;
+  $('#mas').textContent = `Ver más (${Math.min(PAGINA, vistos.length - mostrados)} de ${vistos.length - mostrados} que faltan)`;
+  $('#todos-txt').textContent = `Seleccionar los ${vistos.length} que coinciden`;
   $('#todos').checked = vistos.length > 0 && vistos.every((p) => sel.has(p.id));
   $('#masivo').hidden = !sel.size;
   $('#m-cuantos').textContent = `${sel.size} seleccionado${sel.size === 1 ? '' : 's'}`;
@@ -116,7 +121,7 @@ function pintar() {
 
 function fila(p, vistos, k) {
   const i = items.indexOf(p);
-  const foto = p.imgs[0] ? el('img', { src: p.imgs[0], alt: '' }) : el('div', { className: 'sinfoto', textContent: 'sin foto' });
+  const foto = p.imgs[0] ? el('img', { src: p.thumbs?.[0] || p.imgs[0], alt: '', width: 64, height: 64, loading: 'lazy', decoding: 'async' }) : el('div', { className: 'sinfoto', textContent: 'sin foto' });
   const etq = [];
   if (p.agotado) etq.push(el('span', { className: 'etq mal', textContent: 'Agotado' }));
   if (enOferta(p)) etq.push(el('span', { className: 'etq', textContent: `Oferta -${Math.round((1 - p.precio / p.precioAntes) * 100)}%` }));
@@ -164,8 +169,9 @@ async function eliminar(p) {
   items = items.filter((x) => x !== p);
   try { await guardarTodo('Producto eliminado.', { nota: `Eliminó «${p.nombre}»`, deshacer: true, vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
-$('#buscar').addEventListener('input', pintar);
-$('#f-cat').addEventListener('change', pintar);
+$('#buscar').addEventListener('input', () => { mostrados = PAGINA; pintar(); });
+$('#f-cat').addEventListener('change', () => { mostrados = PAGINA; pintar(); });
+$('#mas').addEventListener('click', () => { mostrados += PAGINA; pintar(); });
 
 // ---------- Varios productos a la vez ----------
 $('#todos').addEventListener('change', (e) => { for (const p of visibles()) e.target.checked ? sel.add(p.id) : sel.delete(p.id); pintar(); });
@@ -235,11 +241,12 @@ $('#versiones').addEventListener('click', async () => {
 $('#v-cerrar').addEventListener('click', () => $('#d-ver').close());
 
 // ---------- Editor ----------
-const vacio = () => ({ id: null, nombre: '', precio: '', precioAntes: '', cat: '', sub: '', desc: '', talles: [], tallesAgotados: [], colores: [], agotado: false, activo: true, imgs: [] });
+const vacio = () => ({ id: null, nombre: '', precio: '', precioAntes: '', cat: '', sub: '', desc: '', talles: [], tallesAgotados: [], colores: [], agotado: false, activo: true, imgs: [], thumbs: [] });
 
 function abrirEditor(i, base = null) {
   editandoIdx = i;
   edit = base ? structuredClone(base) : i < 0 ? vacio() : structuredClone(items[i]);
+  edit.thumbs = edit.imgs.map((_, k) => edit.thumbs?.[k] || '');   // productos viejos sin miniaturas
   $('#t-editor').textContent = base ? 'Duplicar producto: revisá el nombre y las fotos' : i < 0 ? 'Nuevo producto' : 'Editar producto';
   $('#p-nombre').value = edit.nombre; $('#p-precio').value = edit.precio; $('#p-antes').value = edit.precioAntes ?? '';
   $('#p-cat').value = edit.cat; $('#p-sub').value = edit.sub; $('#p-desc').value = edit.desc;
@@ -289,13 +296,13 @@ document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('cl
 // Fotos: se achican en el navegador antes de subirlas
 function fotos() {
   $('#fotos').replaceChildren(...edit.imgs.map((u, i) => {
-    const mover = (d) => { const j = i + d; [edit.imgs[i], edit.imgs[j]] = [edit.imgs[j], edit.imgs[i]]; fotos(); };
+    const mover = (d) => { const j = i + d; for (const l of [edit.imgs, edit.thumbs]) [l[i], l[j]] = [l[j], l[i]]; fotos(); };
     const izq = el('button', { type: 'button', className: 'sec', textContent: '◀', disabled: i === 0 }); izq.setAttribute('aria-label', 'Mover antes');
     const der = el('button', { type: 'button', className: 'sec', textContent: '▶', disabled: i === edit.imgs.length - 1 }); der.setAttribute('aria-label', 'Mover después');
     const x = el('button', { type: 'button', className: 'sec', textContent: '×' }); x.setAttribute('aria-label', 'Quitar foto');
     izq.addEventListener('click', () => mover(-1)); der.addEventListener('click', () => mover(1));
-    x.addEventListener('click', () => { edit.imgs.splice(i, 1); fotos(); });
-    return el('li', {}, el('img', { src: u, alt: `Foto ${i + 1}` }), el('div', { className: 'principal', textContent: i === 0 ? 'Principal' : i === 1 ? 'Al pasar el mouse' : '' }), el('div', { className: 'mov' }, izq, der, x));
+    x.addEventListener('click', () => { edit.imgs.splice(i, 1); edit.thumbs.splice(i, 1); fotos(); });
+    return el('li', {}, el('img', { src: edit.thumbs[i] || u, alt: `Foto ${i + 1}` }), el('div', { className: 'principal', textContent: i === 0 ? 'Principal' : i === 1 ? 'Al pasar el mouse' : '' }), el('div', { className: 'mov' }, izq, der, x));
   }));
 }
 // Quitar el fondo blanco: mismo método que el panel de Bunny Club (se queda con la prenda más grande y suaviza el borde)
@@ -378,20 +385,25 @@ function quitarFondo(c) {
   o.getContext('2d').drawImage(c, x0, y0, x1 - x0 + 1, y1 - y0 + 1, pad, pad, x1 - x0 + 1, y1 - y0 + 1);
   return o;
 }
+const aBase64 = async (blob) => {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
+// Devuelve la foto (máx. 1100 px) y una miniatura (máx. 360 px) en WEBP, que mantiene la transparencia
 async function procesar(archivo, cortar) {
   const bmp = await createImageBitmap(archivo).catch(() => { throw new Error('no es una imagen válida'); });
   let c = scaled(bmp, 1100);
   if (cortar && !tieneAlfa(c)) c = quitarFondo(c);
   let blob, max = 1100;
-  for (let t = 0; t < 4; t++) {                                  // WEBP (mantiene la transparencia); si pesa mucho, se achica más
+  for (let t = 0; t < 4; t++) {                                  // si pesa mucho, se achica más
     blob = await new Promise((ok) => (t === 0 ? c : scaled(c, max)).toBlob(ok, 'image/webp', 0.88));
     if (blob.size < 1.2 * 1024 * 1024) break;
     max = Math.round(max * 0.8);
   }
   if (blob.size > 1.4 * 1024 * 1024) throw new Error('la foto es demasiado pesada');
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(bin);
+  const mini = await new Promise((ok) => scaled(c, 360).toBlob(ok, 'image/webp', 0.8));
+  return { foto: await aBase64(blob), mini: await aBase64(mini) };
 }
 let subiendo = 0;
 $('#subir').addEventListener('change', async (e) => {
@@ -400,7 +412,12 @@ $('#subir').addEventListener('change', async (e) => {
   try {
     for (const f of archivos) {
       if (edit.imgs.length >= 8) { aviso('Máximo 8 fotos por producto.', true); break; }
-      try { aviso(`Procesando ${f.name}…`); edit.imgs.push((await api('subir', { datos: await procesar(f, $('#p-cut').checked) })).url); fotos(); aviso('Foto subida'); }
+      try {
+        aviso(`Procesando ${f.name}…`);
+        const { foto, mini } = await procesar(f, $('#p-cut').checked);
+        const url = (await api('subir', { datos: foto })).url, urlMini = (await api('subir', { datos: mini })).url;
+        edit.imgs.push(url); edit.thumbs.push(urlMini); fotos(); aviso('Foto subida');
+      }
       catch (err) { aviso(`${f.name}: ${err.message}`, true); }
     }
   } finally { if (!--subiendo) $('#guardar').disabled = false; }

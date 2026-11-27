@@ -3,7 +3,9 @@ const more = document.querySelector('#ver-mas');
 const SIZES = [470, 330, 380, 290, 440, 320, 480, 295, 400, 400]; // anchos base del modo flotante (celular), se repiten
 const PAGE = 12;
 let shown = 0;
-let lista = PRODUCTS;   // productos de ejemplo (data/productos.js) hasta que responda el panel
+let lista = [];
+const EJEMPLOS = location.protocol === 'file:';   // solo al abrir el archivo en tu compu para diseñar se ven los de ejemplo
+const CACHE = 'mimi-productos';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Aleatorio estable (misma disposición cada vez) por id de producto
@@ -20,10 +22,10 @@ function render() {
     li.style.cssText = `--w:${w}px;--r:${between(r, -5, 5).toFixed(1)}deg;--dy:${Math.round(between(r, 0, 26))}px;--delay:${(0.4 + Math.min(k, 9) * 0.2).toFixed(2)}s;--fd:${between(r, 7, 12).toFixed(1)}s;--fdl:${(-between(r, 0, 8)).toFixed(1)}s`;
     li.innerHTML = `
       <div class="float"><div class="tilt">
-        <div class="pic${alt ? ' has-alt' : ''}${main ? '' : ' empty'}">
+        <div class="pic${alt ? ' has-alt' : ''}${main ? '' : p.ejemplo ? ' empty' : ' sinfoto'}">
           <span class="badge">${i + 1}</span>
           ${p.agotado ? '<span class="sold">Agotado</span>' : ''}
-          ${main ? `<img class="main" src="${esc(main)}" alt="${esc(p.nombre)}" loading="lazy">` : 'tu imagen aquí'}
+          ${main ? `<img class="main" src="${esc(main)}" alt="${esc(p.nombre)}" loading="lazy">` : p.ejemplo ? 'tu imagen aquí' : ''}
           ${alt ? `<img class="alt" src="${esc(alt)}" alt="" loading="lazy">` : ''}
         </div>
         <div class="cap"><p class="name">${esc(p.nombre)}</p><p class="price">${money(p.precio)}</p></div>
@@ -36,20 +38,39 @@ function render() {
 
 more.addEventListener('click', render);
 
-// Los productos reales vienen del panel (/api/productos). Si no hay servidor (por ejemplo abriendo el archivo
-// en tu compu), se quedan los de ejemplo.
-fetch('/api/productos')
-  .then((r) => (r.ok ? r.json() : Promise.reject()))
-  .then((d) => {
-    lista = d.items.map((p) => ({
-      id: p.id, nombre: p.nombre, precio: p.precio, imgs: p.imgs,
-      // agotado si lo marcó entero o si no queda ningún talle disponible
-      agotado: p.agotado || (p.talles.length > 0 && p.talles.every((t) => p.tallesAgotados.includes(t))),
-    }));
-    if (!lista.length) catalog.innerHTML = '<li class="vacio">Pronto vas a ver los productos acá.</li>';
-  })
-  .catch(() => {})
-  .finally(() => { if (lista.length) render(); });
+function mensaje(html) { catalog.innerHTML = `<li class="vacio">${html}</li>`; more.hidden = true; }
+function mostrar(items) {
+  lista = items; shown = 0; catalog.replaceChildren();
+  if (lista.length) render(); else mensaje('Pronto vas a ver los productos acá.');
+}
+const deApi = (items) => items.map((p) => ({
+  id: p.id, nombre: p.nombre, precio: p.precio, imgs: p.imgs,
+  // agotado si lo marcó entero o si no queda ningún talle disponible
+  agotado: p.agotado || (p.talles.length > 0 && p.talles.every((t) => p.tallesAgotados.includes(t))),
+}));
+
+// Los productos vienen del panel (/api/productos). Si falla, se muestra la última lista que se vio bien;
+// si no hay ninguna, un aviso con "Reintentar". Los productos de ejemplo no se muestran nunca en el sitio publicado.
+async function cargar() {
+  mensaje('Cargando productos…');
+  try {
+    const r = await fetch('/api/productos');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    try { localStorage.setItem(CACHE, JSON.stringify(d.items)); } catch {}
+    mostrar(deApi(d.items));
+  } catch {
+    let guardados = null;
+    try { guardados = JSON.parse(localStorage.getItem(CACHE)); } catch {}
+    if (guardados?.length) mostrar(deApi(guardados));
+    else if (EJEMPLOS) mostrar(PRODUCTS.map((p) => ({ ...p, ejemplo: true })));
+    else {
+      mensaje('No pudimos cargar los productos. <button type="button" class="ver-mas" id="reintentar">Reintentar</button>');
+      document.querySelector('#reintentar').addEventListener('click', cargar);
+    }
+  }
+}
+cargar();
 
 // Celular: el botón de arriba del juego abre los productos (flotando) y vuelve al dress up
 const btn = document.querySelector('#btn-productos');

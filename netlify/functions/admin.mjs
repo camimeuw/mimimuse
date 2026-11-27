@@ -31,13 +31,15 @@ export default async (req) => {
     }
 
     if (body.accion === 'guardar') {
-      const doc = (await db.getJSON('productos')) || { rev: 0, nextId: 1, items: [] };
+      const { valor, etag } = await db.getDoc('productos');
+      const doc = valor || { rev: 0, nextId: 1, items: [] };
       if (body.rev !== doc.rev) throw new ErrorHttp('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409);
       const items = limpiar(body.items);
       let siguiente = Math.max(doc.nextId || 1, ...items.map((p) => (p.id || 0) + 1));
       items.forEach((p) => { if (!p.id) p.id = siguiente++; });
       const nuevo = { rev: doc.rev + 1, nextId: siguiente, items };
-      await db.setJSON('productos', nuevo);
+      // Escritura condicionada: si otro guardado se coló entre la lectura y esta línea, no se pisa
+      if (!(await db.setDocSi('productos', nuevo, etag))) throw new ErrorHttp('Se cruzaron dos guardados. Esperá unos segundos y volvé a intentar.', 409);
       // Borra fotos que ya no usa ningún producto (las de menos de 1 hora se respetan: pueden estar en edición)
       const usadas = new Set(items.flatMap((p) => p.imgs.map((u) => 'img/' + RE_IMG.exec(u)[1])));
       for (const k of await db.keys('img/')) {

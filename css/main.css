@@ -1,5 +1,6 @@
 @font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-400.woff") format("woff"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-700.woff") format("woff"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Pixelpoiiz"; src: url("../assets/fonts/pixelpoiiz.ttf") format("truetype"); font-display: swap; }   /* sin acentos ni ñ: solo para textos que no los usan */
 
 /* Colores: se cambian solo acá. De la hoja de la marca: rosas y lila, con el magenta del logo (sin amarillo ni violeta oscuro). */
 :root {
@@ -18,7 +19,7 @@
 html { background: var(--color-fondo); }
 body {
   margin: 0; font-family: var(--fuente); font-size: .95rem; font-weight: 600; color: var(--color-texto);
-  background: #d7b058 url("../assets/fondo-brillos.gif");   /* papel tapiz dorado con brillitos (gif de 78×110 que se repite) */
+  background: #ffdfef url("../assets/fondo-corazoncito.gif");   /* papel tapiz rosa con un corazoncito (gif de 33×32 que se repite) */
 }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--color-acento); outline-offset: 3px; }
@@ -35,7 +36,7 @@ a { color: var(--color-acento); }
 
 /* Cajas: borde ridge (relieve) con marco interior, como las de la referencia */
 .caja { background: var(--color-caja); border: 3px ridge var(--color-borde); padding: 6px; min-width: 0; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px var(--color-acento); }
-.caja-titulo { margin: -3px -3px 6px; padding: 2px 6px; background: var(--color-acento); color: #fff; font-family: var(--titulo); font-size: 1.1rem; font-weight: 400;
+.caja-titulo { margin: -3px -3px 6px; padding: 2px 6px; background: var(--color-acento); color: #fff; font-family: "Pixelpoiiz", var(--titulo); font-size: 20px; font-weight: 400;   /* 20 px = 2× el tamaño nítido de la fuente */
   display: flex; align-items: center; gap: 6px; border-bottom: 2px ridge var(--color-borde); text-transform: lowercase; }
 .caja-titulo::before, .caja-titulo::after { content: ""; width: 10px; height: 10px; background: var(--rosa);
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
@@ -154,6 +155,8 @@ a { color: var(--color-acento); }
   --escena: linear-gradient(var(--rosa), var(--lila));
   display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 22px;
 }
+/* Título del juego: pixel nítido solo a múltiplos de 10 px (la fuente está dibujada a 10 px) */
+.dressup-titulo { margin: 8px 0 0 4px; font-family: "Pixelpoiiz", var(--titulo); font-size: 40px; font-weight: 400; line-height: 1; color: var(--color-acento); }
 .dressup[data-scene="1"] { --escena: linear-gradient(var(--color-caja), var(--rosa)); }
 .dressup[data-scene="2"] { --escena: radial-gradient(var(--color-caja) 2px, transparent 2.5px) 0 0 / 18px 18px, var(--lila); }
 .closet { display: grid; align-content: start; gap: 8px; }
@@ -273,6 +276,8 @@ a { color: var(--color-acento); }
 
   /* el juego en una columna: modelo, luego las 3 filas de ropa en hilera, luego Mimi Mode */
   .dressup { grid-template-columns: 1fr; grid-template-areas: "model" "closet" "mimi"; gap: 8px; }
+  .dressup-titulo { margin-left: 0; font-size: 30px; text-align: center; }
+  .dressup-titulo + .dressup { margin-top: 40px; }   /* la monita que se asoma queda debajo del título */
   .model { grid-area: model; } .closet { grid-area: closet; grid-template-columns: repeat(3, 1fr); gap: 5px; } .mimi-mode { grid-area: mimi; grid-template-columns: 76px 1fr 1fr; align-items: center; }
   .scene-btns { display: contents; }
   .fila { padding: 6px 2px 8px; }

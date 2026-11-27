@@ -10,8 +10,9 @@
   <link rel="stylesheet" href="css/splash.css">
   <link rel="stylesheet" href="css/main.css">
   <script>
-    // Sin splash si la persona pidió menos movimiento
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('splash-on');
+    // Intro siempre; con "reducir animaciones" va en versión calma (quieta, solo el guiño y un fundido)
+    document.documentElement.classList.add('splash-on');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('calma');
   </script>
 </head>
 <body>

@@ -240,6 +240,7 @@ a { color: var(--color-acento); }
 
   /* productos: sin cajas, flotando y desparramados (diseño de la otra página) */
   #productos { display: none; background: none; border: 0; box-shadow: none; padding: 0; }
+  body.ver-productos { background: var(--color-fondo); }   /* sin el papel tapiz detrás de los productos */
   body.ver-productos #productos { display: block; }
   body.ver-productos .dressup-seccion { display: none; }
   #productos > .caja-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

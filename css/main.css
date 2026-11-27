@@ -104,8 +104,8 @@ a { color: var(--color-acento); }
 .player { display: block; }
 .mp3-caja { flex: 1; min-width: 0; max-width: 300px; margin: 0 auto; display: flex; align-items: center; gap: 6px; padding: 4px 6px;
   background: var(--color-caja); border: 3px solid; border-color: #fff var(--uva) var(--uva) #fff; }
-.mp3-ondas { display: flex; align-items: center; justify-content: center; gap: 3px; width: 38px; height: 60px; flex-shrink: 0; }
-.onda { width: 6px; border-radius: 3px; background: var(--rosa); animation: onda .8s ease-in-out infinite paused; }
+.mp3-ondas { display: flex; align-items: center; justify-content: center; gap: 4px; width: 56px; height: 60px; flex-shrink: 0; }
+.onda { width: 9px; border-radius: 3px; background: var(--rosa); animation: onda .8s ease-in-out infinite paused; }
 .onda:nth-child(1), .onda:nth-child(5) { height: 16px; }
 .onda:nth-child(2), .onda:nth-child(4) { height: 28px; animation-delay: .15s; }
 .onda:nth-child(3) { height: 40px; background: var(--fucsia); animation-delay: .3s; }

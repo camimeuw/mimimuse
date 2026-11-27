@@ -3,17 +3,12 @@
   publish = "admin"
   functions = "netlify/functions"
 
-# El panel no se indexa en buscadores
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Robots-Tag = "noindex"
-
-# Seguridad: cabeceras para todas las páginas (tienda y panel).
+# Seguridad: cabeceras para todas las páginas. El panel no se indexa en buscadores (X-Robots-Tag).
 # Los scripts solo pueden venir de este mismo sitio (nada de scripts "en línea"): así un texto malicioso no puede ejecutar código.
 [[headers]]
   for = "/*"
   [headers.values]
+    X-Robots-Tag = "noindex"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"

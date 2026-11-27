@@ -14,21 +14,34 @@
   <header class="cab">
     <img class="logo" src="../assets/titulo-pixel.png" alt="Mimi Muse" width="130" height="24">
     <h1>Panel de productos</h1>
-    <button type="button" id="seguridad" class="sec" hidden>Seguridad</button>
+    <a id="ver-tienda" class="enlace" href="../index.html" target="_blank" rel="noopener" hidden>Ver la tienda</a>
     <button type="button" id="salir" class="sec" hidden>Salir</button>
   </header>
 
   <main>
+    <!-- Falta conectar Firebase -->
+    <section id="falta" hidden aria-labelledby="t-falta">
+      <h2 id="t-falta">Falta conectar Firebase</h2>
+      <p>Este panel guarda los productos en Firebase. Para conectarlo hay que crear el proyecto y copiar dos datos (<code>projectId</code> y <code>apiKey</code>) en <code>data/config.js</code>. Los pasos están en <code>docs/firebase.md</code>.</p>
+    </section>
+
     <!-- Entrar -->
-    <section id="entrar" aria-labelledby="t-entrar">
+    <section id="entrar" aria-labelledby="t-entrar" hidden>
       <h2 id="t-entrar">Entrar</h2>
       <form id="f-entrar">
+        <label>Email <input type="email" id="email" autocomplete="username" required></label>
         <label>Clave <input type="password" id="clave" autocomplete="current-password" required></label>
         <label class="cut"><input type="checkbox" id="ver-clave"> Mostrar la clave</label>
-        <label class="cut"><input type="checkbox" id="recordar"> Recordarme en este dispositivo <small>(30 días; no lo uses en una compu compartida)</small></label>
         <button type="submit">Entrar</button>
+        <button type="button" id="olvide" class="sec">Olvidé mi clave</button>
+        <p id="e-entrar" class="error" role="alert"></p>
       </form>
     </section>
+
+    <nav id="pestanas" class="pestanas" hidden aria-label="Secciones">
+      <button type="button" data-pestana="productos" aria-current="page">Productos</button>
+      <button type="button" data-pestana="codigos">Códigos de descuento</button>
+    </nav>
 
     <!-- Lista -->
     <section id="panel" hidden aria-label="Productos">
@@ -37,13 +50,28 @@
         <label>Categoría <select id="f-cat"><option value="">Todas</option></select></label>
         <button type="button" id="nuevo">+ Nuevo producto</button>
         <button type="button" id="renombrar" class="sec">Renombrar categoría</button>
-        <button type="button" id="versiones" class="sec">Volver atrás</button>
         <button type="button" id="planilla" class="sec">Planilla (Excel)</button>
         <button type="button" id="copia" class="sec">Descargar copia</button>
       </div>
       <div class="resumen"><label class="todos"><input type="checkbox" id="todos"> <span id="todos-txt">Seleccionar todos</span></label><p id="resumen" class="nota" aria-live="polite"></p></div>
       <ul id="lista" class="lista"></ul>
       <button type="button" id="mas" class="sec mas" hidden></button>
+    </section>
+
+    <!-- Códigos de descuento -->
+    <section id="codigos" hidden aria-label="Códigos de descuento">
+      <form id="f-codigo" class="tarjeta-form">
+        <h2>Crear un código</h2>
+        <p class="nota">Las compradoras lo escriben en el carrito, o entran con un link como <code>tu-tienda/?codigo=HOLA10</code> y se aplica solo.</p>
+        <div class="fila2">
+          <label>Nombre del código <input id="cd-nombre" maxlength="24" placeholder="Ej: HOLA10" autocapitalize="characters" spellcheck="false" autocomplete="off" required></label>
+          <label>Descuento (%) <input id="cd-pct" type="number" min="1" max="99" step="1" placeholder="10" required></label>
+          <label>Vence <small>opcional</small> <input id="cd-vence" type="date"></label>
+        </div>
+        <p id="cd-error" class="error" role="alert"></p>
+        <div class="botones"><button type="submit">Crear código</button></div>
+      </form>
+      <ul id="cd-lista" class="lista"></ul>
     </section>
   </main>
 
@@ -128,33 +156,6 @@
     </form>
   </dialog>
 
-  <dialog id="d-ver" aria-labelledby="t-ver">
-    <h2 id="t-ver">Volver atrás</h2>
-    <p class="nota">Cada cambio guarda cómo estaba antes. Elegí hasta cuándo querés volver (se guardan los últimos 30 cambios).</p>
-    <ul id="v-lista" class="versiones"></ul>
-    <h3 id="t-copias">Copias de cada día</h3>
-    <p class="nota">Todas las noches se guarda una copia de los productos (las últimas 14). Sirven si te das cuenta de un error varios días después.</p>
-    <ul id="c-lista" class="versiones"></ul>
-    <div class="botones"><button type="button" class="sec" id="v-cerrar">Cerrar</button></div>
-  </dialog>
-
-  <!-- Clave y sesiones -->
-  <dialog id="d-seg" aria-labelledby="t-seg">
-    <form id="f-seg" method="dialog">
-      <h2 id="t-seg">Seguridad</h2>
-      <h3>Cambiar la clave</h3>
-      <label>Clave actual <input type="password" id="s-actual" autocomplete="current-password" required></label>
-      <label>Clave nueva <small>al menos 10 caracteres; mejor una frase larga que puedas recordar</small> <input type="password" id="s-nueva" autocomplete="new-password" minlength="10" maxlength="200" required></label>
-      <label>Repetí la clave nueva <input type="password" id="s-nueva2" autocomplete="new-password" minlength="10" maxlength="200" required></label>
-      <label class="cut"><input type="checkbox" id="s-ver"> Mostrar las claves</label>
-      <p id="s-error" class="error" role="alert"></p>
-      <div class="botones"><button type="submit">Cambiar clave</button></div>
-    </form>
-    <h3>Cerrar sesión en todos los dispositivos</h3>
-    <p class="nota">Si entraste desde una compu o un celular que no es tuyo, o creés que alguien más sabe tu clave: esto cierra el panel en todos lados, también en este. Después hay que volver a entrar. (Cambiar la clave también cierra las demás sesiones, pero deja abierta esta.)</p>
-    <div class="botones"><button type="button" class="sec" id="s-todos">Cerrar todas las sesiones</button><button type="button" class="sec" id="s-cerrar">Cerrar</button></div>
-  </dialog>
-
   <!-- Cargar o actualizar muchos productos con una planilla -->
   <dialog id="d-import" aria-labelledby="t-imp">
     <h2 id="t-imp">Planilla de productos (Excel)</h2>
@@ -178,6 +179,9 @@
   </dialog>
 
   <p id="aviso" class="aviso" role="status" aria-live="polite"></p>
+  <script src="../data/config.js"></script>
+  <script src="../js/firebase.js"></script>
+  <script src="datos.js"></script>
   <script src="csv.js"></script>
   <script src="fotos.js"></script>
   <script src="admin.js"></script>

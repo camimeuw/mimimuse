@@ -8,17 +8,17 @@ web
 
 ## Stack
 
-Static HTML, CSS y JavaScript puro (sin frameworks), HTML y CSS en archivos separados. Se programa en VS Code y se publica en Netlify. Productos administrados desde Google Sheets (CSV publicado, leído con PapaParse).
+Static HTML, CSS y JavaScript puro (sin frameworks), HTML y CSS en archivos separados. Se programa en VS Code y se publica en GitHub Pages. Productos, fotos y cupones administrados desde un panel propio (`/admin/`) que guarda en Firebase (Firestore), como en Bunny Club.
 
 ## Users
 
 Adolescentes y jóvenes de Perú que entran desde el celular (llegan por redes sociales). Buscan ropa de estética kawaii / Y2K y quieren ver cómo se ve un look completo antes de pedir. Mobile-first. La edad exacta y el canal de entrada principal quedan por confirmar con la clienta.
 
-Audiencia secundaria: la dueña de Mimi Muse, que administra el catálogo desde una planilla (o no, si contrata la carga).
+Audiencia secundaria: la dueña de Mimi Muse, que administra el catálogo y los cupones desde el panel (`/admin/`).
 
 ## Product Purpose
 
-Tienda web a medida para Mimi Muse, marca de ropa de Perú (precios en soles, S/). Mostrar unos 200 productos y convertir la visita en un pedido: el carrito arma el mensaje y lo envía por WhatsApp. Éxito: la clienta puede mantener el catálogo sola desde Google Sheets y las compradoras llegan al pedido sin fricción.
+Tienda web a medida para Mimi Muse, marca de ropa de Perú (precios en soles, S/). Mostrar unos 200 productos y convertir la visita en un pedido: el carrito arma el mensaje y lo envía por WhatsApp. Éxito: la clienta puede mantener el catálogo sola desde el panel y las compradoras llegan al pedido sin fricción.
 
 ## Positioning
 

@@ -56,6 +56,7 @@ a { color: var(--color-acento); }
   border-radius: 11px; background: var(--color-acento); color: #fff; font-size: .85rem; font-weight: 800; line-height: 22px; text-align: center; }
 .menu-celu { /* aquí va el menú del celular (lo coloca la dueña de la página) */ }
 .tira { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 3px; margin-top: 5px; }
+.tira img { display: block; image-rendering: pixelated; transition: translate .2s var(--ease); } .tira img:hover { translate: 0 -2px; }
 .b88 { width: 88px; height: 31px; display: grid; place-items: center; font-size: .75rem; font-weight: 800; color: var(--color-texto);
   border: 1px solid var(--color-borde); image-rendering: pixelated; transition: translate .2s var(--ease); }
 .b88:hover { translate: 0 -2px; }

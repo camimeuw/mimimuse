@@ -17,7 +17,7 @@ body {
 button { font: inherit; }
 
 /* Página: una columna centrada */
-.page { padding: 0 16px 16px; max-width: 520px; margin: 0 auto; }
+.page { position: relative; padding: 0 16px 16px; max-width: 520px; margin: 0 auto; }
 .main { display: grid; gap: 12px; align-content: start; }
 
 /* Header */
@@ -194,3 +194,46 @@ button { font: inherit; }
   .item .price::before, .item.flip .price::after { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .mp3-star, .onda { animation: none; } .item, .item .float { animation: none; } .item .tilt { transition: none; } }
+
+/* ---- Personalidad: capas de brillitos, pegatinas inclinadas, la mona que se asoma ---- */
+.fondo { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.fondo svg { position: absolute; width: var(--t); height: auto; opacity: .85; animation: float var(--d) ease-in-out infinite alternate; }
+
+.dressup { margin-top: 22px; }
+.closet a.slot:nth-of-type(odd) { rotate: -2.5deg; }
+.closet a.slot:nth-of-type(even) { rotate: 2deg; }
+.slot { box-shadow: 0 6px 10px -6px rgba(123, 42, 142, .5); transition: translate .25s cubic-bezier(.22, 1, .36, 1), scale .25s cubic-bezier(.22, 1, .36, 1); }
+.slot:hover, .slot:focus-visible { translate: 0 -5px; }
+.slot:active { translate: 0 1px; scale: .95; }
+.tab { transition: translate .2s cubic-bezier(.22, 1, .36, 1); }
+.tab:hover { translate: 0 -2px; }
+.tab:active { translate: 0 1px; }
+.arrow { z-index: 2; transition: scale .2s cubic-bezier(.22, 1, .36, 1); }
+.arrow:hover { scale: 1.12; }
+.arrow:active { scale: .94; }
+.mimi-mode .room { rotate: 2.5deg; box-shadow: 0 6px 10px -6px rgba(123, 42, 142, .5); }
+
+.model { isolation: isolate; }
+.photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(123, 42, 142, .55); }
+.look-name { font-size: 2rem; -webkit-text-stroke: 5px #fff; paint-order: stroke fill; }
+.asoma { position: absolute; z-index: 0; top: -34px; right: 12%; width: 73px; height: 76px; rotate: 6deg; pointer-events: none;
+  background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated;
+  animation: asoma 2.6s ease-in-out infinite alternate; }
+@keyframes asoma { to { translate: 0 -4px; } }
+
+/* Cambiar de look: la foto se acomoda y salen brillitos; cambiar de fondo: destello */
+.photo.swap { animation: swap .5s cubic-bezier(.22, 1, .36, 1); }
+@keyframes swap { from { transform: scale(.94, .9) rotate(-1.5deg); } }
+.photo::after, .room::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: 0; pointer-events: none; }
+.room { position: relative; }
+.photo.flash::after, .room.flash::after { animation: flash .5s ease-out; }
+@keyframes flash { from { opacity: .85; } }
+.chispa { position: absolute; left: 50%; top: 50%; z-index: 3; width: 16px; height: 16px; margin: -8px 0 0 -8px; pointer-events: none;
+  background: var(--fucsia); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: chispa .75s cubic-bezier(.22, 1, .36, 1) forwards; }
+@keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo svg, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
+  .slot, .tab, .arrow { transition: none; }
+}

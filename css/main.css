@@ -31,7 +31,7 @@ a { color: var(--color-acento); }
 .col-izq { display: none; }               /* el menú va solo en escritorio */
 .col-centro, .col-der, .col-izq { gap: 5px; min-width: 0; align-content: start; }
 .col-centro, .col-der { display: grid; }
-.dressup-seccion { display: none; }       /* el dress up va solo en escritorio */
+.btn-productos { display: none; }
 
 /* Cajas: borde ridge (relieve) con marco interior, como las de la referencia */
 .caja { background: var(--color-caja); border: 3px ridge var(--color-borde); padding: 6px; min-width: 0; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px var(--color-acento); }
@@ -168,7 +168,7 @@ a { color: var(--color-acento); }
 .paso:hover { scale: 1.12; }
 .paso:active { scale: .94; }
 .model { position: relative; min-width: 0; display: grid; grid-template-rows: 1fr auto; gap: 6px; }
-.photo { position: relative; touch-action: none; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--fucsia); border-radius: 28px; background: var(--escena); text-align: center; padding: 12px; }
+.photo { position: relative; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--fucsia); border-radius: 28px; background: var(--escena); text-align: center; padding: 12px; }
 .doll { position: relative; height: 350px; aspect-ratio: 730 / 1790; margin-bottom: 26px; }
 .doll img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
 .pista { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; padding: 0 12px; font-size: .75rem; font-weight: 800; color: var(--tinta); }
@@ -210,12 +210,57 @@ a { color: var(--color-acento); }
   .dressup-seccion { display: block; }
 }
 /* ---------- Celular: una columna (cabecera, productos, reproductor) ---------- */
+@keyframes floatIn { from { opacity: 0; transform: translateY(90px) scale(.96); filter: blur(8px); } 55% { opacity: 1; } to { opacity: 1; transform: none; filter: blur(0); } }
 @media (max-width: 999px) {
   .banner { grid-template-columns: 1fr; justify-items: center; min-height: 0; }
   .banner .aqui { display: none; }
   .banner .logo { grid-column: 1; }
-  #catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .caen { display: none; }
+  .caen, .tira, .col-centro > .marquee { display: none; }
+
+  /* orden: cabecera, reproductor, botón de productos, juego (o productos), lo demás */
+  .cols { display: flex; flex-direction: column; align-items: stretch; }
+  .col-centro, .col-der { display: contents; }
+  .caja-musica { order: 1; }
+  .btn-productos { order: 2; display: block; min-height: 48px; padding: 4px 16px; border: 2px ridge var(--color-acento); background: #fff; color: var(--color-acento);
+    font-family: var(--titulo); font-size: 1.4rem; cursor: pointer; }
+  .dressup-seccion, #productos { order: 3; }
+  .col-der > :not(.caja-musica) { order: 5; }
+  .pie { order: 9; }
+
+  /* el juego en una columna: modelo, luego las 3 filas de ropa en hilera, luego Mimi Mode */
+  .dressup { grid-template-columns: 1fr; grid-template-areas: "model" "closet" "mimi"; gap: 8px; }
+  .model { grid-area: model; } .closet { grid-area: closet; grid-template-columns: repeat(3, 1fr); gap: 5px; } .mimi-mode { grid-area: mimi; grid-template-columns: 76px 1fr 1fr; align-items: center; }
+  .scene-btns { display: contents; }
+  .fila { padding: 6px 2px 8px; }
+
+  /* productos: sin cajas, flotando y desparramados (diseño de la otra página) */
+  #productos { display: none; background: none; border: 0; box-shadow: none; padding: 0; }
+  body.ver-productos { background: var(--color-fondo); }   /* sin el papel tapiz detrás de los productos */
+  body.ver-productos #productos { display: block; }
+  body.ver-productos .dressup-seccion { display: none; }
+  #productos > .caja-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 0; padding: 34px .5vw 16px; justify-items: center; align-items: start; }
+  .tarjeta { width: 100%; margin-top: calc(var(--dy) * .5); padding: 0; background: none; border: 0; animation: floatIn 2.8s var(--ease) var(--delay) backwards; }
+  .tarjeta:hover { translate: none; }
+  .tarjeta .float { animation: float var(--fd) ease-in-out var(--fdl) infinite alternate; }
+  .tarjeta .tilt { transform: rotate(var(--r)); }
+  .tarjeta .pic { background: none; }
+  .tarjeta .pic.empty { width: 78%; margin: auto; border-radius: 28px; background: rgba(255, 255, 255, .55); }
+  .tarjeta .pic img { filter: drop-shadow(0 14px 14px rgba(123, 42, 142, .22)); }
+  .tarjeta .badge { top: 4px; left: 4px; width: 20px; height: 20px; min-width: 0; padding: 0; border-radius: 50%; background: var(--fucsia); font-size: 11px; box-shadow: 0 0 0 3px rgba(255, 255, 255, .7); }
+  .tarjeta .sold { right: 2%; top: 8%; transform: rotate(8deg); box-shadow: 0 4px 12px rgba(0, 0, 0, .12); }
+  .tarjeta .cap { margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tarjeta .name { margin: 0; font-size: 13px; line-height: 1.1; }
+  .tarjeta .price { margin: 0; font-size: 15px; text-shadow: 0 0 10px rgba(255, 255, 255, .9); }
+  #catalog .tarjeta:nth-child(3n+2) { translate: 0 24px; }
+  #catalog .tarjeta:nth-child(2) { margin-top: calc(var(--dy) * .5 + 55px); translate: 0 30px; scale: 1.18; transform-origin: 50% 0; z-index: 2; }
+  .tarjeta.big { width: 128%; z-index: 1; }
+  #catalog .tarjeta.big:nth-child(3n+1) { justify-self: start; }
+  #catalog .tarjeta.big:nth-child(3n) { justify-self: end; }
+  #catalog .tarjeta.big:nth-child(3n+2) { width: 100%; }
+  #catalog .tarjeta:nth-child(4) { justify-self: end; }
+  #catalog .tarjeta:nth-child(6) { justify-self: start; }
+  #productos { overflow-x: clip; }
 }
 
 /* ---- Personalidad: capas de brillitos, pegatinas inclinadas, la mona que se asoma ---- */
@@ -243,6 +288,6 @@ a { color: var(--color-acento); }
 @keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee span, .tarjeta, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
   .tab, .paso { transition: none; }
 }

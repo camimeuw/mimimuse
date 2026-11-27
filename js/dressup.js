@@ -1,12 +1,12 @@
 const dressup = document.querySelector('.dressup');
 const photo = dressup.querySelector('.photo');
 const room = dressup.querySelector('.room');
-const name = dressup.querySelector('.look-name');
-const dots = [...dressup.querySelectorAll('[data-dot]')];
+const doll = dressup.querySelector('#doll');
 const SCENES = 3;
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
-let look = 0, z = 1;
-const turno = {}; // próxima prenda o personaje de cada lista
+const rnd = (n) => Math.floor(Math.random() * n);
+let z = 1;
+const turno = {}; // próximo personaje de la lista
 
 // Reinicia una animación de CSS aunque se repita seguido
 const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
@@ -23,16 +23,54 @@ function burst() {
   }
 }
 
-const showLook = (i) => {
-  const n = (i + dots.length) % dots.length;
-  if (n === look) return;
-  look = n;
-  name.textContent = `Look ${look + 1}`;
-  dots.forEach((d, k) => d.setAttribute('aria-current', k === look));
-  if (!calm.matches) { restart(photo, 'swap'); burst(); }
-};
+// ---- La muñeca: modelo + una capa por parte, todas del mismo tamaño y apiladas ----
+const ORDEN = ['abajo', 'arriba', 'zapatos'];   // de atrás hacia adelante
+const elegida = { arriba: 0, abajo: 0, zapatos: 0 };
+const capas = {}, textos = {};
 
-// ---- Agregar personajes y prendas ----
+const capa = (src, alt) => {
+  const i = new Image();
+  i.src = src; i.alt = alt; i.draggable = false;
+  doll.appendChild(i);
+  return i;
+};
+capa(MODELO, 'Modelo');
+ORDEN.forEach((k) => { capas[k] = capa(ROPA[k][0].src, ''); });
+dressup.querySelectorAll('.fila').forEach((f) => { textos[f.dataset.parte] = f.querySelector('.prenda'); });
+
+function mostrar() {
+  ORDEN.forEach((k) => {
+    const item = ROPA[k][elegida[k]];
+    capas[k].src = item.src;
+    capas[k].alt = item.nombre;
+    textos[k].textContent = `${item.nombre} ${elegida[k] + 1}/${ROPA[k].length}`;
+  });
+}
+function cambiar(parte, d) {
+  const n = ROPA[parte].length;
+  elegida[parte] = (elegida[parte] + d + n) % n;   // en loop
+  mostrar();
+}
+mostrar();
+
+function random() {
+  const final = {};
+  ORDEN.forEach((k) => { final[k] = rnd(ROPA[k].length); });
+  const terminar = () => {
+    Object.assign(elegida, final);
+    mostrar();
+    if (!calm.matches) { restart(photo, 'swap'); burst(); }
+  };
+  if (calm.matches) return terminar();
+  let t = 0;
+  const id = setInterval(() => {      // barajada rápida antes de elegir
+    ORDEN.forEach((k) => { elegida[k] = rnd(ROPA[k].length); });
+    mostrar();
+    if (++t >= 6) { clearInterval(id); terminar(); }
+  }, 70);
+}
+
+// ---- Agregar personajes (se arrastran) ----
 function agregar(lista, clave, esPersonaje) {
   if (!lista?.length) return;
   const item = lista[(turno[clave] = ((turno[clave] ?? -1) + 1) % lista.length)];
@@ -88,9 +126,8 @@ dressup.addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   if (b.classList.contains('quitar')) b.parentElement.remove();
-  if (b.dataset.look) showLook(look + +b.dataset.look);
-  if (b.dataset.dot) showLook(+b.dataset.dot);
-  if (b.dataset.prenda) agregar(PRENDAS[b.dataset.prenda], b.dataset.prenda, false);
+  if (b.dataset.paso) cambiar(b.closest('.fila').dataset.parte, +b.dataset.paso);
+  if (b.id === 'random') random();
   if (b.id === 'add-personaje') agregar(PERSONAJES, 'personaje', true);
   if (b.id === 'limpiar') photo.querySelectorAll('.pieza').forEach((p) => p.remove());
   if (b.dataset.scene) {

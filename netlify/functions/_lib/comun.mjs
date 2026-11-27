@@ -26,6 +26,12 @@ const lista = (v, max, n) => [...new Set((Array.isArray(v) ? v : []).map((x) => 
 const sinTildes = (s) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 export const RE_IMG = /^\/api\/imagen\/([a-z0-9]{6,12}-[a-f0-9]{12}\.(?:webp|png|jpg))$/;
 
+// Fotos y miniaturas van en listas paralelas: la miniatura i es la versión chica de la foto i ('' si no hay)
+function fotos(p) {
+  const pares = (Array.isArray(p.imgs) ? p.imgs : []).map((u, k) => [u, Array.isArray(p.thumbs) ? p.thumbs[k] : '']).filter(([u]) => RE_IMG.test(u)).slice(0, 8);
+  return { imgs: pares.map(([u]) => u), thumbs: pares.map(([, t]) => (RE_IMG.test(t) ? t : '')) };
+}
+
 export function limpiar(items) {
   if (!Array.isArray(items) || items.length > 1000) throw new ErrorHttp('Lista de productos inválida (máximo 1000).');
   const formas = new Map(); // "Remeras" y "remeras" se unifican en la primera forma escrita
@@ -52,7 +58,7 @@ export function limpiar(items) {
       colores: lista(p.colores, 30, 30),
       agotado: !!p.agotado,
       activo: p.activo !== false,
-      imgs: (Array.isArray(p.imgs) ? p.imgs : []).filter((u) => RE_IMG.test(u)).slice(0, 8),
+      ...fotos(p),
     };
   });
 }

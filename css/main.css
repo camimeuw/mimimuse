@@ -183,6 +183,44 @@ a { color: var(--color-acento); }
 .scene-btns svg { width: 20px; height: 20px; }
 
 /* ---------- Productos ---------- */
+/* Filtros de la tienda */
+.filtros { display: grid; gap: 6px; margin-bottom: 8px; }
+.filtros input { width: 100%; min-height: 44px; padding: 6px 12px; font: inherit; font-weight: 600; color: var(--color-texto); background: var(--color-caja); border: 2px solid var(--color-borde); border-radius: 22px; }
+.chips-f { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips-f[hidden] { display: none; }
+.chip-f { min-height: 40px; padding: 2px 14px; font-family: var(--titulo); font-size: 1.05rem; color: var(--color-acento); background: var(--color-caja); border: 2px solid var(--color-acento); border-radius: 20px; cursor: pointer; }
+.chip-f[aria-pressed="true"] { background: var(--color-acento); color: #fff; }
+.tarjeta .abrir { position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.tarjeta .abrir:focus-visible { outline: 3px solid var(--color-acento); outline-offset: 2px; }
+.tarjeta .sale { position: absolute; right: 2px; top: 2px; z-index: 2; padding: 0 8px; border-radius: 999px; background: var(--color-acento); color: #fff; font-size: .75rem; font-weight: 800; }
+.tarjeta .price s, .pp-precio s { margin-left: 4px; font-size: .8em; font-weight: 600; color: #6b5775; }
+
+/* Popup del producto */
+#popup { width: min(780px, calc(100% - 16px)); max-height: calc(100% - 16px); padding: 0; overflow: auto; background: var(--color-caja); color: var(--color-texto); border: 3px ridge var(--color-borde); }
+#popup::backdrop { background: rgba(51, 16, 64, .55); }
+.pp { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px; }
+.pp-x { position: absolute; top: 6px; right: 6px; z-index: 2; width: 44px; height: 44px; font-size: 1.6rem; line-height: 1; color: var(--color-acento); background: var(--color-caja); border: 2px solid var(--color-acento); border-radius: 50%; cursor: pointer; }
+.pp-foto { aspect-ratio: 3 / 4; display: grid; place-items: center; background: #fff; border: 2px solid var(--lila); }
+.pp-foto img { width: 100%; height: 100%; object-fit: contain; }
+.pp-foto.sinfoto::before { content: ""; width: 40%; aspect-ratio: 73 / 76; background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated; opacity: .75; }
+.pp-minis { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pp-minis button { width: 56px; height: 56px; padding: 2px; background: #fff; border: 2px solid var(--lila); cursor: pointer; }
+.pp-minis button[aria-current="true"] { border-color: var(--color-acento); }
+.pp-minis img { width: 100%; height: 100%; object-fit: contain; }
+.pp-info h2 { margin: 0 44px 4px 0; font-family: var(--titulo); font-weight: 400; font-size: 1.6rem; color: var(--color-acento); line-height: 1.1; overflow-wrap: anywhere; }
+.pp-info h3 { margin: 14px 0 6px; font-family: var(--titulo); font-weight: 400; font-size: 1.15rem; color: var(--color-acento); }
+.pp-info h3[hidden], .pp-fichas[hidden] { display: none; }
+.pp-ruta { margin: 0 44px 2px 0; font-size: .85rem; color: #6b5775; }
+.pp-precio { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--color-acento); }
+.sale-txt { padding: 0 8px; border-radius: 999px; background: var(--color-acento); color: #fff; font-size: .8rem; vertical-align: middle; }
+.pp-agotado[hidden] { display: none; }
+.pp-agotado { display: inline-block; margin: 6px 0 0; padding: 0 12px; border: 2px solid var(--color-acento); border-radius: 999px; font-weight: 800; color: var(--color-acento); }
+.pp-desc { margin: 12px 0 0; white-space: pre-line; line-height: 1.45; }
+.pp-fichas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ficha { min-width: 44px; padding: 6px 12px; text-align: center; font-weight: 800; background: #fff; border: 2px solid var(--color-acento); border-radius: 20px; }
+.ficha.agotado { color: #6b5775; border-style: dashed; border-color: #b9a3c2; text-decoration: line-through; }
+@media (max-width: 640px) { .pp { grid-template-columns: 1fr; } .pp-foto { aspect-ratio: 1; } }
+
 #catalog .vacio { grid-column: 1 / -1; text-align: center; padding: 24px 8px; font-weight: 800; list-style: none; }
 #catalog .vacio .ver-mas { margin-top: 12px; }
 #catalog { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
@@ -291,6 +329,7 @@ a { color: var(--color-acento); }
 @keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
+  .chip-f { transition: none; }
   .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
   .tab, .paso { transition: none; }
 }

@@ -33,8 +33,17 @@ Guarda en la carpeta `.almacen-local/` (no se sube al repositorio).
 - Los cambios del panel tardan hasta 30 segundos en verse en la tienda (caché).
 - Un producto cuenta como agotado si se marca entero o si todos sus talles están agotados.
 
+## Miniaturas y lista liviana
+- Al subir una foto, el panel genera la foto (máx. 1100 px) **y una miniatura** (máx. 360 px). La lista del panel y las tarjetas de la tienda usan la miniatura; la foto grande se carga solo al abrir el producto. Los productos cargados antes de este cambio siguen funcionando con la foto grande (sin miniatura).
+- La lista del panel dibuja de a 30 productos ("Ver más") y carga las fotos de a poco; "seleccionar" toma todos los que coinciden con la búsqueda, se vean o no.
+
+## Lo que ven las compradoras
+- **Filtros:** buscador y botones por categoría, subcategoría y "En oferta". Salen solos de lo que cargó la dueña.
+- **Popup del producto** (al tocar una tarjeta): fotos, categoría, precio (con el anterior tachado y el %), descripción, talles (los agotados tachados y marcados "agotado" para lectores de pantalla) y colores. Se cierra con la X, Esc o tocando afuera.
+- Etiqueta **-20%** en la tarjeta cuando hay oferta (o "Agotado" si no hay stock).
+
 ## Volver atrás, varios productos a la vez y ofertas
-- **Volver atrás:** cada cambio guarda cómo estaba antes (los últimos 30). Después de eliminar o de una acción en varios productos aparece **Deshacer** durante 10 segundos, y el botón **Volver atrás** lista los cambios para volver a cualquiera ("Antes de: Eliminó «Falda»"). Volver atrás también queda como un cambio: se puede recuperar. Las fotos no se borran mientras las use algún producto o alguna de esas 30 versiones.
+- **Volver atrás:** cada cambio guarda cómo estaba antes (los últimos 30). Después de eliminar o de una acción en varios productos aparece **Deshacer** durante 10 segundos, y el botón **Volver atrás** lista los cambios para volver a cualquiera ("Antes de: Eliminó «Falda»"). Volver atrás también queda como un cambio: se puede recuperar. Las fotos (y miniaturas) no se borran mientras las use algún producto o alguna de esas 30 versiones. Cada versión se guarda en su propia entrada (`ver/…`, `vmeta/…`), sin un índice compartido que se pueda pisar.
 - **Lista vacía:** si un guardado dejaría la tienda sin productos, el servidor lo rechaza salvo que se confirme (eliminar el último producto o "Eliminar" a todos).
 - **Duplicar:** abre el editor con una copia (mismas fotos) para cambiarle nombre y datos; no se guarda hasta apretar Guardar.
 - **Varios a la vez:** se marcan productos (o "seleccionar todos los que se ven" tras buscar o filtrar) y aparece una barra: agotado / hay stock, ocultar / mostrar, cambiar categoría, oferta y eliminar.

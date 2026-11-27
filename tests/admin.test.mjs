@@ -140,3 +140,15 @@ test('precio anterior debe ser mayor que el precio (oferta)', async () => {
   assert.equal((await guardar([{ nombre: 'X', precio: 50, precioAntes: 40 }])).status, 400);
   assert.equal((await guardar([{ nombre: 'X', precio: 50, precioAntes: 80 }])).status, 200);
 });
+
+test('miniaturas: van alineadas con las fotos, se descartan las inválidas y no se borran mientras se usan', async () => {
+  const dir = process.env.ALMACEN_LOCAL, hace2h = (Date.now() - 2 * 3600e3).toString(36);
+  const foto = async (n) => { const k = `${hace2h}-${n.repeat(12)}.webp`; await fs.writeFile(path.join(dir, 'img__' + k), 'x'); await fs.writeFile(path.join(dir, 'img__' + k + '.tipo'), 'image/webp'); return '/api/imagen/' + k; };
+  const [g1, m1, g2] = [await foto('d'), await foto('e'), await foto('f')];
+  const r = await guardar([{ nombre: 'Con miniaturas', precio: 1, imgs: [g1, 'https://malo.com/x.png', g2], thumbs: [m1, 'x', 'https://malo.com/y.png'] }]);
+  const p = (await r.json()).items[0];
+  assert.deepEqual(p.imgs, [g1, g2]);          // la inválida se va y las listas siguen alineadas
+  assert.deepEqual(p.thumbs, [m1, '']);         // la 2ª no tiene miniatura válida
+  const existe = (u) => fs.stat(path.join(dir, 'img__' + u.split('/').pop())).then(() => true, () => false);
+  assert.equal(await existe(m1), true);        // la miniatura cuenta como "en uso"
+});

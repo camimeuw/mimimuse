@@ -72,3 +72,4 @@ body.guardando { cursor: progress; }
 .versiones small { display: block; color: var(--gris); font-weight: 600; }
 .aviso.conaccion { pointer-events: auto; border-radius: 14px; } .aviso button { min-height: 36px; margin-left: 8px; padding: 2px 12px; background: #fff; color: var(--acento); border-color: #fff; }
 #f-masiva { display: grid; gap: 14px; }
+.mas { display: block; margin: 12px auto; }

@@ -7,7 +7,9 @@ const MAX_FOTO = 1.5 * 1024 * 1024;
 const UNA_HORA = 3600e3;
 const MAX_VERSIONES = 30;   // cuántas versiones anteriores se pueden recuperar
 const claveVersion = (rev) => 'ver/' + String(rev).padStart(8, '0');
-const fotosDe = (items) => items.flatMap((p) => p.imgs.map((u) => 'img/' + RE_IMG.exec(u)[1]));
+const claveMeta = (rev) => 'vmeta/' + String(rev).padStart(8, '0');
+const listaVersiones = async (db) => (await Promise.all((await db.keys('vmeta/')).sort().reverse().slice(0, MAX_VERSIONES).map((k) => db.getJSON(k)))).filter(Boolean);
+const fotosDe = (items) => items.flatMap((p) => [...p.imgs, ...(p.thumbs || [])].filter(Boolean).map((u) => 'img/' + RE_IMG.exec(u)[1]));
 
 // Guarda `items` como la versión nueva. Antes de pisar, deja la versión anterior en el historial.
 async function guardarDoc(db, doc, etag, items, nota, confirmarVacio) {
@@ -15,15 +17,15 @@ async function guardarDoc(db, doc, etag, items, nota, confirmarVacio) {
   let siguiente = Math.max(doc.nextId || 1, ...items.map((p) => (p.id || 0) + 1));
   items.forEach((p) => { if (!p.id) p.id = siguiente++; });
   const nuevo = { rev: doc.rev + 1, nextId: siguiente, items };
-  if (doc.items.length) {
-    const entrada = { rev: doc.rev, fecha: Date.now(), nota: txt(nota, 120) || 'Cambio', cantidad: doc.items.length };
-    await db.setJSON(claveVersion(doc.rev), { ...entrada, items: doc.items, nextId: doc.nextId });
-    const indice = [entrada, ...((await db.getJSON('versiones')) || []).filter((v) => v.rev !== entrada.rev)];
-    for (const v of indice.slice(MAX_VERSIONES)) await db.del(claveVersion(v.rev));
-    await db.setJSON('versiones', indice.slice(0, MAX_VERSIONES));
-  }
-  // Escritura condicionada: si otro guardado se coló entre la lectura y esta línea, no se pisa
+  // 1) copia de la versión actual ANTES de pisarla (su contenido es siempre el mismo para esa versión: si dos guardados compiten, da igual cuál la escribe)
+  if (doc.items.length) await db.setJSON(claveVersion(doc.rev), { rev: doc.rev, items: doc.items, nextId: doc.nextId });
+  // 2) escritura condicionada: si otro guardado se coló entre la lectura y esta línea, no se pisa
   if (!(await db.setDocSi('productos', nuevo, etag))) throw new ErrorHttp('Se cruzaron dos guardados. Esperá unos segundos y volvé a intentar.', 409);
+  // 3) solo quien ganó anota qué cambió y recorta el historial
+  if (doc.items.length) {
+    await db.setJSON(claveMeta(doc.rev), { rev: doc.rev, fecha: Date.now(), nota: txt(nota, 120) || 'Cambio', cantidad: doc.items.length });
+    for (const k of (await db.keys('ver/')).sort().reverse().slice(MAX_VERSIONES)) { await db.del(k); await db.del(k.replace('ver/', 'vmeta/')); }
+  }
   await borrarFotosSueltas(db, items);
   return nuevo;
 }
@@ -33,7 +35,7 @@ async function borrarFotosSueltas(db, items) {
   const usadas = new Set(fotosDe(items));
   const sueltas = (await db.keys('img/')).filter((k) => !usadas.has(k) && Date.now() - parseInt(k.slice(4).split('-')[0], 36) > UNA_HORA);
   if (!sueltas.length) return;
-  for (const v of (await db.getJSON('versiones')) || []) { const d = await db.getJSON(claveVersion(v.rev)); if (d) fotosDe(d.items).forEach((k) => usadas.add(k)); }
+  for (const k of await db.keys('ver/')) { const d = await db.getJSON(k); if (d) fotosDe(d.items).forEach((f) => usadas.add(f)); }
   for (const k of sueltas) if (!usadas.has(k)) await db.del(k);
 }
 
@@ -69,7 +71,7 @@ export default async (req) => {
       return json({ rev: nuevo.rev, items: nuevo.items });
     }
 
-    if (body.accion === 'versiones') return json({ versiones: (await db.getJSON('versiones')) || [] });
+    if (body.accion === 'versiones') return json({ versiones: await listaVersiones(db) });
 
     if (body.accion === 'restaurar') {
       const v = await db.getJSON(claveVersion(Number(body.version)));
@@ -77,7 +79,8 @@ export default async (req) => {
       const { valor, etag } = await db.getDoc('productos');
       const doc = valor || { rev: 0, nextId: 1, items: [] };
       if (body.rev !== doc.rev) throw new ErrorHttp('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409);
-      const nuevo = await guardarDoc(db, doc, etag, limpiar(v.items), `Volvió atrás (antes de: ${v.nota})`, true);
+      const nota = (await db.getJSON(claveMeta(v.rev)))?.nota || 'Cambio';
+      const nuevo = await guardarDoc(db, doc, etag, limpiar(v.items), `Volvió atrás (antes de: ${nota})`, true);
       return json({ rev: nuevo.rev, items: nuevo.items });
     }
 

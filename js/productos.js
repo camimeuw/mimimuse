@@ -113,11 +113,12 @@ $p('#pp-cerrar').addEventListener('click', () => popup.close());
 popup.addEventListener('click', (e) => { if (e.target === popup) popup.close(); });
 
 // ---------- Carga ----------
+const enPanel = (u) => (API && String(u).startsWith('/api/') ? API + u : u);   // las fotos del panel viven en la dirección del panel
 const deApi = (items) => items.map((p) => {
   const talles = p.talles || [], agotadas = p.tallesAgotados || [];
   return {
     id: p.id, nombre: p.nombre, precio: p.precio, precioAntes: p.precioAntes ?? null, cat: p.cat || '', sub: p.sub || '', desc: p.desc || '',
-    talles, tallesAgotados: agotadas, colores: p.colores || [], imgs: p.imgs || [], thumbs: p.thumbs || [], ejemplo: !!p.ejemplo,
+    talles, tallesAgotados: agotadas, colores: p.colores || [], imgs: (p.imgs || []).map(enPanel), thumbs: (p.thumbs || []).map(enPanel), ejemplo: !!p.ejemplo,
     // agotado si lo marcó entero o si no queda ningún talle disponible
     agotado: !!p.agotado || (talles.length > 0 && talles.every((t) => agotadas.includes(t))),
   };
@@ -128,7 +129,7 @@ const deApi = (items) => items.map((p) => {
 async function cargar() {
   mensaje('Cargando productos…');
   try {
-    const r = await fetch('/api/productos');
+    const r = await fetch(API + '/api/productos');
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     try { localStorage.setItem(CACHE, JSON.stringify(d.items)); } catch {}

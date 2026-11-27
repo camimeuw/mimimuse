@@ -179,3 +179,9 @@ test('cambios: poner (nuevo y existente), quitar y orden sin reenviar toda la li
   assert.equal((await cambios(d.rev, [{ op: 'quitar', ids: d.items.map((p) => p.id) }])).status, 400);
   assert.equal((await cambios(d.rev, [{ op: 'quitar', ids: d.items.map((p) => p.id) }], { confirmarVacio: true })).status, 200);
 });
+
+test('productos públicos: se pueden leer desde otro sitio (la tienda en GitHub Pages) y solo muestran los visibles', async () => {
+  const r = await publico(new Request('http://x/api/productos'));
+  assert.equal(r.headers.get('access-control-allow-origin'), '*');
+  assert.ok((await r.json()).items.every((p) => p.activo));
+});

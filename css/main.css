@@ -1,16 +1,16 @@
-@font-face { font-family: "Spirit"; src: url("../assets/fonts/Spirit.ttf") format("truetype"); font-display: swap;
-  unicode-range: U+0020-002F, U+003A-007E; } /* sin números, acentos ni ñ: esos caracteres caen a la fuente de texto (el 1 de Spirit parece una barra) */
+@font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-400.woff") format("woff"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-700.woff") format("woff"); font-weight: 700; font-display: swap; }
 
-/* Colores: se cambian solo acá. Hoy tienen la paleta actual de Mimi Muse (rosa, violeta, crema). */
+/* Colores: se cambian solo acá. Paleta "Menta y rosa". */
 :root {
-  --color-fondo: #fbf1b4;
+  --color-fondo: #d9f7ec;
   --color-caja: #ffffff;
-  --color-borde: #d63fa6;
-  --color-texto: #411d4b;
-  --color-acento: #7b2a8e;
-  --rosa: #f6c9ee; --lila: #d9a8ea;                    /* rellenos de apoyo */
+  --color-borde: #d0357f;
+  --color-texto: #2b1b3d;
+  --color-acento: #7a3fb8;
+  --rosa: #ffcfe6; --lila: #9fe3c8;                    /* rellenos de apoyo */
   --crema: var(--color-fondo); --fucsia: var(--color-borde); --uva: var(--color-acento); --tinta: var(--color-texto);
-  --titulo: "Spirit", "Nunito", cursive;
+  --titulo: "Pixelify Sans", "Nunito", sans-serif;
   --fuente: "Nunito", "Comic Sans MS", cursive;
   --ease: cubic-bezier(.22, .61, .36, 1);
 }

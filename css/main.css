@@ -1,14 +1,14 @@
 @font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-400.woff") format("woff"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-700.woff") format("woff"); font-weight: 700; font-display: swap; }
 
-/* Colores: se cambian solo acá. Violeta por fuera, crema amarillo por dentro. */
+/* Colores: se cambian solo acá. Son los de la hoja de la marca: rosa de fondo, crema por dentro, violeta oscuro y magenta del logo. */
 :root {
-  --color-fondo: #7b2a8e;
-  --color-caja: #fbf1b4;
-  --color-borde: #d63fa6;
-  --color-texto: #411d4b;
-  --color-acento: #7b2a8e;
-  --rosa: #f3df86; --lila: #cfa8e0;                    /* rellenos de apoyo */
+  --color-fondo: #f4a3ec;
+  --color-caja: #fcf3bb;
+  --color-borde: #d843a8;
+  --color-texto: #331040;
+  --color-acento: #7f2b85;
+  --rosa: #fcc3f3; --lila: #dca2e4;                    /* rellenos de apoyo */
   --crema: var(--color-fondo); --fucsia: var(--color-borde); --uva: var(--color-acento); --tinta: var(--color-texto);
   --titulo: "Pixelify Sans", "Nunito", sans-serif;
   --fuente: "Nunito", "Comic Sans MS", cursive;
@@ -75,7 +75,7 @@ a { color: var(--color-acento); }
   color: var(--color-acento); border: 2px dashed var(--color-borde); background: var(--color-caja); transition: translate .2s var(--ease); }
 .menu a:hover { translate: 3px 0; background: var(--rosa); }
 .menu svg { width: 18px; height: 18px; flex-shrink: 0; fill: var(--color-borde); }
-.nuevo { margin-left: auto; padding: 0 4px; background: var(--color-borde); color: #fff; font-family: var(--fuente); font-size: .6rem; font-weight: 800; animation: parp 1s steps(2) infinite; }
+.nuevo { margin-left: auto; padding: 0 4px; background: var(--color-acento); color: #fff; font-family: var(--fuente); font-size: .6rem; font-weight: 800; animation: parp 1s steps(2) infinite; }
 @keyframes parp { 50% { opacity: 0; } }
 .novedades { margin: 0; padding-left: 16px; font-size: .8rem; line-height: 1.5; }
 .estado { display: flex; align-items: center; gap: 8px; font-size: .8rem; line-height: 1.25; }

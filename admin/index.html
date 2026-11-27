@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Panel · Mimi Muse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="cab">
+    <img class="logo" src="titulo-pixel.png" alt="Mimi Muse" width="130" height="24">
+    <h1>Panel de productos</h1>
+    <button type="button" id="seguridad" class="sec" hidden>Seguridad</button>
+    <button type="button" id="salir" class="sec" hidden>Salir</button>
+  </header>
+
+  <main>
+    <!-- Entrar -->
+    <section id="entrar" aria-labelledby="t-entrar">
+      <h2 id="t-entrar">Entrar</h2>
+      <form id="f-entrar">
+        <label>Clave <input type="password" id="clave" autocomplete="current-password" required></label>
+        <label class="cut"><input type="checkbox" id="ver-clave"> Mostrar la clave</label>
+        <label class="cut"><input type="checkbox" id="recordar"> Recordarme en este dispositivo <small>(30 días; no lo uses en una compu compartida)</small></label>
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Lista -->
+    <section id="panel" hidden aria-label="Productos">
+      <div class="barra">
+        <label class="buscar">Buscar <input type="search" id="buscar" placeholder="nombre, categoría…"></label>
+        <label>Categoría <select id="f-cat"><option value="">Todas</option></select></label>
+        <button type="button" id="nuevo">+ Nuevo producto</button>
+        <button type="button" id="renombrar" class="sec">Renombrar categoría</button>
+        <button type="button" id="versiones" class="sec">Volver atrás</button>
+        <button type="button" id="planilla" class="sec">Planilla (Excel)</button>
+        <button type="button" id="copia" class="sec">Descargar copia</button>
+      </div>
+      <div class="resumen"><label class="todos"><input type="checkbox" id="todos"> <span id="todos-txt">Seleccionar todos</span></label><p id="resumen" class="nota" aria-live="polite"></p></div>
+      <ul id="lista" class="lista"></ul>
+      <button type="button" id="mas" class="sec mas" hidden></button>
+    </section>
+  </main>
+
+  <!-- Editor de un producto -->
+  <dialog id="editor" aria-labelledby="t-editor">
+    <form id="f-prod" method="dialog">
+      <h2 id="t-editor">Producto</h2>
+      <div class="fila2">
+        <label>Nombre <input id="p-nombre" maxlength="120" required></label>
+        <label>Precio (S/) <input id="p-precio" type="number" min="0" step="0.01" required></label>
+        <label>Precio anterior (S/) <small>opcional: si hay oferta, tiene que ser mayor que el precio</small> <input id="p-antes" type="number" min="0" step="0.01"></label>
+      </div>
+      <div class="fila2">
+        <label>Categoría <small>escribí una nueva o elegí una</small> <input id="p-cat" list="d-cats" maxlength="40" autocomplete="off"></label>
+        <label>Subcategoría <input id="p-sub" list="d-subs" maxlength="40" autocomplete="off"></label>
+      </div>
+      <datalist id="d-cats"></datalist><datalist id="d-subs"></datalist>
+
+      <label>Descripción <textarea id="p-desc" rows="4" maxlength="2000"></textarea></label>
+
+      <fieldset>
+        <legend>Talles <small>tocá un talle para marcarlo agotado</small></legend>
+        <div class="chips" id="c-talles"></div>
+        <div class="agregar"><input id="n-talle" maxlength="20" placeholder="Ej: S, 38, Único" aria-label="Nuevo talle"><button type="button" class="sec" id="a-talle">Agregar</button>
+          <button type="button" class="sec" data-preset="XS,S,M,L,XL">XS–XL</button><button type="button" class="sec" data-preset="Único">Único</button></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Colores</legend>
+        <div class="chips" id="c-colores"></div>
+        <div class="agregar"><input id="n-color" maxlength="30" placeholder="Ej: rosa, negro" aria-label="Nuevo color"><button type="button" class="sec" id="a-color">Agregar</button></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Fotos <small>la primera es la principal; la segunda aparece al pasar el mouse</small></legend>
+        <ul class="fotos" id="fotos"></ul>
+        <label class="subir">Agregar fotos <input type="file" id="subir" accept="image/png,image/jpeg,image/webp" multiple></label>
+        <label class="cut"><input type="checkbox" id="p-cut" checked> Quitar el fondo blanco automáticamente <small>(solo si la foto no es PNG transparente)</small></label>
+      </fieldset>
+
+      <div class="checks">
+        <label><input type="checkbox" id="p-agotado"> Agotado (todo el producto)</label>
+        <label><input type="checkbox" id="p-activo" checked> Visible en la tienda</label>
+      </div>
+
+      <p id="e-error" class="error" role="alert"></p>
+      <div class="botones">
+        <button type="submit" id="guardar">Guardar producto</button>
+        <button type="button" class="sec" id="cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Renombrar categoría o subcategoría -->
+  <dialog id="d-ren" aria-labelledby="t-ren">
+    <form id="f-ren" method="dialog">
+      <h2 id="t-ren">Renombrar categoría</h2>
+      <label>Categoría <select id="r-cat"></select></label>
+      <label>Subcategoría <select id="r-sub"><option value="">(la categoría entera)</option></select></label>
+      <label>Nuevo nombre <input id="r-nuevo" maxlength="40" required></label>
+      <p class="nota">Se cambia en todos los productos que la usan.</p>
+      <div class="botones"><button type="submit">Renombrar</button><button type="button" class="sec" id="r-cancelar">Cancelar</button></div>
+    </form>
+  </dialog>
+
+  <!-- Barra de acciones para varios productos -->
+  <section id="masivo" class="masivo" hidden aria-label="Acciones para los productos seleccionados">
+    <strong id="m-cuantos"></strong>
+    <button type="button" data-m="agotado" class="sec">Agotado</button><button type="button" data-m="stock" class="sec">Hay stock</button>
+    <button type="button" data-m="ocultar" class="sec">Ocultar</button><button type="button" data-m="mostrar" class="sec">Mostrar</button>
+    <button type="button" data-m="cat" class="sec">Categoría…</button><button type="button" data-m="of" class="sec">Oferta…</button><button type="button" data-m="sinoferta" class="sec">Quitar oferta</button>
+    <button type="button" data-m="eliminar" class="sec">Eliminar</button><button type="button" id="m-quitar">Quitar selección</button>
+  </section>
+
+  <dialog id="d-masiva" aria-labelledby="m-titulo">
+    <form id="f-masiva" method="dialog">
+      <h2 id="m-titulo"></h2>
+      <div id="m-cat" hidden><label>Categoría <input id="m-c" list="d-cats" maxlength="40" autocomplete="off"></label><label>Subcategoría <input id="m-s" list="d-subs" maxlength="40" autocomplete="off"></label></div>
+      <div id="m-of" hidden><label>Descuento (%) <input id="m-p" type="number" min="1" max="90" step="1"></label><p class="nota">El precio actual pasa a ser el "precio anterior" y se baja el precio. Si ya estaba en oferta, el descuento se calcula sobre el precio anterior.</p></div>
+      <p id="m-error" class="error" role="alert"></p>
+      <div class="botones"><button type="submit">Aplicar</button><button type="button" class="sec" id="m-cancelar">Cancelar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="d-ver" aria-labelledby="t-ver">
+    <h2 id="t-ver">Volver atrás</h2>
+    <p class="nota">Cada cambio guarda cómo estaba antes. Elegí hasta cuándo querés volver (se guardan los últimos 30 cambios).</p>
+    <ul id="v-lista" class="versiones"></ul>
+    <h3 id="t-copias">Copias de cada día</h3>
+    <p class="nota">Todas las noches se guarda una copia de los productos (las últimas 14). Sirven si te das cuenta de un error varios días después.</p>
+    <ul id="c-lista" class="versiones"></ul>
+    <div class="botones"><button type="button" class="sec" id="v-cerrar">Cerrar</button></div>
+  </dialog>
+
+  <!-- Clave y sesiones -->
+  <dialog id="d-seg" aria-labelledby="t-seg">
+    <form id="f-seg" method="dialog">
+      <h2 id="t-seg">Seguridad</h2>
+      <h3>Cambiar la clave</h3>
+      <label>Clave actual <input type="password" id="s-actual" autocomplete="current-password" required></label>
+      <label>Clave nueva <small>al menos 10 caracteres; mejor una frase larga que puedas recordar</small> <input type="password" id="s-nueva" autocomplete="new-password" minlength="10" maxlength="200" required></label>
+      <label>Repetí la clave nueva <input type="password" id="s-nueva2" autocomplete="new-password" minlength="10" maxlength="200" required></label>
+      <label class="cut"><input type="checkbox" id="s-ver"> Mostrar las claves</label>
+      <p id="s-error" class="error" role="alert"></p>
+      <div class="botones"><button type="submit">Cambiar clave</button></div>
+    </form>
+    <h3>Cerrar sesión en todos los dispositivos</h3>
+    <p class="nota">Si entraste desde una compu o un celular que no es tuyo, o creés que alguien más sabe tu clave: esto cierra el panel en todos lados, también en este. Después hay que volver a entrar. (Cambiar la clave también cierra las demás sesiones, pero deja abierta esta.)</p>
+    <div class="botones"><button type="button" class="sec" id="s-todos">Cerrar todas las sesiones</button><button type="button" class="sec" id="s-cerrar">Cerrar</button></div>
+  </dialog>
+
+  <!-- Cargar o actualizar muchos productos con una planilla -->
+  <dialog id="d-import" aria-labelledby="t-imp">
+    <h2 id="t-imp">Planilla de productos (Excel)</h2>
+    <div id="i-paso1">
+      <p class="nota">Para cargar muchos productos juntos: bajá la planilla de ejemplo, completala (una fila por producto) en Excel o Google Sheets y guardala como <strong>CSV</strong>. Para cambiar precios o stock de muchos a la vez: bajá «mis productos», cambiá lo que quieras y volvé a subirla (no toques la columna <em>id</em>).</p>
+      <div class="botones"><button type="button" class="sec" id="i-bajar">Bajar mis productos</button><button type="button" class="sec" id="i-ejemplo">Bajar planilla de ejemplo</button></div>
+      <label class="subir">Elegir la planilla (CSV) <input type="file" id="i-csv" accept=".csv,.txt,text/csv,text/plain"></label>
+    </div>
+    <div id="i-resumen" hidden>
+      <p id="i-txt"></p>
+      <ul id="i-errores" class="errores"></ul>
+      <div id="i-fotos-paso" hidden>
+        <label class="subir">Elegir las fotos <small>(todas juntas; se buscan por el nombre del archivo que pusiste en la columna «fotos»)</small> <input type="file" id="i-fotos" accept="image/png,image/jpeg,image/webp" multiple></label>
+        <p id="i-faltan" class="nota"></p>
+        <label class="cut"><input type="checkbox" id="i-cut" checked> Quitar el fondo blanco automáticamente <small>(solo si la foto no es PNG transparente)</small></label>
+      </div>
+    </div>
+    <div id="i-progreso" hidden><progress id="i-barra" max="1" value="0"></progress><p id="i-estado" class="nota" aria-live="polite"></p><ul id="i-fallos" class="errores"></ul></div>
+    <p id="i-error" class="error" role="alert"></p>
+    <div class="botones"><button type="button" id="i-importar" hidden>Importar</button><button type="button" class="sec" id="i-cerrar">Cerrar</button></div>
+  </dialog>
+
+  <p id="aviso" class="aviso" role="status" aria-live="polite"></p>
+  <script src="csv.js"></script>
+  <script src="fotos.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

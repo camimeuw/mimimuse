@@ -38,6 +38,11 @@
 .splash-on.open .splash { opacity: 0; pointer-events: none; }
 .splash-on.open .titulo { clip-path: inset(0); transition: clip-path .9s steps(16) 1s; }
 
+/* Versión calma (reducir animaciones): sin rebote de entrada ni vuelo, el título aparece de una; queda el guiño (cambio de cuadro) y el fundido */
+.calma .mona { animation: guino 2.1s step-end 1; }
+.calma.open .mona { animation: none; }
+.calma.open .titulo { transition: none; }
+
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
 
 @media (prefers-reduced-motion: reduce) { .mona { animation: none; } }

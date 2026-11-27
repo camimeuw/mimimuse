@@ -1,16 +1,16 @@
-@font-face { font-family: "Spirit"; src: url("../assets/fonts/Spirit.ttf") format("truetype"); font-display: swap;
-  unicode-range: U+0020-002F, U+003A-007E; } /* sin números, acentos ni ñ: esos caracteres caen a la fuente de texto (el 1 de Spirit parece una barra) */
+@font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-400.woff") format("woff"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Pixelify Sans"; src: url("../assets/fonts/PixelifySans-700.woff") format("woff"); font-weight: 700; font-display: swap; }
 
-/* Colores: se cambian solo acá. Hoy tienen la paleta actual de Mimi Muse (rosa, violeta, crema). */
+/* Colores: se cambian solo acá. De la hoja de la marca: rosas y lila, con el magenta del logo (sin amarillo ni violeta oscuro). */
 :root {
-  --color-fondo: #fbf1b4;
-  --color-caja: #ffffff;
-  --color-borde: #d63fa6;
-  --color-texto: #411d4b;
-  --color-acento: #7b2a8e;
-  --rosa: #f6c9ee; --lila: #d9a8ea;                    /* rellenos de apoyo */
+  --color-fondo: #f4a3ec;
+  --color-caja: #fff1fb;
+  --color-borde: #d843a8;
+  --color-texto: #331040;
+  --color-acento: #a8247a;
+  --rosa: #fcc3f3; --lila: #dca2e4;                    /* rellenos de apoyo */
   --crema: var(--color-fondo); --fucsia: var(--color-borde); --uva: var(--color-acento); --tinta: var(--color-texto);
-  --titulo: "Spirit", "Nunito", cursive;
+  --titulo: "Pixelify Sans", "Nunito", sans-serif;
   --fuente: "Nunito", "Comic Sans MS", cursive;
   --ease: cubic-bezier(.22, .61, .36, 1);
 }
@@ -18,12 +18,7 @@
 html { background: var(--color-fondo); }
 body {
   margin: 0; font-family: var(--fuente); font-size: .95rem; font-weight: 600; color: var(--color-texto);
-  /* papel tapiz apretado + bordes en zigzag a los costados, como las webs viejas */
-  background:
-    linear-gradient(135deg, var(--color-borde) 25%, transparent 25%) 0 0 / 28px 28px,
-    linear-gradient(225deg, var(--lila) 25%, transparent 25%) 0 0 / 28px 28px,
-    conic-gradient(var(--rosa) 25%, var(--color-fondo) 0 50%, var(--rosa) 0 75%, var(--color-fondo) 0) 0 0 / 24px 24px;
-  background-attachment: fixed;
+  background: var(--color-fondo);   /* liso */
 }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--color-acento); outline-offset: 3px; }
@@ -36,7 +31,7 @@ a { color: var(--color-acento); }
 .col-izq { display: none; }               /* el menú va solo en escritorio */
 .col-centro, .col-der, .col-izq { gap: 5px; min-width: 0; align-content: start; }
 .col-centro, .col-der { display: grid; }
-.dressup-seccion { display: none; }       /* el dress up va solo en escritorio */
+.btn-productos { display: none; }
 
 /* Cajas: borde ridge (relieve) con marco interior, como las de la referencia */
 .caja { background: var(--color-caja); border: 3px ridge var(--color-borde); padding: 6px; min-width: 0; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px var(--color-acento); }
@@ -46,16 +41,16 @@ a { color: var(--color-acento); }
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
 .caja-titulo::after { margin-left: auto; }
 .pixel-sep { height: 12px; background: repeating-linear-gradient(90deg, var(--color-borde) 0 6px, transparent 6px 12px); opacity: .6; }
-.aqui { display: grid; place-items: center; text-align: center; padding: 4px; min-height: 48px; border: 2px dashed var(--color-borde); background: #fff;
+.aqui { display: grid; place-items: center; text-align: center; padding: 4px; min-height: 48px; border: 2px dashed var(--color-borde); background: var(--color-caja);
   color: var(--color-acento); font-size: .75rem; line-height: 1.2; }
 
 /* ---------- Cabecera: banner grande + tira de 88x31 ---------- */
 .banner { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; min-height: 190px; padding: 4px 10px;
-  background: radial-gradient(#fff 1.5px, transparent 2px) 0 0 / 12px 12px, linear-gradient(var(--rosa), var(--lila)); }
+  background: radial-gradient(var(--color-caja) 1.5px, transparent 2px) 0 0 / 12px 12px, linear-gradient(var(--rosa), var(--lila)); }
 .banner .aqui { min-height: 140px; }
 .banner .logo { grid-column: 2; margin: 0; }
 .cart { position: absolute; top: 8px; right: 8px; z-index: 30; width: 44px; height: 44px; display: grid; place-items: center;
-  border: 2px ridge var(--color-borde); border-radius: 50%; background: #fff; color: var(--color-acento); cursor: pointer; }
+  border: 2px ridge var(--color-borde); border-radius: 50%; background: var(--color-caja); color: var(--color-acento); cursor: pointer; }
 .cart svg { width: 24px; height: 24px; }
 .cart-count { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 4px;
   border-radius: 11px; background: var(--color-acento); color: #fff; font-size: .85rem; font-weight: 800; line-height: 22px; text-align: center; }
@@ -64,12 +59,12 @@ a { color: var(--color-acento); }
 .b88 { width: 88px; height: 31px; display: grid; place-items: center; font-size: .75rem; font-weight: 800; color: var(--color-texto);
   border: 1px solid var(--color-borde); image-rendering: pixelated; transition: translate .2s var(--ease); }
 .b88:hover { translate: 0 -2px; }
-.b88:nth-child(5n+1) { background: repeating-linear-gradient(45deg, var(--rosa) 0 4px, #fff 4px 8px); }
-.b88:nth-child(5n+2) { background: linear-gradient(var(--lila), #fff); }
-.b88:nth-child(5n+3) { background: radial-gradient(var(--rosa) 1.5px, transparent 2px) 0 0 / 6px 6px, #fff; }
+.b88:nth-child(5n+1) { background: repeating-linear-gradient(45deg, var(--rosa) 0 4px, var(--color-caja) 4px 8px); }
+.b88:nth-child(5n+2) { background: linear-gradient(var(--lila), var(--color-caja)); }
+.b88:nth-child(5n+3) { background: radial-gradient(var(--rosa) 1.5px, transparent 2px) 0 0 / 6px 6px, var(--color-caja); }
 .b88:nth-child(5n+4) { background: var(--color-acento); color: #fff; }
 .b88:nth-child(5n) { background: repeating-linear-gradient(90deg, var(--lila) 0 4px, var(--rosa) 4px 8px); }
-.marquee { overflow: hidden; white-space: nowrap; padding: 2px 0; font-size: .9rem; background: #fff; }
+.marquee { overflow: hidden; white-space: nowrap; padding: 2px 0; font-size: .9rem; background: var(--color-caja); }
 .marquee span { display: inline-block; padding-left: 100%; animation: marquee 24s linear infinite; }
 .marquee.al-reves span { animation-direction: reverse; animation-duration: 30s; }
 @keyframes marquee { to { transform: translateX(-100%); } }
@@ -77,14 +72,14 @@ a { color: var(--color-acento); }
 /* ---------- Menú izquierdo ---------- */
 .menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
 .menu a { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 2px 6px; text-decoration: none; font-family: var(--titulo); font-size: 1.15rem;
-  color: var(--color-acento); border: 2px dashed var(--color-borde); background: #fff; transition: translate .2s var(--ease); }
+  color: var(--color-acento); border: 2px dashed var(--color-borde); background: var(--color-caja); transition: translate .2s var(--ease); }
 .menu a:hover { translate: 3px 0; background: var(--rosa); }
 .menu svg { width: 18px; height: 18px; flex-shrink: 0; fill: var(--color-borde); }
-.nuevo { margin-left: auto; padding: 0 4px; background: var(--color-borde); color: #fff; font-family: var(--fuente); font-size: .6rem; font-weight: 800; animation: parp 1s steps(2) infinite; }
+.nuevo { margin-left: auto; padding: 0 4px; background: var(--color-acento); color: #fff; font-family: var(--fuente); font-size: .6rem; font-weight: 800; animation: parp 1s steps(2) infinite; }
 @keyframes parp { 50% { opacity: 0; } }
 .novedades { margin: 0; padding-left: 16px; font-size: .8rem; line-height: 1.5; }
 .estado { display: flex; align-items: center; gap: 8px; font-size: .8rem; line-height: 1.25; }
-.codigo { width: 100%; height: 56px; resize: none; font: .7rem monospace; color: var(--color-texto); border: 2px inset var(--lila); background: #fff; }
+.codigo { width: 100%; height: 56px; resize: none; font: .7rem monospace; color: var(--color-texto); border: 2px inset var(--lila); background: var(--color-caja); }
 
 /* ---------- Columna derecha ---------- */
 .reloj { margin: 0; text-align: center; font-size: 1.9rem; font-weight: 800; color: var(--color-acento); font-variant-numeric: tabular-nums; }
@@ -95,7 +90,7 @@ a { color: var(--color-acento); }
 .amigas { display: grid; grid-template-columns: repeat(2, 88px); justify-content: center; gap: 4px; }
 
 /* Pegatinas pixel con movimiento tipo gif (hechas con SVG, no son imágenes) */
-.pegatinas { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.pegatinas { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 6px; background: var(--color-caja); border: 3px ridge var(--color-borde); }
 .pix { width: 34px; height: 34px; color: var(--color-borde); }
 .pix.rosa { color: var(--rosa); } .pix.lila { color: var(--lila); } .pix.uva { color: var(--color-acento); }
 .pix.bota { animation: bota .8s steps(4) infinite alternate; }
@@ -123,7 +118,7 @@ a { color: var(--color-acento); }
 .mp3-caja.activo .onda { animation-play-state: running; }
 @keyframes onda { 50% { transform: scaleY(1.5); } }
 .mp3-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.mp3-artista { margin: 0; font-family: var(--titulo); font-size: .8rem; color: var(--fucsia); line-height: 1; }
+.mp3-artista { margin: 0; font-family: var(--titulo); font-size: .8rem; color: var(--uva); line-height: 1; }
 .mp3-cancion { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .85rem; font-weight: 800; line-height: 1.2; }
 .seek { -webkit-appearance: none; appearance: none; width: 100%; height: 14px; margin: 2px 0 0; padding: 0; background: none; cursor: pointer; --p: 0%; }
 .seek::-webkit-slider-runnable-track { height: 6px; background: linear-gradient(90deg, var(--rosa), var(--fucsia)) 0 / var(--p) 100% no-repeat, #f5d8ec; border: 1px solid var(--lila); }
@@ -149,7 +144,7 @@ a { color: var(--color-acento); }
 .mp3-btn:hover { opacity: .85; }
 .mp3-btn:active { border-color: var(--uva) #fff #fff var(--uva); }
 .mp3-btn:disabled, .vol:disabled, .seek:disabled, .mute:disabled { opacity: .45; cursor: default; }
-.mp3-play { min-width: 46px; background: var(--uva); color: #fff; border-color: #c58ad6 #3d1247 #3d1247 #c58ad6; }
+.mp3-play { min-width: 46px; background: var(--uva); color: #fff; border-color: #f3a4d8 #6e1450 #6e1450 #f3a4d8; }
 .mp3-play .i-pause, .mp3-play[aria-pressed="true"] .i-play { display: none; }
 .mp3-play[aria-pressed="true"] .i-pause { display: block; }
 
@@ -157,52 +152,82 @@ a { color: var(--color-acento); }
 /* ---------- Dress Up (mismo diseño de antes, en su versión angosta: closet | modelo | Mimi Mode) ---------- */
 .dressup {
   --escena: linear-gradient(var(--rosa), var(--lila));
-  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 560px; margin-top: 22px;
+  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 22px;
 }
-.dressup[data-scene="1"] { --escena: linear-gradient(#fff, var(--rosa)); }
-.dressup[data-scene="2"] { --escena: radial-gradient(#fff 2px, transparent 2.5px) 0 0 / 18px 18px, var(--lila); }
+.dressup[data-scene="1"] { --escena: linear-gradient(var(--color-caja), var(--rosa)); }
+.dressup[data-scene="2"] { --escena: radial-gradient(var(--color-caja) 2px, transparent 2.5px) 0 0 / 18px 18px, var(--lila); }
 .closet { display: grid; align-content: start; gap: 8px; }
 .closet h2, .mimi-mode h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
-.fila { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(123, 42, 142, .5); }
+.fila { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(168, 36, 122, .5); }
 .parte { font-family: var(--titulo); font-size: 1.15rem; color: var(--uva); line-height: 1; }
-.prenda { min-height: 2.3em; font-size: .68rem; font-weight: 800; line-height: 1.15; }
+.prenda { min-height: 2.3em; font-size: .75rem; font-weight: 800; line-height: 1.15; }
 .pasos { display: flex; gap: 6px; }
-.paso { width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 2px solid var(--uva); border-radius: 50%; background: #fff; color: var(--uva); cursor: pointer; transition: scale .2s cubic-bezier(.22, 1, .36, 1); }
+.paso { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 2px solid var(--uva); border-radius: 50%; background: var(--color-caja); color: var(--uva); cursor: pointer; transition: scale .2s cubic-bezier(.22, 1, .36, 1); }
 .paso svg { width: 20px; height: 20px; }
 .paso[data-paso="-1"] svg { transform: scaleX(-1); }
 .paso:hover { scale: 1.12; }
 .paso:active { scale: .94; }
 .model { position: relative; min-width: 0; display: grid; grid-template-rows: 1fr auto; gap: 6px; }
 .photo { position: relative; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--fucsia); border-radius: 28px; background: var(--escena); text-align: center; padding: 12px; }
-.doll { position: relative; height: 440px; aspect-ratio: 730 / 1790; margin-bottom: 22px; }
+.doll { position: relative; height: 350px; aspect-ratio: 730 / 1790; margin-bottom: 26px; }
 .doll img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
-.pista { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; padding: 0 12px; font-size: .7rem; font-weight: 800; color: var(--tinta); }
+.pista { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; padding: 0 12px; font-size: .75rem; font-weight: 800; color: var(--tinta); }
 .scene-prev svg { transform: scaleX(-1); }
 .acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-width: 0; }
-.mini { min-height: 36px; padding: 2px 10px; font-family: var(--titulo); font-size: 1.1rem; color: var(--uva); background: #fff; border: 2px solid var(--uva); border-radius: 18px; cursor: pointer; }
+.mini { min-height: 44px; padding: 2px 10px; font-family: var(--titulo); font-size: 1.1rem; color: var(--uva); background: var(--color-caja); border: 2px solid var(--uva); border-radius: 18px; cursor: pointer; }
 .mini:hover { background: var(--rosa); }
 .mimi-mode { display: grid; align-content: start; gap: 8px; }
 .room { aspect-ratio: 1; border: 2px solid var(--lila); border-radius: 18px; background: var(--escena); }
 .scene-btns { display: grid; gap: 6px; }
-.scene-btns button { height: 36px; display: grid; place-items: center; padding: 0; border: 2px solid var(--uva); border-radius: 18px; background: #fff; color: var(--uva); cursor: pointer; }
+.scene-btns button { height: 44px; display: grid; place-items: center; padding: 0; border: 2px solid var(--uva); border-radius: 18px; background: var(--color-caja); color: var(--uva); cursor: pointer; }
 .scene-btns svg { width: 20px; height: 20px; }
 
-/* Piezas que se agregan y se mueven con el mouse */
-.pieza { position: absolute; z-index: 1; display: grid; place-items: center; width: 76px; height: 76px; cursor: grab; touch-action: none; user-select: none;
-  border: 2px dashed var(--uva); border-radius: 12px; background: rgba(255, 255, 255, .85); color: var(--uva); font-size: .7rem; font-weight: 800; line-height: 1.1; text-align: center; padding: 4px; }
-.pieza.personaje { width: 100px; height: 124px; }
-.pieza.arrastrando { cursor: grabbing; box-shadow: 0 10px 14px -8px rgba(123, 42, 142, .6); }
-.pieza img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
-.pieza.mona { border-style: solid; background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat, rgba(255, 255, 255, .85); background-size: 300% 100%, auto; image-rendering: pixelated; color: transparent; }
-.quitar { position: absolute; top: -10px; right: -10px; width: 22px; height: 22px; padding: 0; border: 2px solid var(--uva); border-radius: 50%; background: #fff; color: var(--uva);
-  font-size: .9rem; line-height: 1; cursor: pointer; opacity: 0; }
-.pieza:hover .quitar, .pieza:focus .quitar, .quitar:focus-visible { opacity: 1; }
-
 /* ---------- Productos ---------- */
+/* Filtros de la tienda */
+.filtros { display: grid; gap: 6px; margin-bottom: 8px; }
+.filtros input { width: 100%; min-height: 44px; padding: 6px 12px; font: inherit; font-weight: 600; color: var(--color-texto); background: var(--color-caja); border: 2px solid var(--color-borde); border-radius: 22px; }
+.chips-f { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips-f[hidden] { display: none; }
+.chip-f { min-height: 40px; padding: 2px 14px; font-family: var(--titulo); font-size: 1.05rem; color: var(--color-acento); background: var(--color-caja); border: 2px solid var(--color-acento); border-radius: 20px; cursor: pointer; }
+.chip-f[aria-pressed="true"] { background: var(--color-acento); color: #fff; }
+.tarjeta .abrir { position: absolute; inset: 0; z-index: 3; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.tarjeta .abrir:focus-visible { outline: 3px solid var(--color-acento); outline-offset: 2px; }
+.tarjeta .sale { position: absolute; right: 2px; top: 2px; z-index: 2; padding: 0 8px; border-radius: 999px; background: var(--color-acento); color: #fff; font-size: .75rem; font-weight: 800; }
+.tarjeta .price s, .pp-precio s { margin-left: 4px; font-size: .8em; font-weight: 600; color: #6b5775; }
+
+/* Popup del producto */
+#popup { width: min(780px, calc(100% - 16px)); max-height: calc(100% - 16px); padding: 0; overflow: auto; background: var(--color-caja); color: var(--color-texto); border: 3px ridge var(--color-borde); }
+#popup::backdrop { background: rgba(51, 16, 64, .55); }
+.pp { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px; }
+.pp-x { position: absolute; top: 6px; right: 6px; z-index: 2; width: 44px; height: 44px; font-size: 1.6rem; line-height: 1; color: var(--color-acento); background: var(--color-caja); border: 2px solid var(--color-acento); border-radius: 50%; cursor: pointer; }
+.pp-foto { aspect-ratio: 3 / 4; display: grid; place-items: center; background: #fff; border: 2px solid var(--lila); }
+.pp-foto img { width: 100%; height: 100%; object-fit: contain; }
+.pp-foto.sinfoto::before { content: ""; width: 40%; aspect-ratio: 73 / 76; background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated; opacity: .75; }
+.pp-minis { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pp-minis button { width: 56px; height: 56px; padding: 2px; background: #fff; border: 2px solid var(--lila); cursor: pointer; }
+.pp-minis button[aria-current="true"] { border-color: var(--color-acento); }
+.pp-minis img { width: 100%; height: 100%; object-fit: contain; }
+.pp-info h2 { margin: 0 44px 4px 0; font-family: var(--titulo); font-weight: 400; font-size: 1.6rem; color: var(--color-acento); line-height: 1.1; overflow-wrap: anywhere; }
+.pp-info h3 { margin: 14px 0 6px; font-family: var(--titulo); font-weight: 400; font-size: 1.15rem; color: var(--color-acento); }
+.pp-info h3[hidden], .pp-fichas[hidden] { display: none; }
+.pp-ruta { margin: 0 44px 2px 0; font-size: .85rem; color: #6b5775; }
+.pp-precio { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--color-acento); }
+.sale-txt { padding: 0 8px; border-radius: 999px; background: var(--color-acento); color: #fff; font-size: .8rem; vertical-align: middle; }
+.pp-agotado[hidden] { display: none; }
+.pp-agotado { display: inline-block; margin: 6px 0 0; padding: 0 12px; border: 2px solid var(--color-acento); border-radius: 999px; font-weight: 800; color: var(--color-acento); }
+.pp-desc { margin: 12px 0 0; white-space: pre-line; line-height: 1.45; }
+.pp-fichas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ficha { min-width: 44px; padding: 6px 12px; text-align: center; font-weight: 800; background: #fff; border: 2px solid var(--color-acento); border-radius: 20px; }
+.ficha.agotado { color: #6b5775; border-style: dashed; border-color: #b9a3c2; text-decoration: line-through; }
+@media (max-width: 640px) { .pp { grid-template-columns: 1fr; } .pp-foto { aspect-ratio: 1; } }
+
+#catalog .vacio { grid-column: 1 / -1; text-align: center; padding: 24px 8px; font-weight: 800; list-style: none; }
+#catalog .vacio .ver-mas { margin-top: 12px; }
 #catalog { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
-.tarjeta { position: relative; padding: 4px; text-align: center; background: #fff; border: 3px ridge var(--color-borde); transition: translate .2s var(--ease); }
+.tarjeta { position: relative; padding: 4px; text-align: center; background: var(--color-caja); border: 3px ridge var(--color-borde); transition: translate .2s var(--ease); }
 .tarjeta:hover { translate: 0 -3px; }
-.tarjeta .pic { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: #fff; }
+.tarjeta .pic { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: var(--color-caja); }
+.tarjeta .pic.sinfoto::before { content: ""; width: 55%; aspect-ratio: 73 / 76; background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated; opacity: .75; }   /* sin foto: la mona */
 .tarjeta .pic.empty { border: 2px dashed var(--lila); color: var(--color-acento); font-size: .75rem; }
 .tarjeta .pic img { width: 100%; height: 100%; object-fit: contain; transition: opacity .6s; }
 .tarjeta .pic .alt { position: absolute; inset: 0; opacity: 0; }
@@ -210,11 +235,11 @@ a { color: var(--color-acento); }
 .tarjeta:hover .pic.has-alt .main { opacity: 0; }
 .tarjeta .badge { position: absolute; top: 2px; left: 2px; z-index: 2; min-width: 22px; height: 22px; padding: 0 4px; display: grid; place-items: center; border-radius: 11px;
   background: var(--color-acento); color: #fff; font-size: .8rem; font-weight: 800; }
-.tarjeta .sold { position: absolute; right: 2px; top: 2px; z-index: 2; padding: 0 8px; border-radius: 999px; background: #fff; color: var(--color-acento); border: 1px solid var(--color-acento); font-size: .75rem; font-weight: 800; }
+.tarjeta .sold { position: absolute; right: 2px; top: 2px; z-index: 2; padding: 0 8px; border-radius: 999px; background: var(--color-caja); color: var(--color-acento); border: 1px solid var(--color-acento); font-size: .75rem; font-weight: 800; }
 .tarjeta.is-sold .pic img { opacity: .55; }
 .tarjeta .name { margin: 4px 0 0; font-weight: 800; font-size: .9rem; line-height: 1.15; overflow-wrap: anywhere; }
 .tarjeta .price { margin: 2px 0 0; font-size: 1.05rem; font-weight: 800; color: var(--color-acento); }
-.ver-mas { display: block; margin: 8px auto 0; min-height: 44px; padding: 4px 28px; border: 2px ridge var(--uva); background: #fff; color: var(--uva);
+.ver-mas { display: block; margin: 8px auto 0; min-height: 44px; padding: 4px 28px; border: 2px ridge var(--uva); background: var(--color-caja); color: var(--uva);
   font-family: var(--titulo); font-size: 1.3rem; cursor: pointer; }
 .ver-mas[hidden] { display: none; }
 .pie { text-align: center; font-size: .75rem; }
@@ -226,12 +251,57 @@ a { color: var(--color-acento); }
   .dressup-seccion { display: block; }
 }
 /* ---------- Celular: una columna (cabecera, productos, reproductor) ---------- */
+@keyframes floatIn { from { opacity: 0; transform: translateY(90px) scale(.96); filter: blur(8px); } 55% { opacity: 1; } to { opacity: 1; transform: none; filter: blur(0); } }
 @media (max-width: 999px) {
   .banner { grid-template-columns: 1fr; justify-items: center; min-height: 0; }
   .banner .aqui { display: none; }
   .banner .logo { grid-column: 1; }
-  #catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .caen { display: none; }
+  .caen, .tira, .col-centro > .marquee { display: none; }
+
+  /* orden: cabecera, reproductor, botón de productos, juego (o productos), lo demás */
+  .cols { display: flex; flex-direction: column; align-items: stretch; }
+  .col-centro, .col-der { display: contents; }
+  .caja-musica { order: 1; }
+  .btn-productos { order: 2; display: block; min-height: 48px; padding: 4px 16px; border: 2px ridge var(--color-acento); background: #fff; color: var(--color-acento);
+    font-family: var(--titulo); font-size: 1.4rem; cursor: pointer; }
+  .dressup-seccion, #productos { order: 3; }
+  .col-der > :not(.caja-musica) { order: 5; }
+  .pie { order: 9; }
+
+  /* el juego en una columna: modelo, luego las 3 filas de ropa en hilera, luego Mimi Mode */
+  .dressup { grid-template-columns: 1fr; grid-template-areas: "model" "closet" "mimi"; gap: 8px; }
+  .model { grid-area: model; } .closet { grid-area: closet; grid-template-columns: repeat(3, 1fr); gap: 5px; } .mimi-mode { grid-area: mimi; grid-template-columns: 76px 1fr 1fr; align-items: center; }
+  .scene-btns { display: contents; }
+  .fila { padding: 6px 2px 8px; }
+
+  /* productos: sin cajas, flotando y desparramados (diseño de la otra página) */
+  #productos { display: none; background: none; border: 0; box-shadow: none; padding: 0; }
+  body.ver-productos { background: var(--color-fondo); }   /* sin el papel tapiz detrás de los productos */
+  body.ver-productos #productos { display: block; }
+  body.ver-productos .dressup-seccion { display: none; }
+  #productos > .caja-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 0; padding: 34px .5vw 16px; justify-items: center; align-items: start; }
+  .tarjeta { width: 100%; margin-top: calc(var(--dy) * .5); padding: 0; background: none; border: 0; animation: floatIn 2.8s var(--ease) var(--delay) backwards; }
+  .tarjeta:hover { translate: none; }
+  .tarjeta .float { animation: float var(--fd) ease-in-out var(--fdl) infinite alternate; }
+  .tarjeta .tilt { transform: rotate(var(--r)); }
+  .tarjeta .pic { background: none; }
+  .tarjeta .pic.empty { width: 78%; margin: auto; border-radius: 28px; background: rgba(255, 255, 255, .55); }
+  .tarjeta .pic img { filter: drop-shadow(0 14px 14px rgba(123, 42, 142, .22)); }
+  .tarjeta .badge { top: 4px; left: 4px; width: 20px; height: 20px; min-width: 0; padding: 0; border-radius: 50%; background: var(--fucsia); font-size: 11px; box-shadow: 0 0 0 3px rgba(255, 255, 255, .7); }
+  .tarjeta .sold { right: 2%; top: 8%; transform: rotate(8deg); box-shadow: 0 4px 12px rgba(0, 0, 0, .12); }
+  .tarjeta .cap { margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tarjeta .name { margin: 0; font-size: 13px; line-height: 1.1; }
+  .tarjeta .price { margin: 0; font-size: 15px; text-shadow: 0 0 10px rgba(255, 255, 255, .9); }
+  #catalog .tarjeta:nth-child(3n+2) { translate: 0 24px; }
+  #catalog .tarjeta:nth-child(2) { margin-top: calc(var(--dy) * .5 + 55px); translate: 0 30px; scale: 1.18; transform-origin: 50% 0; z-index: 2; }
+  .tarjeta.big { width: 128%; z-index: 1; }
+  #catalog .tarjeta.big:nth-child(3n+1) { justify-self: start; }
+  #catalog .tarjeta.big:nth-child(3n) { justify-self: end; }
+  #catalog .tarjeta.big:nth-child(3n+2) { width: 100%; }
+  #catalog .tarjeta:nth-child(4) { justify-self: end; }
+  #catalog .tarjeta:nth-child(6) { justify-self: start; }
+  #productos { overflow-x: clip; }
 }
 
 /* ---- Personalidad: capas de brillitos, pegatinas inclinadas, la mona que se asoma ---- */
@@ -240,7 +310,7 @@ a { color: var(--color-acento); }
 .mimi-mode .room { rotate: 2.5deg; }
 
 .model { isolation: isolate; }
-.photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(123, 42, 142, .55); }
+.photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(168, 36, 122, .55); }
 .asoma { position: absolute; z-index: 0; top: -34px; right: 12%; width: 73px; height: 76px; rotate: 6deg; pointer-events: none;
   background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated;
   animation: asoma 2.6s ease-in-out infinite alternate; }
@@ -259,6 +329,7 @@ a { color: var(--color-acento); }
 @keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee span, .tarjeta, .pix, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
+  .chip-f { transition: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
   .tab, .paso { transition: none; }
 }

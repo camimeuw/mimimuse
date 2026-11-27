@@ -12,7 +12,7 @@ if (root.classList.contains('splash-on')) {
 
   const open = () => {
     if (root.classList.contains('open')) return;
-    logo.style.transition = 'transform 1.1s cubic-bezier(.34, 1.3, .64, 1)';
+    logo.style.transition = root.classList.contains('calma') ? 'none' : 'transform 1.1s cubic-bezier(.34, 1.3, .64, 1)';
     logo.style.transform = '';
     root.classList.add('open');
   };

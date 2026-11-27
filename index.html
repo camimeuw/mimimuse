@@ -9,10 +9,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap">
   <link rel="stylesheet" href="css/splash.css">
   <link rel="stylesheet" href="css/main.css">
-  <script>
-    // Sin splash si la persona pidió menos movimiento
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('splash-on');
-  </script>
+  <script src="js/intro.js"></script>
 </head>
 <body>
   <div class="splash" aria-hidden="true"></div>
@@ -35,10 +32,10 @@
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
     <symbol id="p-heart" viewBox="0 0 10 9"><polygon points="0,2 2,0 4,0 5,1 6,0 8,0 10,2 10,4 5,9 0,4"/></symbol>
     <symbol id="p-star" viewBox="0 0 10 10"><polygon points="5,0 6,4 10,5 6,6 5,10 4,6 0,5 4,4"/></symbol>
-    <symbol id="p-flower" viewBox="0 0 9 9"><rect x="3" y="0" width="3" height="3"/><rect x="0" y="3" width="3" height="3"/><rect x="6" y="3" width="3" height="3"/><rect x="3" y="6" width="3" height="3"/><rect x="3" y="3" width="3" height="3" fill="#fbf1b4"/></symbol>
+    <symbol id="p-flower" viewBox="0 0 9 9"><rect x="3" y="0" width="3" height="3"/><rect x="0" y="3" width="3" height="3"/><rect x="6" y="3" width="3" height="3"/><rect x="3" y="6" width="3" height="3"/><rect x="3" y="3" width="3" height="3" fill="#fff1fb"/></symbol>
     <symbol id="p-note" viewBox="0 0 8 10"><rect x="5" y="0" width="2" height="7"/><rect x="5" y="0" width="3" height="2"/><rect x="1" y="6" width="5" height="3"/></symbol>
     <symbol id="p-cloud" viewBox="0 0 14 8"><rect x="5" y="0" width="4" height="3"/><rect x="3" y="2" width="8" height="5"/><rect x="1" y="4" width="12" height="3"/></symbol>
-    <symbol id="p-bunny" viewBox="0 0 12 13"><rect x="2" y="0" width="2" height="5"/><rect x="8" y="0" width="2" height="5"/><rect x="1" y="5" width="10" height="7"/><rect x="3" y="8" width="1" height="2" fill="#411d4b"/><rect x="8" y="8" width="1" height="2" fill="#411d4b"/><rect x="5" y="10" width="2" height="1" fill="#411d4b"/></symbol>
+    <symbol id="p-bunny" viewBox="0 0 12 13"><rect x="2" y="0" width="2" height="5"/><rect x="8" y="0" width="2" height="5"/><rect x="1" y="5" width="10" height="7"/><rect x="3" y="8" width="1" height="2" fill="#331040"/><rect x="8" y="8" width="1" height="2" fill="#331040"/><rect x="5" y="10" width="2" height="1" fill="#331040"/></symbol>
   </defs></svg>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol></svg>
 
@@ -79,7 +76,7 @@
           <h2 class="caja-titulo">estado</h2>
           <div class="estado"><svg class="pix bota" style="color:#d63fa6" aria-hidden="true"><use href="#p-bunny" fill="currentColor"/></svg><span>escribí acá cómo estás hoy ♪</span></div>
         </section>
-        <div class="pegatinas" aria-hidden="true"><svg class="pix bota" style="color:#d63fa6" aria-hidden="true"><use href="#p-bunny" fill="currentColor"/></svg><svg class="pix late" style="" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix gira" style="color:#7b2a8e" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix parp" style="color:#d9a8ea" aria-hidden="true"><use href="#p-flower" fill="currentColor"/></svg><svg class="pix bota" style="color:#7b2a8e" aria-hidden="true"><use href="#p-note" fill="currentColor"/></svg><svg class="pix late" style="color:#d9a8ea" aria-hidden="true"><use href="#p-cloud" fill="currentColor"/></svg><svg class="pix parp" style="color:#7b2a8e" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix late" style="" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg></div>
+        <div class="pegatinas" aria-hidden="true"><svg class="pix bota" style="color:#d63fa6" aria-hidden="true"><use href="#p-bunny" fill="currentColor"/></svg><svg class="pix late" style="" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix gira" style="color:#a8247a" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix parp" style="color:#d9a8ea" aria-hidden="true"><use href="#p-flower" fill="currentColor"/></svg><svg class="pix bota" style="color:#a8247a" aria-hidden="true"><use href="#p-note" fill="currentColor"/></svg><svg class="pix late" style="color:#d9a8ea" aria-hidden="true"><use href="#p-cloud" fill="currentColor"/></svg><svg class="pix parp" style="color:#a8247a" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix late" style="" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg></div>
         <section class="caja">
           <h2 class="caja-titulo">novedades</h2>
           <ul class="novedades">
@@ -93,33 +90,36 @@
           <h2 class="caja-titulo">enlazanos</h2>
           <textarea class="codigo" readonly aria-label="Código para enlazar">&lt;a href="#"&gt;tu código de enlace aquí&lt;/a&gt;</textarea>
         </section>
-        <div class="pegatinas" aria-hidden="true"><svg class="pix late" style="color:#d63fa6" aria-hidden="true"><use href="#p-flower" fill="currentColor"/></svg><svg class="pix gira" style="" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix bota" style="color:#d9a8ea" aria-hidden="true"><use href="#p-note" fill="currentColor"/></svg><svg class="pix late" style="color:#7b2a8e" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg></div>
+        <div class="pegatinas" aria-hidden="true"><svg class="pix late" style="color:#d63fa6" aria-hidden="true"><use href="#p-flower" fill="currentColor"/></svg><svg class="pix gira" style="" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix bota" style="color:#d9a8ea" aria-hidden="true"><use href="#p-note" fill="currentColor"/></svg><svg class="pix late" style="color:#a8247a" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg></div>
       </aside>
 
       <!-- Columna central -->
       <main class="col-centro">
         <div class="caja marquee" aria-hidden="true"><span>✧ bienvenida a Mimi Muse ✧ escribí acá tu mensaje de bienvenida ✧ novedades y looks nuevos ✧</span></div>
 
+        <!-- solo celular: abre y cierra la vista de productos -->
+        <button class="btn-productos" id="btn-productos" type="button" aria-expanded="false" aria-controls="productos">ver todos los productos →</button>
+
         <section class="caja dressup-seccion" id="dressup" aria-label="Dress Up">
           <h2 class="caja-titulo">dress up</h2>
           <div class="dressup" data-scene="0">
             <nav class="closet" aria-label="Closet">
               <h2>Closet</h2>
-              <div class="fila" data-parte="arriba"><span class="parte">arriba</span><span class="prenda" aria-live="polite"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="arriba anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="arriba siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
-              <div class="fila" data-parte="abajo"><span class="parte">abajo</span><span class="prenda" aria-live="polite"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="abajo anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="abajo siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
-              <div class="fila" data-parte="zapatos"><span class="parte">zapatos</span><span class="prenda" aria-live="polite"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="zapatos anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="zapatos siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
+              <div class="fila" data-parte="arriba"><span class="parte">arriba</span><span class="prenda"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="arriba anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="arriba siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
+              <div class="fila" data-parte="abajo"><span class="parte">abajo</span><span class="prenda"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="abajo anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="abajo siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
+              <div class="fila" data-parte="zapatos"><span class="parte">zapatos</span><span class="prenda"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="zapatos anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="zapatos siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
             </nav>
 
             <div class="model">
               <span class="asoma" aria-hidden="true"></span>
               <div class="photo" id="escenario">
-                <div class="doll" id="doll"></div>
-                <p class="pista">elegí con las flechas o probá random · arrastrá a los personajes</p>
+                <div class="doll" id="doll" role="group" aria-label="Modelo con su ropa"></div>
+                <p class="pista">elegí con las flechas, random, o arrastrá la ropa</p>
               </div>
+              <p class="sr-only" id="anuncio" aria-live="polite"></p>
               <div class="acciones">
                 <button class="mini" type="button" id="random">random</button>
-                <button class="mini" type="button" id="add-personaje">+ personaje</button>
-                <button class="mini" type="button" id="limpiar">limpiar</button>
+                <button class="mini" type="button" id="acomodar">acomodar</button>
               </div>
             </div>
 
@@ -139,6 +139,12 @@
 
         <section class="caja" id="productos" aria-label="Todos los productos">
           <h2 class="caja-titulo">todos los productos</h2>
+          <div class="filtros" id="filtros" hidden>
+            <label class="sr-only" for="buscar-tienda">Buscar productos</label>
+            <input id="buscar-tienda" type="search" placeholder="buscar un producto…" autocomplete="off">
+            <div class="chips-f" id="chips-cat" role="group" aria-label="Categorías"></div>
+            <div class="chips-f" id="chips-sub" role="group" aria-label="Subcategorías" hidden></div>
+          </div>
           <ul id="catalog"></ul>
           <button class="ver-mas" id="ver-mas" type="button" hidden>ver más</button>
         </section>
@@ -147,7 +153,7 @@
 
       <!-- Columna derecha -->
       <aside class="col-der">
-        <section class="caja" aria-label="Reproductor de música">
+        <section class="caja caja-musica" aria-label="Reproductor de música">
           <h2 class="caja-titulo">música</h2>
           <div class="player">
             <div class="mp3-caja" id="caja">
@@ -189,16 +195,32 @@
           <h2 class="caja-titulo">visitas</h2>
           <div class="visitas" id="visitas" aria-live="off"></div>
         </section>
-        <div class="pegatinas" aria-hidden="true"><svg class="pix gira" style="" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix late" style="color:#7b2a8e" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix bota" style="color:#d9a8ea" aria-hidden="true"><use href="#p-bunny" fill="currentColor"/></svg><svg class="pix parp" style="" aria-hidden="true"><use href="#p-note" fill="currentColor"/></svg><svg class="pix late" style="color:#d63fa6" aria-hidden="true"><use href="#p-flower" fill="currentColor"/></svg><svg class="pix bota" style="color:#f6c9ee" aria-hidden="true"><use href="#p-cloud" fill="currentColor"/></svg><svg class="pix parp" style="color:#7b2a8e" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix bota" style="" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg></div>
+        <div class="pegatinas" aria-hidden="true"><svg class="pix gira" style="" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix late" style="color:#a8247a" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix bota" style="color:#d9a8ea" aria-hidden="true"><use href="#p-bunny" fill="currentColor"/></svg><svg class="pix parp" style="" aria-hidden="true"><use href="#p-note" fill="currentColor"/></svg><svg class="pix late" style="color:#d63fa6" aria-hidden="true"><use href="#p-flower" fill="currentColor"/></svg><svg class="pix bota" style="color:#f6c9ee" aria-hidden="true"><use href="#p-cloud" fill="currentColor"/></svg><svg class="pix parp" style="color:#a8247a" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg><svg class="pix bota" style="" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg></div>
         <section class="caja" aria-label="Amigas">
           <h2 class="caja-titulo">amigas</h2>
           <div class="amigas" aria-hidden="true"><span class="b88">88×31</span><span class="b88">88×31</span><span class="b88">88×31</span><span class="b88">88×31</span></div>
         </section>
         <div class="aqui" style="min-height:150px">tu gif<br>o sticker aquí</div>
-        <div class="pegatinas" aria-hidden="true"><svg class="pix bota" style="color:#d63fa6" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix late" style="color:#d9a8ea" aria-hidden="true"><use href="#p-cloud" fill="currentColor"/></svg><svg class="pix parp" style="color:#7b2a8e" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg></div>
+        <div class="pegatinas" aria-hidden="true"><svg class="pix bota" style="color:#d63fa6" aria-hidden="true"><use href="#p-heart" fill="currentColor"/></svg><svg class="pix late" style="color:#d9a8ea" aria-hidden="true"><use href="#p-cloud" fill="currentColor"/></svg><svg class="pix parp" style="color:#a8247a" aria-hidden="true"><use href="#p-star" fill="currentColor"/></svg></div>
       </aside>
     </div>
   </div>
+
+  <dialog id="popup" aria-labelledby="pp-nombre">
+    <div class="pp">
+      <button type="button" class="pp-x" id="pp-cerrar" aria-label="Cerrar">×</button>
+      <div class="pp-galeria"><div class="pp-foto" id="pp-foto"></div><div class="pp-minis" id="pp-minis"></div></div>
+      <div class="pp-info">
+        <p class="pp-ruta" id="pp-ruta"></p>
+        <h2 id="pp-nombre"></h2>
+        <p class="pp-precio" id="pp-precio"></p>
+        <p class="pp-agotado" id="pp-agotado" hidden>Agotado</p>
+        <p class="pp-desc" id="pp-desc"></p>
+        <h3>Talles</h3><ul id="pp-talles" class="pp-fichas"></ul>
+        <h3>Colores</h3><ul id="pp-colores" class="pp-fichas"></ul>
+      </div>
+    </div>
+  </dialog>
 
   <script src="data/config.js"></script>
   <script src="data/canciones.js"></script>

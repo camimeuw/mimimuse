@@ -31,9 +31,11 @@
         <h1 class="logo">
           <img src="assets/logo.png" alt="Mimi Muse" width="866" height="620">
           <svg class="wink" viewBox="0 0 100 100" aria-hidden="true">
-            <ellipse cx="50" cy="50" rx="46" ry="46" fill="#fbecf3"/>
-            <path d="M14 62 Q50 20 86 62" fill="none" stroke="#411d4b" stroke-width="10" stroke-linecap="round"/>
-          </svg>
+        <defs><radialGradient id="piel"><stop offset=".82" stop-color="#fbecf3"/><stop offset="1" stop-color="#fbecf3" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="50" cy="50" r="50" fill="url(#piel)"/>
+        <path d="M16 58 Q40 30 84 52" fill="none" stroke="#411d4b" stroke-width="7" stroke-linecap="round"/>
+        <path d="M78 47 L90 40" fill="none" stroke="#411d4b" stroke-width="6" stroke-linecap="round"/>
+      </svg>
         </h1>
         <button class="cart" type="button" aria-label="Carrito, 0 productos">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg>

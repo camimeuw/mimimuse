@@ -17,7 +17,7 @@ body { margin: 0; min-height: 100svh; background: var(--crema); }
 
 /* Guiño: ojo derecho de la mona (posición en % del logo 866×620) */
 .wink {
-  position: absolute; left: 55%; top: 61%; width: 11%;
+  position: absolute; left: 54%; top: 59.8%; width: 10.5%;
   transform: translate(-50%, -50%); opacity: 0;
 }
 

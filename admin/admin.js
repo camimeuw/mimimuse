@@ -291,24 +291,24 @@ function fotos() {
 // si el navegador no lo permite, se hace en la propia página (procesarFoto viene de fotos.js)
 let worker = null, enWorker = typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined', seq = 0;
 const esperando = new Map();
-function tareaWorker(archivo, cortar, blanco) {
+function tareaWorker(archivo, cortar) {
   return new Promise((ok, mal) => {
     if (!worker) {
       worker = new Worker('foto-worker.js');
       worker.onmessage = ({ data }) => { const t = esperando.get(data.id); esperando.delete(data.id); if (t) data.error ? t.mal(new Error(data.error)) : t.ok(data); };
       worker.onerror = () => { enWorker = false; worker = null; for (const t of esperando.values()) t.mal(Object.assign(new Error('worker'), { reintentar: true })); esperando.clear(); };
     }
-    const id = ++seq; esperando.set(id, { ok, mal }); worker.postMessage({ id, archivo, cortar, blanco });
+    const id = ++seq; esperando.set(id, { ok, mal }); worker.postMessage({ id, archivo, cortar });
   });
 }
-async function procesar(archivo, cortar, blanco) {
-  if (enWorker) { try { return await tareaWorker(archivo, cortar, blanco); } catch (e) { if (!e.reintentar) throw e; } }
-  return window.procesarFoto(archivo, cortar, blanco);
+async function procesar(archivo, cortar) {
+  if (enWorker) { try { return await tareaWorker(archivo, cortar); } catch (e) { if (!e.reintentar) throw e; } }
+  return window.procesarFoto(archivo, cortar);
 }
 const aBase64 = (blob) => new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = () => mal(new Error('no se pudo leer la foto')); r.readAsDataURL(blob); });
 // Procesa una foto y la sube (la foto y su miniatura son dos documentos de Firebase). Devuelve { url, mini, aviso } con los números de foto
-async function subirFoto(archivo, cortar, blanco) {
-  const { foto, mini, aviso } = await procesar(archivo, cortar, blanco);
+async function subirFoto(archivo, cortar) {
+  const { foto, mini, aviso } = await procesar(archivo, cortar);
   try {
     const url = await Datos.subir(await aBase64(foto), foto.type), urlMini = await Datos.subir(await aBase64(mini), mini.type);
     return { url, mini: urlMini, aviso };
@@ -326,7 +326,7 @@ $('#subir').addEventListener('change', async (e) => {
       if (edit.imgs.length >= 8) { aviso('Máximo 8 fotos por producto.', true); break; }
       try {
         aviso(`Procesando ${f.name}…`);
-        const r = await subirFoto(f, $('#p-cut').checked, $('#p-blanco').checked);
+        const r = await subirFoto(f, $('#p-cut').checked);
         nuevasFotos.add(r.url); nuevasFotos.add(r.mini); edit.imgs.push(r.url); edit.thumbs.push(r.mini); fotos(); aviso(r.aviso ? `${f.name}: ${r.aviso}` : 'Foto subida', !!r.aviso);
       }
       catch (err) { aviso(`${f.name}: ${err.message}`, true); }
@@ -437,7 +437,7 @@ function armarCambios(subidas) {
   return poner(tocados);
 }
 $('#i-importar').addEventListener('click', async () => {
-  const cola = [...nombresFotos()].filter((n) => archivosFotos.has(n)), subidas = new Map(), fallos = [], cortar = $('#i-cut').checked, blanco = $('#i-blanco').checked;
+  const cola = [...nombresFotos()].filter((n) => archivosFotos.has(n)), subidas = new Map(), fallos = [], cortar = $('#i-cut').checked;
   const n = plan.filas.length;
   importando = true; cancelaImport = false;
   for (const id of ['#i-paso1', '#i-resumen', '#i-importar']) $(id).hidden = true;
@@ -450,7 +450,7 @@ $('#i-importar').addEventListener('click', async () => {
     while (!cancelaImport && cola.length) {
       const nombre = cola.shift();
       try {
-        const r = await subirFoto(archivosFotos.get(nombre), cortar, blanco);
+        const r = await subirFoto(archivosFotos.get(nombre), cortar);
         subidas.set(nombre, r); seguidos = 0;
         if (r.aviso) fallos.push(`${nombre}: ${r.aviso}`);
       } catch (err) {

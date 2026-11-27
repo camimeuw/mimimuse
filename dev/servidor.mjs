@@ -23,6 +23,15 @@ async function cabeceras() {
   });
 }
 
+// Redirecciones de netlify.toml (solo las simples: from, to, status; se usan si no existe un archivo en esa dirección, como en Netlify)
+async function redirecciones() {
+  const toml = await fs.readFile(path.join(raiz, 'netlify.toml'), 'utf8').catch(() => '');
+  return toml.split('[[redirects]]').slice(1).map((b) => {
+    const g = (k) => new RegExp(`^\\s*${k}\\s*=\\s*"?([^"\\n]+)"?`, 'm').exec(b)?.[1].trim();
+    return { re: new RegExp('^' + g('from').replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '(.*)') + '$'), to: g('to'), status: Number(g('status') || 301) };
+  });
+}
+
 // Carpeta que se publica (publish en netlify.toml): "." = todo el repo; "admin" = solo el panel
 async function publicada() {
   const toml = await fs.readFile(path.join(raiz, 'netlify.toml'), 'utf8').catch(() => '');
@@ -43,6 +52,9 @@ export function crear() {
       let p = path.join(base, decodeURIComponent(url.pathname));
       if (!p.startsWith(base)) { res.writeHead(403); return res.end(); }
       if ((await fs.stat(p).catch(() => null))?.isDirectory()) p = path.join(p, 'index.html');
+      if (!(await fs.stat(p).catch(() => null))) {
+        for (const r of await redirecciones()) { const m = r.re.exec(url.pathname); if (m) { res.writeHead(r.status, { location: r.to.replace(':splat', m[1] ?? '') }); return res.end(); } }
+      }
       const data = await fs.readFile(p);
       const extra = {}; for (const [re, valores] of await cabeceras()) if (re.test(url.pathname)) for (const [k, v] of valores) extra[k] = v;
       res.writeHead(200, { 'content-type': TIPOS[path.extname(p)] || 'application/octet-stream', ...extra }); res.end(data);

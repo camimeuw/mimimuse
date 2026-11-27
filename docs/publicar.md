@@ -4,7 +4,8 @@ La tienda (`/`) y el panel (`/admin/`) salen del mismo repositorio. Los datos es
 
 ## Configuración del proyecto
 - **Repositorio:** `camimeuw/mimimuse`.
-- **Rama de producción:** `main` (¡no `solo-panel` ni otra!). Si se publica otra rama, se ve una versión vieja del panel que no funciona.
+- **Rama de producción:** `main` (¡no `solo-panel` ni otra!). Si se publica otra rama, se ve una versión vieja del panel que no funciona. Se cambia en Cloudflare → el proyecto → **Settings → Build → Branch control → Production branch**. Ojo: cambiarla no vuelve a publicar solo; hace falta que llegue un cambio nuevo a `main` (o «Retry deployment» sobre un deploy de `main`).
+- Las demás ramas se publican como vistas previas: `main.TU-PROYECTO.pages.dev` y una dirección con números por cada cambio. Si la rama de producción no es `main`, ahí aparece lo nuevo pero el link corto sigue con lo viejo.
 - **Framework preset:** None.
 - **Comando de compilación** (en una sola línea):
   ```

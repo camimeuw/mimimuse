@@ -11,7 +11,6 @@
   width: calc(73px * var(--s)); height: calc(76px * var(--s));
   background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat;
   image-rendering: pixelated;
-  animation: guino 4s infinite step-end;
 }
 .titulo { position: absolute; left: 0; top: calc(65px * var(--s)); width: calc(130px * var(--s)); height: auto; image-rendering: pixelated; }
 
@@ -35,7 +34,7 @@
 /* Solo la mona: el título aparece al abrir, de izquierda a derecha en saltos de pixel */
 .splash-on .titulo { clip-path: inset(0 100% 0 0); }
 .splash-on .mona { animation: pop .6s steps(6) both, guino 2.1s step-end 1; } /* el guiño cae en ~1,9 s */
-.splash-on.open .mona { animation: guino 4s infinite step-end; }
+.splash-on.open .mona { animation: none; } /* el guiño para cuando aparece el título */
 .splash-on.open .splash { opacity: 0; pointer-events: none; }
 .splash-on.open .titulo { clip-path: inset(0); transition: clip-path .9s steps(16) 1s; }
 

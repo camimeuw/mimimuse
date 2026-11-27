@@ -30,8 +30,7 @@ button { font: inherit; }
   border-radius: 11px; background: var(--uva); color: #fff; font-size: .85rem; font-weight: 800; line-height: 22px; text-align: center; }
 
 /* Reproductor mp3 (diseño tomado de yumeproyect.pages.dev, con la paleta de Mimi Muse) */
-.player { display: flex; align-items: center; justify-content: center; gap: 2px; padding: 6px;
-  background: var(--rosa); border: 2px solid var(--fucsia); outline: 1px solid var(--fucsia); outline-offset: 2px; }
+.player { display: flex; align-items: center; justify-content: center; gap: 2px; }
 .mp3-star { width: 44px; height: 44px; flex-shrink: 0; animation: float 3s ease-in-out infinite alternate; }
 .mp3-star:last-child { animation-delay: .6s; }
 .mp3-caja { flex: 1; max-width: 300px; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 6px 8px;
@@ -73,6 +72,15 @@ button { font: inherit; }
 .mp3-play { min-width: 52px; background: var(--uva); color: #fff; border-color: #c58ad6 #3d1247 #3d1247 #c58ad6; }
 .mp3-play .i-pause, .mp3-play[aria-pressed="true"] .i-play { display: none; }
 .mp3-play[aria-pressed="true"] .i-pause { display: block; }
+
+/* Productos: sin header, controles en las esquinas (play, volver y carrito) */
+.esquina { position: fixed; top: 8px; z-index: 50; display: flex; align-items: center; gap: 8px; }
+.esquina-izq { left: 8px; }
+.esquina-der { right: 8px; }
+.esquina .cart { position: relative; }
+.esquina .mp3-play { width: 44px; height: 44px; min-width: 0; padding: 0; border-radius: 50%; }
+.esquina .mp3-play svg { width: 20px; height: 20px; }
+.esquina .tab { min-height: 44px; }
 
 /* Botones de navegación */
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -130,7 +138,7 @@ button { font: inherit; }
 }
 
 /* Productos flotando: sin cajas, desparramados (estructura de Bunny Club, estilo Mimi Muse) */
-#catalog { list-style: none; margin: 0 auto; padding: 40px 0 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+#catalog { list-style: none; margin: 0 auto; padding: 64px 0 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   justify-items: center; align-items: start; gap: 28px 6px; }
 .item { position: relative; width: min(var(--w), 100%); margin-top: var(--dy); animation: floatIn 2.8s var(--ease) var(--delay) backwards; }
 .item .float { animation: float var(--fd) ease-in-out var(--fdl) infinite alternate; }
@@ -169,7 +177,7 @@ button { font: inherit; }
   .solo .main:has(#catalog) > :not(#catalog):not(.ver-mas) { max-width: 520px; margin-inline: auto; width: 100%; }
 }
 @media (max-width: 640px) {
-  #catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 0; padding: 34px .5vw 16px; }
+  #catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 0; padding: 64px .5vw 16px; }
   .item { width: 100%; margin-top: calc(var(--dy) * .5); }
   #catalog .item:nth-child(3n+2) { translate: 0 24px; }
   #catalog .item:nth-child(2) { margin-top: calc(var(--dy) * .5 + 55px); translate: 0 30px; scale: 1.18; transform-origin: 50% 0; z-index: 2; }

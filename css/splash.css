@@ -51,6 +51,7 @@
 .splash-on.open .ropa-intro img { animation: none; translate: calc(-50% + var(--sale)) -50%; transform: rotate(var(--giro)); }   /* salen derecho hacia su costado, sin desvanecerse */
 .splash-on.open .ropa-intro { visibility: hidden; transition: visibility 0s 1s; }
 @keyframes aparece { from { opacity: 0; scale: .5; } }
+@media (min-width: 1000px) { .ropa-intro img { width: clamp(80px, calc(var(--w) * 1.1), 140px); } }   /* en compu, la ropa más chica */
 
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
 

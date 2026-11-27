@@ -9,6 +9,7 @@
   --color-borde: #d843a8;
   --color-texto: #331040;
   --color-acento: #a8247a;
+  --color-menu: #ff9aeb;                                /* fondo de las barras de título */
   --rosa: #fcc3f3; --lila: #dca2e4;                    /* rellenos de apoyo */
   --crema: var(--color-fondo); --fucsia: var(--color-borde); --uva: var(--color-acento); --tinta: var(--color-texto);
   --titulo: "Pixelify Sans", "Nunito", sans-serif;
@@ -36,7 +37,7 @@ a { color: var(--color-acento); }
 
 /* Cajas: borde ridge (relieve) con marco interior, como las de la referencia */
 .caja { background: var(--color-caja); border: 3px ridge var(--color-borde); padding: 6px; min-width: 0; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px var(--color-acento); }
-.caja-titulo { margin: -3px -3px 6px; padding: 2px 6px; background: var(--color-acento); color: #fff; font-family: "Pixelpoiiz", var(--titulo); font-size: 20px; font-weight: 400;   /* 20 px = 2× el tamaño nítido de la fuente */
+.caja-titulo { margin: -3px -3px 6px; padding: 2px 6px; background: var(--color-menu); color: var(--color-texto); font-family: "Pixelpoiiz", var(--titulo); font-size: 20px; font-weight: 400;   /* 20 px = 2× el tamaño nítido de la fuente */
   display: flex; align-items: center; gap: 6px; border-bottom: 2px ridge var(--color-borde); text-transform: lowercase; }
 .caja-titulo::before, .caja-titulo::after { content: ""; width: 10px; height: 10px; background: var(--rosa);
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
@@ -63,7 +64,7 @@ a { color: var(--color-acento); }
 .b88:nth-child(5n+1) { background: repeating-linear-gradient(45deg, var(--rosa) 0 4px, var(--color-caja) 4px 8px); }
 .b88:nth-child(5n+2) { background: linear-gradient(var(--lila), var(--color-caja)); }
 .b88:nth-child(5n+3) { background: radial-gradient(var(--rosa) 1.5px, transparent 2px) 0 0 / 6px 6px, var(--color-caja); }
-.b88:nth-child(5n+4) { background: var(--color-acento); color: #fff; }
+.b88:nth-child(5n+4) { background: var(--color-menu); color: var(--color-texto); }
 .b88:nth-child(5n) { background: repeating-linear-gradient(90deg, var(--lila) 0 4px, var(--rosa) 4px 8px); }
 .marquee { overflow: hidden; white-space: nowrap; padding: 2px 0; font-size: .9rem; background: var(--color-caja); }
 .marquee span { display: inline-block; padding-left: 100%; animation: marquee 24s linear infinite; }
@@ -145,14 +146,14 @@ a { color: var(--color-acento); }
 .mp3-btn:hover { opacity: .85; }
 .mp3-btn:active { border-color: var(--uva) #fff #fff var(--uva); }
 .mp3-btn:disabled, .vol:disabled, .seek:disabled, .mute:disabled { opacity: .45; cursor: default; }
-.mp3-play { min-width: 56px; background: var(--uva); color: #fff; border-color: #f3a4d8 #6e1450 #6e1450 #f3a4d8; }
+.mp3-play { min-width: 56px; background: var(--color-acento); color: #fff; border-color: #f3a4d8 #6e1450 #6e1450 #f3a4d8; }
 .mp3-play .i-pause, .mp3-play[aria-pressed="true"] .i-play { display: none; }
 .mp3-play[aria-pressed="true"] .i-pause { display: block; }
 
 
 /* ---------- Dress Up (mismo diseño de antes, en su versión angosta: closet | modelo | Mimi Mode) ---------- */
 .dressup {
-  --escena: linear-gradient(var(--rosa), var(--lila));
+  --escena: #9e85ac url("../assets/fondo-modelo.gif");   /* escena 0: brillitos lila (gif de 60×30 que se repite) */
   display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 22px;
 }
 /* Título del juego: pixel nítido solo a múltiplos de 10 px (la fuente está dibujada a 10 px) */

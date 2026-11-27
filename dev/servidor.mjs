@@ -23,6 +23,12 @@ async function cabeceras() {
   });
 }
 
+// Carpeta que se publica (publish en netlify.toml): "." = todo el repo; "admin" = solo el panel
+async function publicada() {
+  const toml = await fs.readFile(path.join(raiz, 'netlify.toml'), 'utf8').catch(() => '');
+  return path.resolve(raiz, /^\s*publish\s*=\s*"([^"]+)"/m.exec(toml)?.[1] ?? '.');
+}
+
 export function crear() {
   return http.createServer(async (req, res) => {
     try {
@@ -33,8 +39,9 @@ export function crear() {
         const r = await (await import(f[1])).default(new Request(url, { method: req.method, headers: req.headers, body: ['GET', 'HEAD'].includes(req.method) ? undefined : Buffer.concat(chunks) }));
         res.writeHead(r.status, Object.fromEntries(r.headers)); return res.end(Buffer.from(await r.arrayBuffer()));
       }
-      let p = path.join(raiz, decodeURIComponent(url.pathname));
-      if (!p.startsWith(raiz)) { res.writeHead(403); return res.end(); }
+      const base = await publicada();
+      let p = path.join(base, decodeURIComponent(url.pathname));
+      if (!p.startsWith(base)) { res.writeHead(403); return res.end(); }
       if ((await fs.stat(p).catch(() => null))?.isDirectory()) p = path.join(p, 'index.html');
       const data = await fs.readFile(p);
       const extra = {}; for (const [re, valores] of await cabeceras()) if (re.test(url.pathname)) for (const [k, v] of valores) extra[k] = v;

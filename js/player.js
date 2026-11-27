@@ -1,4 +1,4 @@
-const $ = (s) => document.querySelector(s) || document.createElement('div'); // en productos solo hay play
+const $ = (s) => document.querySelector(s);
 const audio = $('#audio'), caja = $('#caja'), seek = $('#seek'), vol = $('#vol');
 const play = $('#play'), prev = $('#prev'), next = $('#next'), mute = $('#mute');
 const KEY = 'mimi-player'; // recuerda canción, minuto y volumen al cambiar de página

@@ -33,19 +33,20 @@
 
 /* Solo la mona: el título aparece al abrir, de izquierda a derecha en saltos de pixel */
 .splash-on .titulo { clip-path: inset(0 100% 0 0); }
-.splash-on .mona { animation: pop .6s steps(6) both, guino 2.1s step-end 1; } /* el guiño cae en ~1,9 s */
+.splash-on .mona { animation: pop .6s steps(6) both, guino 1.2s step-end 1; } /* el guiño cae en ~1,1 s */
 .splash-on.open .mona { animation: none; } /* el guiño para cuando aparece el título */
 .splash-on.open .splash { opacity: 0; pointer-events: none; }
 .splash-on.open .titulo { clip-path: inset(0); transition: clip-path .9s steps(16) 1s; }
 
 /* Versión calma (reducir animaciones): sin el salto de entrada; el guiño, el viaje al header, el título y la ropa que sale volando se mantienen (pedido de la dueña) */
-.calma .mona { animation: guino 2.1s step-end 1; }
+.calma .mona { animation: guino 1.2s step-end 1; }
 .calma.open .mona { animation: none; }
 
 /* Ropa de la intro: aparece de a una y, al abrir, sale disparada hacia su costado girando */
 .ropa-intro { display: none; }
 .splash-on .ropa-intro { display: block; position: fixed; inset: 0; z-index: 15; overflow: hidden; pointer-events: none; }
-.ropa-intro img { position: absolute; width: clamp(80px, calc(var(--w) * 1.7), 220px); height: auto; translate: -50% -50%; rotate: var(--r);   /* vienen de JPG con sombreado: se escalan suaves, no en pixel */
+.ropa-intro img { position: absolute; left: calc(50% + var(--lado) * (95px + 12vw) * var(--lejos));   /* a los costados de la mona, cerca */
+  width: clamp(80px, calc(var(--w) * 1.6), 200px); height: auto; translate: -50% -50%; rotate: var(--r);   /* vienen de JPG con sombreado: se escalan suaves, no en pixel */
   animation: aparece .4s steps(4) var(--d) both; transition: translate .9s cubic-bezier(.55, 0, .8, .4), transform .9s cubic-bezier(.55, 0, .8, .4); }
 .splash-on.open .ropa-intro img { animation: none; translate: calc(-50% + var(--sale)) -50%; transform: rotate(var(--giro)); }   /* salen derecho hacia su costado, sin desvanecerse */
 .splash-on.open .ropa-intro { visibility: hidden; transition: visibility 0s 1s; }

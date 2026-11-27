@@ -1,14 +1,14 @@
 const root = document.documentElement;
-const logo = document.querySelector('.logo');
 
 if (root.classList.contains('splash-on')) {
-  // El logo ya está en su lugar final; lo llevamos al centro y lo hacemos volver (FLIP).
+  const logo = document.querySelector('.logo');
   const r = logo.getBoundingClientRect();
-  const s = Math.min(innerWidth * 0.72, 380) / r.width;
-  const dx = innerWidth / 2 - (r.left + r.width / 2);
-  const dy = innerHeight / 2 - (r.top + r.height / 2) + 0.17 * r.height * s; // centra solo la cabeza
+  const h = document.querySelector('.mona').getBoundingClientRect();
+  // Escala entera para que el pixel art no se deforme; centra la cabeza de la mona.
+  const k = Math.max(1, Math.floor(Math.min(innerWidth * 0.8, 440) / h.width));
+  const hx = h.left + h.width / 2 - r.left, hy = h.top + h.height / 2 - r.top;
   logo.style.transition = 'none';
-  logo.style.transform = `translate(${dx}px, ${dy}px) scale(${s})`;
+  logo.style.transform = `translate(${innerWidth / 2 - r.left - hx * k}px, ${innerHeight / 2 - r.top - hy * k}px) scale(${k})`;
 
   const open = () => {
     if (root.classList.contains('open')) return;
@@ -16,6 +16,6 @@ if (root.classList.contains('splash-on')) {
     logo.style.transform = '';
     root.classList.add('open');
   };
-  setTimeout(open, 2300);
+  setTimeout(open, 2400);
   document.querySelector('.splash').addEventListener('click', open); // tocar para saltar
 }

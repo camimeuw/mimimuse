@@ -1,48 +1,43 @@
-@property --p { syntax: "<percentage>"; inherits: false; initial-value: 118%; }
 
-:root { --crema: #fbf1b4; --rosa: #f6c9ee; --lila: #d9a8ea; }
-* { box-sizing: border-box; }
-body { margin: 0; min-height: 100svh; background: var(--crema); }
-
-/* Logo: en su lugar final (arriba). La máscara deja ver solo la mona hasta que se abre. */
+/* Logo pixel: mona (sprite de 3 cuadros) + título, en píxeles nativos × --s (siempre entero) */
 .logo {
-  position: relative; z-index: 20;
-  width: min(60vw, 240px); margin: 12px auto 0;
-  --p: 118%;
-  clip-path: polygon(0 0, 100% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%, 0 100%, 0 100%);
-  -webkit-mask-image: linear-gradient(#000 var(--p), transparent calc(var(--p) + 12%));
-          mask-image: linear-gradient(#000 var(--p), transparent calc(var(--p) + 12%));
+  --s: 2;
+  position: relative; z-index: 20; transform-origin: 0 0;
+  width: calc(130px * var(--s)); height: calc(89px * var(--s)); margin: 8px auto 0;
+  font-size: 0; /* el <h1> no aporta alto de línea */
 }
-.logo img { display: block; width: 100%; height: auto; }
+.mona {
+  position: absolute; left: calc(32px * var(--s)); top: 0; z-index: 1;
+  width: calc(73px * var(--s)); height: calc(76px * var(--s));
+  background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat;
+  image-rendering: pixelated;
+}
+.titulo { position: absolute; left: 0; top: calc(65px * var(--s)); width: calc(130px * var(--s)); height: auto; image-rendering: pixelated; }
 
-/* Guiño: ojo derecho de la mona (posición en % del logo 866×620) */
-.wink {
-  position: absolute; left: 55%; top: 61%; width: 11%;
-  transform: translate(-50%, -50%); opacity: 0;
+@keyframes guino {
+  0%, 88% { background-position: 0% 0; }   /* ojo abierto */
+  90%     { background-position: 50% 0; }  /* entrecerrado */
+  92%     { background-position: 100% 0; } /* guiño */
+  97%     { background-position: 50% 0; }
+  99%     { background-position: 0% 0; }
 }
 
 /* Splash */
 .splash { display: none; }
 .splash-on .splash {
   display: block; position: fixed; inset: 0; z-index: 10;
-  background: linear-gradient(var(--rosa), var(--lila));
+  background: linear-gradient(#f6c9ee, #d9a8ea);
   transition: opacity .8s ease;
 }
 .splash-on:not(.open) body { overflow: hidden; }
-/* Solo la mona: se recortan las chispas y el título que rodean la cabeza */
-.splash-on .logo {
-  --p: 61%;
-  clip-path: polygon(8% 0, 82% 0, 82% 50%, 76% 50%, 76% 76%, 28% 76%, 28% 52%, 8% 52%);
-}
-.splash-on .logo img { animation: pop .7s cubic-bezier(.34, 1.56, .64, 1) both; }
-.splash-on .wink { animation: wink .5s ease 1.2s; }
 
+/* Solo la mona: el título aparece al abrir, de izquierda a derecha en saltos de pixel */
+.splash-on .titulo { clip-path: inset(0 100% 0 0); }
+.splash-on .mona { animation: pop .6s steps(6) both, guino 2.1s step-end 1; } /* el guiño cae en ~1,9 s */
+.splash-on.open .mona { animation: none; } /* el guiño para cuando aparece el título */
 .splash-on.open .splash { opacity: 0; pointer-events: none; }
-.splash-on.open .logo {
-  --p: 118%;
-  clip-path: polygon(0 0, 100% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%, 0 100%, 0 100%);
-  transition: --p 1s ease .6s, clip-path 1s ease .6s;
-}
+.splash-on.open .titulo { clip-path: inset(0); transition: clip-path .9s steps(16) 1s; }
 
-@keyframes pop  { from { transform: scale(.5); opacity: 0; } }
-@keyframes wink { 20%, 75% { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) { .mona { animation: none; } }

@@ -110,6 +110,7 @@
         <ul class="fotos" id="fotos"></ul>
         <label class="subir">Agregar fotos <input type="file" id="subir" accept="image/png,image/jpeg,image/webp" multiple></label>
         <label class="cut"><input type="checkbox" id="p-cut" checked> Quitar el fondo blanco automáticamente <small>(solo si la foto no es PNG transparente)</small></label>
+        <label class="cut"><input type="checkbox" id="p-blanco"> Guardar en PNG con fondo blanco <small>(sin transparencia)</small></label>
       </fieldset>
 
       <div class="checks">
@@ -171,6 +172,7 @@
         <label class="subir">Elegir las fotos <small>(todas juntas; se buscan por el nombre del archivo que pusiste en la columna «fotos»)</small> <input type="file" id="i-fotos" accept="image/png,image/jpeg,image/webp" multiple></label>
         <p id="i-faltan" class="nota"></p>
         <label class="cut"><input type="checkbox" id="i-cut" checked> Quitar el fondo blanco automáticamente <small>(solo si la foto no es PNG transparente)</small></label>
+        <label class="cut"><input type="checkbox" id="i-blanco"> Guardar en PNG con fondo blanco <small>(sin transparencia)</small></label>
       </div>
     </div>
     <div id="i-progreso" hidden><progress id="i-barra" max="1" value="0"></progress><p id="i-estado" class="nota" aria-live="polite"></p><ul id="i-fallos" class="errores"></ul></div>

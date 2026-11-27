@@ -5,7 +5,7 @@
   const enWorker = typeof document === 'undefined';
   const lienzo = (w, h) => (enWorker ? new OffscreenCanvas(w, h) : Object.assign(document.createElement('canvas'), { width: w, height: h }));
   const ctx = (c) => c.getContext('2d', { willReadFrequently: true });
-  const aBlob = (c, calidad) => (enWorker ? c.convertToBlob({ type: 'image/webp', quality: calidad }) : new Promise((ok) => c.toBlob(ok, 'image/webp', calidad)));
+  const aBlob = (c, calidad, tipo) => (enWorker ? c.convertToBlob({ type: tipo, quality: calidad }) : new Promise((ok) => c.toBlob(ok, tipo, calidad)));
 
   function achicado(src, max) {
     const s = Math.min(1, max / Math.max(src.width, src.height)), w = Math.max(1, Math.round(src.width * s)), h = Math.max(1, Math.round(src.height * s));
@@ -89,8 +89,14 @@
     return o;
   }
 
-  // Devuelve { foto, mini, aviso }: la foto (máx. 1100 px) y la miniatura (máx. 360 px) en WEBP, que mantiene la transparencia
-  async function procesarFoto(archivo, cortar) {
+  function conFondoBlanco(c) {
+    const o = lienzo(c.width, c.height), x = ctx(o);
+    x.fillStyle = '#fff'; x.fillRect(0, 0, o.width, o.height); x.drawImage(c, 0, 0); return o;
+  }
+
+  // Devuelve { foto, mini, aviso }: la foto (máx. 1100 px) y la miniatura (máx. 360 px) en WEBP, que mantiene la transparencia,
+  // o en PNG sobre fondo blanco (sin transparencia) si `blanco` es true
+  async function procesarFoto(archivo, cortar, blanco) {
     const bmp = await createImageBitmap(archivo).catch(() => { throw new Error('no es una imagen válida'); });
     const original = achicado(bmp, 1100);
     let c = original, aviso = '';
@@ -99,14 +105,16 @@
       c = quitarFondo(copia);
       if (opacoPct(c) < 0.1) { c = original; aviso = 'no se pudo separar la prenda del fondo, se subió sin quitarlo'; }   // la prenda "desapareció": mejor dejarla como estaba
     }
+    if (blanco) c = conFondoBlanco(c);
+    const tipo = blanco ? 'image/png' : 'image/webp';
     let blob, max = 1100;
     for (let t = 0; t < 4; t++) {                                  // si pesa mucho, se achica más
-      blob = await aBlob(t === 0 ? c : achicado(c, max), 0.88);
+      blob = await aBlob(t === 0 ? c : achicado(c, max), 0.88, tipo);
       if (blob.size < 550 * 1024) break;            // Firebase guarda hasta 1 MB por documento (la foto va en base64: pesa 1/3 más)
       max = Math.round(max * 0.8);
     }
     if (blob.size > 700 * 1024) throw new Error('la foto es demasiado pesada');
-    return { foto: blob, mini: await aBlob(achicado(c, 360), 0.8), aviso };
+    return { foto: blob, mini: await aBlob(achicado(c, 360), 0.8, tipo), aviso };
   }
   g.procesarFoto = procesarFoto;
 })(typeof self !== 'undefined' ? self : globalThis);

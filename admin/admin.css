@@ -72,7 +72,7 @@ body.guardando { cursor: progress; }
 .versiones small { display: block; color: var(--gris); font-weight: 600; }
 .aviso.conaccion { pointer-events: auto; border-radius: 14px; } .aviso button { min-height: 36px; margin-left: 8px; padding: 2px 12px; background: #fff; color: var(--acento); border-color: #fff; }
 #f-masiva { display: grid; gap: 14px; }
-.mas { display: block; margin: 12px auto; }
+.mas { display: block; margin: 12px auto; } .mas[hidden] { display: none; }
 #i-paso1 .botones { margin-bottom: 12px; } #d-import > * + * { margin-top: 12px; }
 progress { width: 100%; height: 18px; accent-color: var(--acento); }
 .errores { margin: 0; padding-left: 20px; font-size: .9rem; color: var(--mal); max-height: 160px; overflow: auto; } .errores:empty { display: none; }

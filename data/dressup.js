@@ -7,15 +7,9 @@
 // Para usar tus prendas: poné los PNG en assets/dressup/ y cambiá solo el `src`:
 //   { nombre: "remera rosa", src: "assets/dressup/arriba-1.png" }
 // Mientras tanto se ven placeholders (formas de color) del mismo tamaño.
+// Cada parte (arriba, abajo, zapatos) tiene 3 prendas. La modelo queda fija; las prendas se arrastran.
 // ============================================================
 const MODELO = "assets/dressup/modelo.png";
-
-// Personajes que se agregan con "+ personaje" y se arrastran. Sin `src` se ve un marcador.
-const PERSONAJES = [
-  { nombre: "Mona", clase: "mona" },        // usa el sprite de la mona
-  { nombre: "Personaje 2" },
-  { nombre: "Personaje 3" },
-];
 
 const ROPA = (() => {
   const W = 730, H = 1790, TRAZO = 'stroke="#411d4b" stroke-width="5" stroke-linejoin="round"';

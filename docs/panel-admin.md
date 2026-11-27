@@ -17,6 +17,10 @@ Las fotos se achican solas en el navegador (máx. 1100 px, WEBP con transparenci
 - **Todo junto en Netlify (rama `main`):** la tienda en `/` y el panel en `/admin/`, mismo sitio. Es lo más simple si la tienda también va a Netlify.
 - **Tienda en GitHub Pages y solo el panel en Netlify (rama `solo-panel`):** en Netlify se elige la rama `solo-panel`; publica solo la carpeta `admin/` (`publish = "admin"`) más las funciones, así que el panel queda en la raíz del sitio de Netlify (`/admin/` redirige a `/`). La tienda de GitHub Pages lee los productos y las fotos de Netlify: la dirección está en `data/config.js` (`API`, por defecto `https://mimimuse-panel.netlify.app`, así que el sitio de Netlify tiene que llamarse **mimimuse-panel**; si se llama distinto, cambiar ese nombre). `/api/productos` lleva `access-control-allow-origin: *` (son datos públicos de solo lectura); las fotos se cargan con `<img>`, que no lo necesita. `solo-panel` es `main` más un cambio en `netlify.toml`: al agregar cosas al panel en `main`, hay que traerlas con `git merge main`.
 
+## Si el proyecto de Netlify nunca desplegó (celular)
+- Netlify despliega solo cuando llega un cambio nuevo a la **rama de producción** del proyecto (*Project configuration → Build & deploy → Continuous deployment → Production branch*; para este panel tiene que ser `solo-panel`). Un proyecto recién creado puede quedar en «Project has not yet been deployed» hasta el primer cambio o hasta *Deploys → Trigger deploy*.
+- Las variables `ADMIN_PASSWORD` y `ADMIN_SECRET` se cargan en *Project configuration → Environment variables* de **ese** proyecto (no se heredan de otro proyecto).
+
 ## Dejarlo andando en Netlify (una sola vez)
 1. En Netlify: **Site configuration → Environment variables** y crear `ADMIN_PASSWORD` con la clave de la clienta (larga: 12 caracteres o más). Opcional: `ADMIN_SECRET` con cualquier texto largo al azar (firma las sesiones; si no está, usa la clave).
 2. Volver a desplegar el sitio. Netlify instala `@netlify/blobs` (ahí se guardan productos y fotos, sin cuentas extra) y publica las funciones de `netlify/functions/`.

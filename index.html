@@ -105,25 +105,21 @@
           <div class="dressup" data-scene="0">
             <nav class="closet" aria-label="Closet">
               <h2>Closet</h2>
-              <button class="slot" type="button" data-prenda="TOP">TOP</button><button class="slot" type="button" data-prenda="BOTTOM">BOTTOM</button><button class="slot" type="button" data-prenda="SHOES">SHOES</button><button class="slot" type="button" data-prenda="ACC">ACC</button>
+              <div class="fila" data-parte="arriba"><span class="parte">arriba</span><span class="prenda" aria-live="polite"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="arriba anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="arriba siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
+              <div class="fila" data-parte="abajo"><span class="parte">abajo</span><span class="prenda" aria-live="polite"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="abajo anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="abajo siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
+              <div class="fila" data-parte="zapatos"><span class="parte">zapatos</span><span class="prenda" aria-live="polite"></span><div class="pasos"><button class="paso" type="button" data-paso="-1" aria-label="zapatos anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button><button class="paso" type="button" data-paso="1" aria-label="zapatos siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button></div></div>
             </nav>
 
             <div class="model">
               <span class="asoma" aria-hidden="true"></span>
               <div class="photo" id="escenario">
-                <p class="look-name" aria-live="polite">Look 1</p>
-                <p class="pista">tocá el closet o “+ personaje” y arrastrá para mover</p>
-              </div>
-              <button class="arrow prev" type="button" data-look="-1" aria-label="Look anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button>
-              <button class="arrow next" type="button" data-look="1" aria-label="Look siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button>
-              <div class="dots">
-                <button type="button" data-dot="0" aria-label="Look 1" aria-current="true"></button>
-                <button type="button" data-dot="1" aria-label="Look 2"></button>
-                <button type="button" data-dot="2" aria-label="Look 3"></button>
+                <div class="doll" id="doll"></div>
+                <p class="pista">elegí con las flechas o probá random · arrastrá a los personajes</p>
               </div>
               <div class="acciones">
+                <button class="mini" type="button" id="random">random</button>
                 <button class="mini" type="button" id="add-personaje">+ personaje</button>
-                <button class="mini" type="button" id="limpiar">borrar todo</button>
+                <button class="mini" type="button" id="limpiar">limpiar</button>
               </div>
             </div>
 

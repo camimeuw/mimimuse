@@ -27,7 +27,7 @@
 .splash-on .splash {
   display: block; position: fixed; inset: 0; z-index: 10;
   background: linear-gradient(#f6c9ee, #d9a8ea);
-  transition: opacity .8s ease;
+  transition: opacity 1.2s ease;
 }
 .splash-on:not(.open) body { overflow: hidden; }
 
@@ -38,10 +38,9 @@
 .splash-on.open .splash { opacity: 0; pointer-events: none; }
 .splash-on.open .titulo { clip-path: inset(0); transition: clip-path .9s steps(16) 1s; }
 
-/* Versión calma (reducir animaciones): sin rebote de entrada ni vuelo, el título aparece de una; queda el guiño (cambio de cuadro) y el fundido */
+/* Versión calma (reducir animaciones): sin el salto de entrada; el guiño, el viaje al header y el título se mantienen (pedido de la dueña) */
 .calma .mona { animation: guino 2.1s step-end 1; }
 .calma.open .mona { animation: none; }
-.calma.open .titulo { transition: none; }
 
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
 

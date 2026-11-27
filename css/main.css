@@ -18,7 +18,7 @@
 html { background: var(--color-fondo); }
 body {
   margin: 0; font-family: var(--fuente); font-size: .95rem; font-weight: 600; color: var(--color-texto);
-  background: var(--color-fondo);   /* liso */
+  background: var(--color-fondo) url("../assets/fondo-corazones.gif");   /* papel tapiz de corazones (gif de 100×120 que se repite) */
 }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--color-acento); outline-offset: 3px; }
@@ -45,9 +45,9 @@ a { color: var(--color-acento); }
   color: var(--color-acento); font-size: .75rem; line-height: 1.2; }
 
 /* ---------- Cabecera: banner grande + tira de 88x31 ---------- */
-.banner { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; min-height: 190px; padding: 4px 10px;
-  background: radial-gradient(var(--color-caja) 1.5px, transparent 2px) 0 0 / 12px 12px, linear-gradient(var(--rosa), var(--lila)); }
-.banner .logo { grid-column: 2; margin: 0; }
+.banner { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; min-height: 290px; padding: 4px 10px;
+  background: #f2df4f url("../assets/fondo-estrellas.gif"); }   /* gif de estrellas de 200×200 que se repite */
+.banner .logo { --s: 3; grid-column: 2; margin: 0; }   /* logo más grande en compu (3 px por pixel) */
 .cart { position: absolute; top: 8px; right: 8px; z-index: 30; width: 44px; height: 44px; display: grid; place-items: center;
   border: 2px ridge var(--color-borde); border-radius: 50%; background: var(--color-caja); color: var(--color-acento); cursor: pointer; }
 .cart svg { width: 24px; height: 24px; }
@@ -254,7 +254,7 @@ a { color: var(--color-acento); }
 @keyframes floatIn { from { opacity: 0; transform: translateY(90px) scale(.96); filter: blur(8px); } 55% { opacity: 1; } to { opacity: 1; transform: none; filter: blur(0); } }
 @media (max-width: 999px) {
   .banner { grid-template-columns: 1fr; justify-items: center; min-height: 0; }
-  .banner .logo { grid-column: 1; }
+  .banner .logo { --s: 2; grid-column: 1; }
   .caen, .tira, .col-centro > .marquee { display: none; }
 
   /* orden: cabecera, reproductor, botón de productos, juego (o productos), lo demás */

@@ -13,6 +13,16 @@ const funciones = [
   [/^\/api\/imagen\//, './../netlify/functions/imagen.mjs'],
 ];
 
+// Las mismas cabeceras de netlify.toml (así se prueba el CSP de verdad en la compu). Solo para archivos, como en Netlify.
+async function cabeceras() {
+  const toml = await fs.readFile(path.join(raiz, 'netlify.toml'), 'utf8').catch(() => '');
+  return toml.split('[[headers]]').slice(1).map((b) => {
+    const para = /for\s*=\s*"([^"]+)"/.exec(b)?.[1] ?? '/*';
+    const valores = [...(b.split('[headers.values]')[1] ?? '').matchAll(/^\s*([A-Za-z-]+)\s*=\s*"((?:[^"\\]|\\.)*)"/gm)].map((m) => [m[1], m[2]]);
+    return [new RegExp('^' + para.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$'), valores];
+  });
+}
+
 export function crear() {
   return http.createServer(async (req, res) => {
     try {
@@ -27,7 +37,8 @@ export function crear() {
       if (!p.startsWith(raiz)) { res.writeHead(403); return res.end(); }
       if ((await fs.stat(p).catch(() => null))?.isDirectory()) p = path.join(p, 'index.html');
       const data = await fs.readFile(p);
-      res.writeHead(200, { 'content-type': TIPOS[path.extname(p)] || 'application/octet-stream' }); res.end(data);
+      const extra = {}; for (const [re, valores] of await cabeceras()) if (re.test(url.pathname)) for (const [k, v] of valores) extra[k] = v;
+      res.writeHead(200, { 'content-type': TIPOS[path.extname(p)] || 'application/octet-stream', ...extra }); res.end(data);
     } catch { res.writeHead(404); res.end('No encontrado'); }
   });
 }

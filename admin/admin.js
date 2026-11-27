@@ -1,6 +1,14 @@
 const $ = (s) => document.querySelector(s);
 const KEY = 'mimi-admin-token';
-let token = sessionStorage.getItem(KEY) || '';
+// La sesión se guarda en esta pestaña; con «Recordarme», en el dispositivo (30 días). Si el navegador no deja guardar, solo se pierde la comodidad.
+const lee = (a) => { try { return a.getItem(KEY) || ''; } catch { return ''; } };
+const borra = (a) => { try { a.removeItem(KEY); } catch {} };
+function guardaToken(t, recordar) {
+  borra(sessionStorage); borra(localStorage);
+  try { (recordar ? localStorage : sessionStorage).setItem(KEY, t); } catch {}
+}
+let token = lee(sessionStorage) || lee(localStorage);
+const recordado = () => !!lee(localStorage);
 let rev = 0;
 let items = [];
 let edit = null;          // copia del producto que se está editando
@@ -39,15 +47,16 @@ function aviso(msg, mal = false, accion = null) {
 
 // ---------- Entrar / salir ----------
 function mostrar(sesion) {
-  $('#entrar').hidden = sesion; $('#panel').hidden = !sesion; $('#salir').hidden = !sesion;
+  $('#entrar').hidden = sesion; $('#panel').hidden = !sesion; $('#salir').hidden = !sesion; $('#seguridad').hidden = !sesion;
 }
-function salir() { token = ''; sessionStorage.removeItem(KEY); mostrar(false); }
+function salir() { token = ''; borra(sessionStorage); borra(localStorage); mostrar(false); }
 $('#salir').addEventListener('click', salir);
+$('#ver-clave').addEventListener('change', (e) => { $('#clave').type = e.target.checked ? 'text' : 'password'; });
 $('#f-entrar').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    token = (await api('entrar', { clave: $('#clave').value })).token;
-    sessionStorage.setItem(KEY, token); $('#clave').value = '';
+    token = (await api('entrar', { clave: $('#clave').value, recordar: $('#recordar').checked })).token;
+    guardaToken(token, $('#recordar').checked); $('#clave').value = '';
     await cargar();
   } catch (err) { aviso(err.message, true); }
 });
@@ -62,7 +71,7 @@ const recargarLista = async () => { const d = await api('ver'); rev = d.rev; ite
 let ocupado = false;
 function bloquear(on) {
   document.body.classList.toggle('guardando', on);
-  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-ver button, #d-import button, #masivo button, #salir').forEach((b) => {
+  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-ver button, #d-seg button, #d-seg input, #seguridad, #d-import button, #masivo button, #salir').forEach((b) => {
     if (on) { b.dataset.estaba = b.disabled ? '1' : ''; b.disabled = true; } else { b.disabled = b.dataset.estaba === '1'; delete b.dataset.estaba; }
   });
 }
@@ -231,20 +240,33 @@ $('#masivo').addEventListener('click', (e) => {
 });
 
 // ---------- Volver atrás ----------
+const cuando = (ms) => new Date(ms).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+const filaVuelta = (titulo, detalle, textoBoton, confirmar, hacer) => {
+  const b = el('button', { type: 'button', textContent: textoBoton });
+  b.addEventListener('click', async () => { if (confirm(confirmar) && await hacer()) $('#d-ver').close(); });
+  return el('li', {}, el('div', {}, el('strong', { textContent: titulo }), el('small', { textContent: detalle })), b);
+};
 $('#versiones').addEventListener('click', async () => {
   try {
-    const { versiones } = await api('versiones');
-    $('#v-lista').replaceChildren(...(versiones.length ? versiones.map((v) => {
-      const b = el('button', { type: 'button', textContent: 'Volver a esta' });
-      b.addEventListener('click', async () => {
-        if (!confirm(`¿Volver a como estaba ANTES de: ${v.nota}?\n\nLo que hiciste después también queda guardado: lo podés recuperar desde esta misma lista.`)) return;
-        if (await volverA(v.rev)) $('#d-ver').close();
-      });
-      return el('li', {}, el('div', {}, el('strong', { textContent: `Antes de: ${v.nota}` }), el('small', { textContent: `${new Date(v.fecha).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })} · ${v.cantidad} productos` })), b);
-    }) : [el('li', {}, 'Todavía no hay versiones anteriores.')]));
+    const { versiones, copias = [] } = await api('versiones');
+    const nada = (txt) => [el('li', {}, txt)];
+    $('#v-lista').replaceChildren(...(versiones.length ? versiones.map((v) => filaVuelta(`Antes de: ${v.nota}`, `${cuando(v.fecha)} · ${v.cantidad} productos`, 'Volver a esta',
+      `¿Volver a como estaba ANTES de: ${v.nota}?\n\nLo que hiciste después también queda guardado: lo podés recuperar desde esta misma lista.`, () => volverA(v.rev))) : nada('Todavía no hay versiones anteriores.')));
+    $('#c-lista').replaceChildren(...(copias.length ? copias.map((c) => filaVuelta(new Date(`${c.dia}T12:00:00`).toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }), `${c.cantidad} productos`, 'Volver a esta copia',
+      `¿Volver a la copia del ${c.dia}?\n\nLo que hay ahora también queda guardado en «Volver atrás».`, () => volverACopia(c.dia))) : nada('Todavía no hay copias: la primera se hace esta noche.')));
     $('#d-ver').showModal();
   } catch (err) { aviso(err.message, true); }
 });
+async function volverACopia(dia) {
+  if (ocupado) return;
+  ocupado = true; bloquear(true); aviso('Volviendo a la copia…');
+  try {
+    const d = await api('restaurarCopia', { rev, dia });
+    rev = d.rev; items = d.items; aviso(`Listo: volvió a la copia del ${dia}.`);
+    return true;
+  } catch (err) { aviso(err.message, true); }
+  finally { ocupado = false; bloquear(false); pintar(); }
+}
 $('#v-cerrar').addEventListener('click', () => $('#d-ver').close());
 
 // ---------- Editor ----------
@@ -388,6 +410,27 @@ $('#f-ren').addEventListener('submit', async (e) => {
   const tocados = [];
   items.forEach((p) => { if (p.cat === cat) { if (!sub) { p.cat = nuevo; tocados.push(p); } else if (p.sub === sub) { p.sub = nuevo; tocados.push(p); } } });
   try { await guardarTodo('Nombre cambiado', { cambios: poner(tocados), nota: `Renombró «${sub || cat}» a «${nuevo}»` }); $('#d-ren').close(); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
+});
+
+// ---------- Seguridad: cambiar la clave y cerrar todas las sesiones ----------
+$('#seguridad').addEventListener('click', () => {
+  $('#f-seg').reset(); $('#s-error').textContent = ''; for (const id of ['#s-actual', '#s-nueva', '#s-nueva2']) $(id).type = 'password';
+  $('#d-seg').showModal(); $('#s-actual').focus();
+});
+$('#s-cerrar').addEventListener('click', () => $('#d-seg').close());
+$('#s-ver').addEventListener('change', (e) => { for (const id of ['#s-actual', '#s-nueva', '#s-nueva2']) $(id).type = e.target.checked ? 'text' : 'password'; });
+$('#f-seg').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if ($('#s-nueva').value !== $('#s-nueva2').value) { $('#s-error').textContent = 'Las dos claves nuevas no son iguales.'; return; }
+  try {
+    const d = await api('cambiarClave', { actual: $('#s-actual').value, nueva: $('#s-nueva').value, recordar: recordado() });
+    token = d.token; guardaToken(token, recordado());
+    $('#d-seg').close(); aviso('Clave cambiada. Las demás sesiones se cerraron.');
+  } catch (err) { $('#s-error').textContent = err.message; }
+});
+$('#s-todos').addEventListener('click', async () => {
+  if (!confirm('¿Cerrar el panel en todos los dispositivos (también en este)? Después tenés que volver a entrar con tu clave.')) return;
+  try { await api('salirTodos'); $('#d-seg').close(); salir(); aviso('Se cerraron todas las sesiones.'); } catch (err) { $('#s-error').textContent = err.message; }
 });
 
 // ---------- Planilla (Excel / CSV): cargar o actualizar muchos productos ----------

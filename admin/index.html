@@ -14,6 +14,7 @@
   <header class="cab">
     <img class="logo" src="../assets/titulo-pixel.png" alt="Mimi Muse" width="130" height="24">
     <h1>Panel de productos</h1>
+    <button type="button" id="seguridad" class="sec" hidden>Seguridad</button>
     <button type="button" id="salir" class="sec" hidden>Salir</button>
   </header>
 
@@ -23,6 +24,8 @@
       <h2 id="t-entrar">Entrar</h2>
       <form id="f-entrar">
         <label>Clave <input type="password" id="clave" autocomplete="current-password" required></label>
+        <label class="cut"><input type="checkbox" id="ver-clave"> Mostrar la clave</label>
+        <label class="cut"><input type="checkbox" id="recordar"> Recordarme en este dispositivo <small>(30 días; no lo uses en una compu compartida)</small></label>
         <button type="submit">Entrar</button>
       </form>
     </section>
@@ -129,7 +132,27 @@
     <h2 id="t-ver">Volver atrás</h2>
     <p class="nota">Cada cambio guarda cómo estaba antes. Elegí hasta cuándo querés volver (se guardan los últimos 30 cambios).</p>
     <ul id="v-lista" class="versiones"></ul>
+    <h3 id="t-copias">Copias de cada día</h3>
+    <p class="nota">Todas las noches se guarda una copia de los productos (las últimas 14). Sirven si te das cuenta de un error varios días después.</p>
+    <ul id="c-lista" class="versiones"></ul>
     <div class="botones"><button type="button" class="sec" id="v-cerrar">Cerrar</button></div>
+  </dialog>
+
+  <!-- Clave y sesiones -->
+  <dialog id="d-seg" aria-labelledby="t-seg">
+    <form id="f-seg" method="dialog">
+      <h2 id="t-seg">Seguridad</h2>
+      <h3>Cambiar la clave</h3>
+      <label>Clave actual <input type="password" id="s-actual" autocomplete="current-password" required></label>
+      <label>Clave nueva <small>al menos 10 caracteres; mejor una frase larga que puedas recordar</small> <input type="password" id="s-nueva" autocomplete="new-password" minlength="10" maxlength="200" required></label>
+      <label>Repetí la clave nueva <input type="password" id="s-nueva2" autocomplete="new-password" minlength="10" maxlength="200" required></label>
+      <label class="cut"><input type="checkbox" id="s-ver"> Mostrar las claves</label>
+      <p id="s-error" class="error" role="alert"></p>
+      <div class="botones"><button type="submit">Cambiar clave</button></div>
+    </form>
+    <h3>Cerrar sesión en todos los dispositivos</h3>
+    <p class="nota">Si entraste desde una compu o un celular que no es tuyo, o creés que alguien más sabe tu clave: esto cierra el panel en todos lados, también en este. Después hay que volver a entrar. (Cambiar la clave también cierra las demás sesiones, pero deja abierta esta.)</p>
+    <div class="botones"><button type="button" class="sec" id="s-todos">Cerrar todas las sesiones</button><button type="button" class="sec" id="s-cerrar">Cerrar</button></div>
   </dialog>
 
   <!-- Cargar o actualizar muchos productos con una planilla -->

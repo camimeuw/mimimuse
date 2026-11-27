@@ -17,15 +17,9 @@
 <body>
   <div class="splash" aria-hidden="true"></div>
 
-  <div class="page">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol></svg>
 
-    <aside class="side" aria-hidden="true">
-      <div class="card">
-        <h2>Closet</h2>
-        <div class="slots"><div class="slot">TOP</div><div class="slot">BOTTOM</div><div class="slot">SHOES</div><div class="slot">ACC</div></div>
-      </div>
-    </aside>
-
+  <div class="page home">
     <div class="main">
       <header class="top">
         <h1 class="logo">
@@ -56,19 +50,41 @@
       <a class="tab" href="index.html" aria-current="page">Dress Up ✧</a>
       <a class="tab" href="productos.html">ver todos los productos →</a>
     </nav>
-      <div class="stage"><p>acá va la modelo con el look</p></div>
-    </div>
 
-    <aside class="side" aria-hidden="true">
-      <div class="card">
-        <h2>Mimi Mode</h2>
-        <div class="room"></div>
-        <div class="arrows"><span>◂</span><span>▸</span></div>
-      </div>
-    </aside>
+      <section class="dressup" data-scene="0" aria-label="Dress Up">
+        <nav class="closet" aria-label="Closet">
+          <h2>Closet</h2>
+          <a class="slot" href="productos.html">TOP</a>
+          <a class="slot" href="productos.html">BOTTOM</a>
+          <a class="slot" href="productos.html">SHOES</a>
+          <a class="slot" href="productos.html">ACC</a>
+        </nav>
+
+        <div class="model">
+          <div class="photo"><p class="look-name" aria-live="polite">Look 1</p></div>
+          <button class="arrow prev" type="button" data-look="-1" aria-label="Look anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button>
+          <button class="arrow next" type="button" data-look="1" aria-label="Look siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button>
+          <div class="dots">
+            <button type="button" data-dot="0" aria-label="Look 1" aria-current="true"></button>
+            <button type="button" data-dot="1" aria-label="Look 2"></button>
+            <button type="button" data-dot="2" aria-label="Look 3"></button>
+          </div>
+        </div>
+
+        <div class="mimi-mode">
+          <h2>Mimi Mode</h2>
+          <div class="room" role="img" aria-label="Fondo actual"></div>
+          <div class="scene-btns">
+            <button class="scene-prev" type="button" data-scene="-1" aria-label="Fondo anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button>
+            <button type="button" data-scene="1" aria-label="Fondo siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#chev"/></svg></button>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 
   <script src="js/splash.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/dressup.js"></script>
 </body>
 </html>

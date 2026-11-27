@@ -58,14 +58,6 @@ a { color: var(--color-acento); }
 .menu-celu { /* aquí va el menú del celular (lo coloca la dueña de la página) */ }
 .tira { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 3px; margin-top: 5px; }
 .tira img { display: block; image-rendering: pixelated; transition: translate .2s var(--ease); } .tira img:hover { translate: 0 -2px; }
-.b88 { width: 88px; height: 31px; display: grid; place-items: center; font-size: .75rem; font-weight: 800; color: var(--color-texto);
-  border: 1px solid var(--color-borde); image-rendering: pixelated; transition: translate .2s var(--ease); }
-.b88:hover { translate: 0 -2px; }
-.b88:nth-child(5n+1) { background: repeating-linear-gradient(45deg, var(--rosa) 0 4px, var(--color-caja) 4px 8px); }
-.b88:nth-child(5n+2) { background: linear-gradient(var(--lila), var(--color-caja)); }
-.b88:nth-child(5n+3) { background: radial-gradient(var(--rosa) 1.5px, transparent 2px) 0 0 / 6px 6px, var(--color-caja); }
-.b88:nth-child(5n+4) { background: var(--color-menu); color: var(--color-texto); }
-.b88:nth-child(5n) { background: repeating-linear-gradient(90deg, var(--lila) 0 4px, var(--rosa) 4px 8px); }
 .marquee { overflow: hidden; white-space: nowrap; padding: 2px 0; font-size: .9rem; background: var(--color-caja); }
 .marquee span { display: inline-block; padding-left: 100%; animation: marquee 24s linear infinite; }
 .marquee.al-reves span { animation-direction: reverse; animation-duration: 30s; }
@@ -79,8 +71,9 @@ a { color: var(--color-acento); }
 .menu svg { width: 18px; height: 18px; flex-shrink: 0; fill: var(--color-borde); }
 .nuevo { margin-left: auto; padding: 0 4px; background: var(--color-acento); color: #fff; font-family: var(--fuente); font-size: .6rem; font-weight: 800; animation: parp 1s steps(2) infinite; }
 @keyframes parp { 50% { opacity: 0; } }
-.novedades { margin: 0; padding-left: 16px; font-size: .8rem; line-height: 1.5; }
-.estado { display: flex; align-items: center; gap: 8px; font-size: .8rem; line-height: 1.25; }
+.lema { margin: 6px 2px; font-family: "Pixelpoiiz", var(--titulo); font-size: 20px; line-height: 1.3; color: var(--color-acento); text-align: center; }
+.tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px 0; padding: 0; list-style: none; }
+.tags li { padding: 2px 10px; border-radius: 999px; background: var(--rosa); color: var(--color-acento); font-size: .85rem; font-weight: 800; }
 .codigo { width: 100%; height: 56px; resize: none; font: .7rem monospace; color: var(--color-texto); border: 2px inset var(--lila); background: var(--color-caja); }
 
 /* ---------- Columna derecha ---------- */
@@ -89,7 +82,6 @@ a { color: var(--color-acento); }
 .visitas { display: flex; justify-content: center; gap: 2px; margin: 2px 0; }
 .visitas i { font-style: normal; width: 22px; height: 30px; display: grid; place-items: center; background: var(--color-texto); color: var(--rosa);
   font-family: monospace; font-size: 1.2rem; font-weight: 700; border: 2px outset var(--lila); }
-.amigas { display: grid; grid-template-columns: repeat(2, 88px); justify-content: center; gap: 4px; }
 
 /* Pegatinas pixel con movimiento tipo gif (hechas con SVG, no son imágenes) */
 .pegatinas { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 6px; background: var(--color-caja); border: 3px ridge var(--color-borde); }
@@ -112,8 +104,8 @@ a { color: var(--color-acento); }
 .player { display: block; }
 .mp3-caja { flex: 1; min-width: 0; max-width: 300px; margin: 0 auto; display: flex; align-items: center; gap: 6px; padding: 4px 6px;
   background: var(--color-caja); border: 3px solid; border-color: #fff var(--uva) var(--uva) #fff; }
-.mp3-ondas { display: flex; align-items: center; justify-content: center; gap: 3px; width: 38px; height: 60px; flex-shrink: 0; }
-.onda { width: 6px; border-radius: 3px; background: var(--rosa); animation: onda .8s ease-in-out infinite paused; }
+.mp3-ondas { display: flex; align-items: center; justify-content: center; gap: 4px; width: 56px; height: 60px; flex-shrink: 0; }
+.onda { width: 9px; border-radius: 3px; background: var(--rosa); animation: onda .8s ease-in-out infinite paused; }
 .onda:nth-child(1), .onda:nth-child(5) { height: 16px; }
 .onda:nth-child(2), .onda:nth-child(4) { height: 28px; animation-delay: .15s; }
 .onda:nth-child(3) { height: 40px; background: var(--fucsia); animation-delay: .3s; }
@@ -153,8 +145,8 @@ a { color: var(--color-acento); }
 
 /* ---------- Dress Up (mismo diseño de antes, en su versión angosta: closet | modelo | Mimi Mode) ---------- */
 .dressup {
-  --escena: #9e85ac url("../assets/fondo-modelo.gif");   /* escena 0: brillitos lila (gif de 60×30 que se repite) */
-  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 22px;
+  --escena: #e9cae1 url("../assets/fondo-modelo.gif");   /* escena 0: brillitos rosa (gif de 85×85 que se repite) */
+  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 10px;
 }
 /* Título del juego: pixel nítido solo a múltiplos de 10 px (la fuente está dibujada a 10 px) */
 .dressup-titulo { margin: 8px 0 0 4px; font-family: "Pixelpoiiz", var(--titulo); font-size: 40px; font-weight: 400; line-height: 1; color: var(--color-acento); }
@@ -278,7 +270,6 @@ a { color: var(--color-acento); }
   /* el juego en una columna: modelo, luego las 3 filas de ropa en hilera, luego Mimi Mode */
   .dressup { grid-template-columns: 1fr; grid-template-areas: "model" "closet" "mimi"; gap: 8px; }
   .dressup-titulo { margin-left: 0; font-size: 30px; text-align: center; }
-  .dressup-titulo + .dressup { margin-top: 40px; }   /* la monita que se asoma queda debajo del título */
   .model { grid-area: model; } .closet { grid-area: closet; grid-template-columns: repeat(3, 1fr); gap: 5px; } .mimi-mode { grid-area: mimi; grid-template-columns: 76px 1fr 1fr; align-items: center; }
   .scene-btns { display: contents; }
   .fila { padding: 6px 2px 8px; }
@@ -313,17 +304,13 @@ a { color: var(--color-acento); }
   #productos { overflow-x: clip; }
 }
 
-/* ---- Personalidad: capas de brillitos, pegatinas inclinadas, la mona que se asoma ---- */
+/* ---- Personalidad: capas de brillitos, pegatinas inclinadas ---- */
 @keyframes float { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 
 .mimi-mode .room { rotate: 2.5deg; }
 
 .model { isolation: isolate; }
 .photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(168, 36, 122, .55); }
-.asoma { position: absolute; z-index: 0; top: -34px; right: 12%; width: 73px; height: 76px; rotate: 6deg; pointer-events: none;
-  background: url("../assets/mona-guino-sprite.png") 0 0 / 300% 100% no-repeat; image-rendering: pixelated;
-  animation: asoma 2.6s ease-in-out infinite alternate; }
-@keyframes asoma { to { translate: 0 -4px; } }
 
 /* Cambiar de look: la foto se acomoda y salen brillitos; cambiar de fondo: destello */
 .photo.swap { animation: swap .5s cubic-bezier(.22, 1, .36, 1); }
@@ -339,7 +326,7 @@ a { color: var(--color-acento); }
 
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
-  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .asoma, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
   .tab, .paso { transition: none; }
 }
 

@@ -11,7 +11,15 @@ export default async (req) => {
   try {
     const body = await req.json().catch(() => { throw new ErrorHttp('Pedido inválido.'); });
     if (body.accion === 'entrar') {
-      if (!claveOk(body.clave)) { await new Promise((r) => setTimeout(r, 800)); throw new ErrorHttp('Clave incorrecta.', 401); }
+      const db0 = await almacen();
+      const intentos = (await db0.getJSON('intentos')) || { n: 0, desde: 0 };
+      if (intentos.n >= 5 && Date.now() - intentos.desde < 10 * 60e3) throw new ErrorHttp('Demasiados intentos. Esperá 10 minutos y probá de nuevo.', 429);
+      if (!claveOk(body.clave)) {
+        await db0.setJSON('intentos', { n: Date.now() - intentos.desde > 10 * 60e3 ? 1 : intentos.n + 1, desde: Date.now() - intentos.desde > 10 * 60e3 ? Date.now() : intentos.desde });
+        await new Promise((r) => setTimeout(r, 800));
+        throw new ErrorHttp('Clave incorrecta.', 401);
+      }
+      if (intentos.n) await db0.setJSON('intentos', { n: 0, desde: 0 });
       return json({ token: nuevaSesion() });
     }
     if (!sesionOk(tokenDe(req))) throw new ErrorHttp('Sesión vencida: volvé a entrar.', 401);

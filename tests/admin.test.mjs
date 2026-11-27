@@ -72,3 +72,10 @@ test('ids repetidos: el segundo recibe uno nuevo', async () => {
   const ids = (await r.json()).items.map((p) => p.id);
   assert.equal(new Set(ids).size, 2);
 });
+
+test('5 claves malas bloquean la entrada, incluso con la buena', async () => {
+  for (let i = 0; i < 5; i++) await post({ accion: 'entrar', clave: 'mala' });
+  assert.equal((await post({ accion: 'entrar', clave: 'clave-de-prueba' })).status, 429);
+  await fs.rm(path.join(process.env.ALMACEN_LOCAL, 'intentos'), { force: true });   // fin del bloqueo
+  assert.equal((await post({ accion: 'entrar', clave: 'clave-de-prueba' })).status, 200);
+});

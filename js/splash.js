@@ -4,8 +4,8 @@ if (root.classList.contains('splash-on')) {
   const logo = document.querySelector('.logo');
   const r = logo.getBoundingClientRect();
   const h = document.querySelector('.mona').getBoundingClientRect();
-  // La mona de la intro mide 2 px enteros por pixel del dibujo (146 px de ancho, nítida), sea cual sea su tamaño en el header (×2 en celu, ×3 en compu).
-  const k = 2 / (h.width / 73);
+  // Mona de la intro: 3 px por pixel del dibujo (219 px), o 2,5 en pantallas de alta densidad (= 5 px reales, sigue nítida); en el header es ×2 en celu y ×3 en compu.
+  const k = (devicePixelRatio >= 2 ? 2.5 : 3) / (h.width / 73);
   const hx = h.left + h.width / 2 - r.left, hy = h.top + h.height / 2 - r.top;
   logo.style.transition = 'none';
   logo.style.transform = `translate(${innerWidth / 2 - r.left - hx * k}px, ${innerHeight / 2 - r.top - hy * k}px) scale(${k})`;
@@ -16,6 +16,6 @@ if (root.classList.contains('splash-on')) {
     logo.style.transform = '';
     root.classList.add('open');
   };
-  setTimeout(open, 2200);   // justo después del guiño (~2,05 s)
+  setTimeout(open, 1400);   // justo después del guiño (~1,2 s)
   document.querySelector('.splash').addEventListener('click', open); // tocar para saltar
 }

@@ -1,0 +1,48 @@
+@property --p { syntax: "<percentage>"; inherits: false; initial-value: 118%; }
+
+:root { --crema: #fbf1b4; --rosa: #f6c9ee; --lila: #d9a8ea; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; background: var(--crema); }
+
+/* Logo: en su lugar final (arriba). La máscara deja ver solo la mona hasta que se abre. */
+.logo {
+  position: relative; z-index: 20;
+  width: min(60vw, 240px); margin: 12px auto 0;
+  --p: 118%;
+  clip-path: polygon(0 0, 100% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%, 0 100%, 0 100%);
+  -webkit-mask-image: linear-gradient(#000 var(--p), transparent calc(var(--p) + 12%));
+          mask-image: linear-gradient(#000 var(--p), transparent calc(var(--p) + 12%));
+}
+.logo img { display: block; width: 100%; height: auto; }
+
+/* Guiño: ojo derecho de la mona (posición en % del logo 866×620) */
+.wink {
+  position: absolute; left: 55%; top: 61%; width: 11%;
+  transform: translate(-50%, -50%); opacity: 0;
+}
+
+/* Splash */
+.splash { display: none; }
+.splash-on .splash {
+  display: block; position: fixed; inset: 0; z-index: 10;
+  background: linear-gradient(var(--rosa), var(--lila));
+  transition: opacity .8s ease;
+}
+.splash-on:not(.open) body { overflow: hidden; }
+/* Solo la mona: se recortan las chispas y el título que rodean la cabeza */
+.splash-on .logo {
+  --p: 61%;
+  clip-path: polygon(8% 0, 82% 0, 82% 50%, 76% 50%, 76% 76%, 28% 76%, 28% 52%, 8% 52%);
+}
+.splash-on .logo img { animation: pop .7s cubic-bezier(.34, 1.56, .64, 1) both; }
+.splash-on .wink { animation: wink .5s ease 1.2s; }
+
+.splash-on.open .splash { opacity: 0; pointer-events: none; }
+.splash-on.open .logo {
+  --p: 118%;
+  clip-path: polygon(0 0, 100% 0, 100% 0, 100% 100%, 100% 100%, 100% 100%, 0 100%, 0 100%);
+  transition: --p 1s ease .6s, clip-path 1s ease .6s;
+}
+
+@keyframes pop  { from { transform: scale(.5); opacity: 0; } }
+@keyframes wink { 20%, 75% { opacity: 1; } }

@@ -131,6 +131,9 @@ photo.addEventListener('pointermove', (e) => {
     Math.max(-lim.x, Math.min(lim.x, drag.ox + e.clientX - drag.sx)),
     Math.max(-lim.y, Math.min(lim.y, drag.oy + e.clientY - drag.sy)));
 });
+// Táctil: el scroll de la página solo se frena si el dedo agarra una prenda
+photo.addEventListener('touchstart', (e) => { if (!barajando && prendaEn(e.touches[0])) e.preventDefault(); }, { passive: false });
+
 const soltar = () => {
   if (!drag) return;
   const { x, y } = off[drag.k];

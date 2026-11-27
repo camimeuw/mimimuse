@@ -27,14 +27,36 @@
       </header>
 
       <section class="player" aria-label="Reproductor de música">
-        <button class="play" type="button" aria-label="Reproducir o pausar" aria-pressed="false">
-          <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
-          <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
-        </button>
-        <p class="song">Canción de Mimi Muse</p>
-        <input class="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Progreso de la canción">
-        <audio id="audio" src="assets/cancion.mp3" preload="none" loop></audio>
-      </section>
+      <svg class="mp3-star" viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><polygon points="5,0 6,4 10,5 6,6 5,10 4,6 0,5 4,4" fill="#fff" stroke="#d63fa6" stroke-width=".7" stroke-linejoin="round"/></svg>
+      <div class="mp3-caja" id="caja">
+        <div class="mp3-ondas" aria-hidden="true"><div class="onda"></div><div class="onda"></div><div class="onda"></div><div class="onda"></div><div class="onda"></div></div>
+        <div class="mp3-info">
+          <p class="mp3-artista" id="artista">Mimi Muse</p>
+          <p class="mp3-cancion" id="cancion" aria-live="polite">Sin canciones todavía</p>
+          <input class="seek" id="seek" type="range" min="0" max="1000" value="0" aria-label="Progreso de la canción">
+          <div class="mp3-fila">
+            <div class="mp3-vol">
+              <button class="mute" id="mute" type="button" aria-label="Silenciar" aria-pressed="false">
+                <svg class="i-on" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3zM15 8a5 5 0 0 1 0 8M17.5 5.5a9 9 0 0 1 0 13" stroke="currentColor" stroke-width="2" fill-rule="evenodd" stroke-linecap="round"/></svg>
+                <svg class="i-off" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3zM16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <input class="vol" id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volumen">
+            </div>
+            <p class="mp3-tiempo" id="tiempo">0:00 / 0:00</p>
+          </div>
+          <div class="mp3-controles">
+            <button class="mp3-btn" id="prev" type="button" aria-label="Canción anterior"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 5h2v14H5zM19 5v14L9 12z"/></svg></button>
+            <button class="mp3-btn mp3-play" id="play" type="button" aria-label="Reproducir o pausar" aria-pressed="false">
+              <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+            </button>
+            <button class="mp3-btn" id="next" type="button" aria-label="Canción siguiente"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 5h2v14h-2zM5 5l10 7L5 19z"/></svg></button>
+          </div>
+        </div>
+        <audio id="audio" preload="metadata"></audio>
+      </div>
+      <svg class="mp3-star" viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><polygon points="5,0 6,4 10,5 6,6 5,10 4,6 0,5 4,4" fill="#fff" stroke="#d63fa6" stroke-width=".7" stroke-linejoin="round"/></svg>
+    </section>
     <nav class="tabs" aria-label="Secciones">
       <a class="tab" href="index.html">Dress Up ✧</a>
       <a class="tab" href="productos.html" aria-current="page">ver todos los productos →</a>
@@ -44,6 +66,7 @@
     </div>
   </div>
 
+  <script src="data/canciones.js"></script>
   <script src="js/player.js"></script>
   <script src="data/productos.js"></script>
   <script src="js/productos.js"></script>

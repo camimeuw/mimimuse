@@ -145,7 +145,7 @@ a { color: var(--color-acento); }
 
 /* ---------- Dress Up: todos los controles en una columna a la izquierda | la modelo a la derecha (también en celu) ---------- */
 .dressup {
-  --escena: #e9cae1 url("../assets/fondo-modelo.gif");   /* escena 0: brillitos rosa (gif de 85×85 que se repite) */
+  --escena: #e9cae1 url("../assets/fondos/brillos-rosa.gif");
   position: relative;                                                    /* las estrellitas de los botones salen desde acá */
   display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: start; gap: 8px; min-height: 0; margin-top: 10px;
 }
@@ -155,8 +155,16 @@ a { color: var(--color-acento); }
 .dressup-titulo { margin: 10px 0 0; font-family: "Grape Soda", var(--titulo); font-size: 48px; font-weight: 400; line-height: 1; color: var(--color-acento); text-align: center;   /* nítida a múltiplos de 16 px */
   animation: flota 2.8s ease-in-out infinite alternate; }
 @keyframes flota { from { translate: 0 2px; } to { translate: 0 -6px; } }
-.dressup[data-scene="1"] { --escena: linear-gradient(var(--color-caja), var(--rosa)); }
-.dressup[data-scene="2"] { --escena: radial-gradient(var(--color-caja) 2px, transparent 2.5px) 0 0 / 18px 18px, var(--lila); }
+/* Fondos de la modelo (las flechas «fondo» pasan por estos gifs, en este orden) */
+.dressup[data-scene="0"] { --escena: #e9cae1 url("../assets/fondos/brillos-rosa.gif"); }
+.dressup[data-scene="1"] { --escena: #9e85ac url("../assets/fondos/brillos-lila.gif"); }
+.dressup[data-scene="2"] { --escena: #d7b058 url("../assets/fondos/dorado.gif"); }
+.dressup[data-scene="3"] { --escena: #fae1fb url("../assets/fondos/corazones-lila.gif"); }
+.dressup[data-scene="4"] { --escena: #fed0d6 url("../assets/fondos/corazones-rosa.gif"); }
+.dressup[data-scene="5"] { --escena: #fce6f1 url("../assets/fondos/corazones-claro.gif"); }
+.dressup[data-scene="6"] { --escena: #ffdaed url("../assets/fondos/corazoncitos.gif"); }
+.dressup[data-scene="7"] { --escena: #eba0bb url("../assets/fondos/estrellas-rosa.gif"); }
+.dressup[data-scene="8"] { --escena: #f0e05e url("../assets/fondos/estrellas-amarillo.gif"); }
 .closet { display: grid; gap: 8px; }
 .closet h2, .mimi-mode h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
 .fila, .mimi-mode { display: grid; justify-items: center; gap: 4px; padding: 8px 6px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(168, 36, 122, .5); }

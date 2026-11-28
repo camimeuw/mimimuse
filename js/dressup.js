@@ -3,7 +3,7 @@ const photo = dressup.querySelector('.photo');
 const room = dressup.querySelector('.room');
 const doll = dressup.querySelector('#doll');
 const anuncio = dressup.querySelector('#anuncio');
-const SCENES = 3;
+const SCENES = 9;   // los fondos están en css/main.css (.dressup[data-scene="N"])
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
 const rnd = (n) => Math.floor(Math.random() * n);
 

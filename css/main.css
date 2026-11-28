@@ -51,6 +51,9 @@ a { color: var(--color-acento); }
 .banner { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; min-height: 290px; padding: 4px 10px;
   background: #fae1fb url("../assets/fondo-header.gif"); }   /* gif de corazones lila de 100×120 que se repite */
 .banner .logo { --s: 3; grid-column: 2; margin: 0; }   /* logo más grande en compu (3 px por pixel) */
+/* El logo flota todo el tiempo, una vez que termina la intro (usa translate: no choca con el transform del viaje de la intro) */
+.open .banner .logo, html:not(.splash-on) .banner .logo { animation: flota-logo 3.2s ease-in-out infinite alternate; }
+@keyframes flota-logo { from { translate: 0 3px; } to { translate: 0 -9px; } }
 .cart { position: absolute; top: 8px; right: 8px; z-index: 30; width: 44px; height: 44px; display: grid; place-items: center;
   border: 2px ridge var(--color-borde); border-radius: 50%; background: var(--color-caja); color: var(--color-acento); cursor: pointer; }
 .cart svg { width: 24px; height: 24px; }
@@ -345,7 +348,7 @@ a { color: var(--color-acento); }
 
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
-  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .boing, .doll.salta, .doll.gira, .dressup-titulo, .photo.flash::after, .room.flash::after { animation: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .boing, .doll.salta, .doll.gira, .dressup-titulo, .open .banner .logo, html:not(.splash-on) .banner .logo, .photo.flash::after, .room.flash::after { animation: none; }
   .tab, .paso, .scene-btns button, .mini, .paso svg, .scene-btns svg { transition: none; }
   .paso:hover svg, .paso[data-paso="-1"]:hover svg, .scene-btns button:hover svg { translate: none; }   /* queda el cambio de color, sin movimiento */
 }

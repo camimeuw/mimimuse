@@ -55,6 +55,9 @@ a { color: var(--color-acento); }
 .cart { position: absolute; top: 8px; right: 8px; z-index: 30; width: 44px; height: 44px; display: grid; place-items: center;
   border: 2px ridge var(--color-borde); border-radius: 50%; background: var(--color-caja); color: var(--color-acento); cursor: pointer; }
 .cart svg { width: 24px; height: 24px; }
+/* El carrito aparece recién cuando termina la intro: se queda escondido y después sale con un fundido suave (espera a que la mona llegue al header) */
+.splash-on:not(.open) .cart { opacity: 0; scale: .7; visibility: hidden; pointer-events: none; }
+.splash-on.open .cart { transition: opacity .8s ease 1.3s, scale .8s cubic-bezier(.22, 1, .36, 1) 1.3s, visibility 0s 1.3s; }
 .cart-count { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 4px;
   border-radius: 11px; background: var(--color-acento); color: #fff; font-size: .85rem; font-weight: 800; line-height: 22px; text-align: center; }
 .menu-celu { /* aquí va el menú del celular (lo coloca la dueña de la página) */ }
@@ -147,7 +150,7 @@ a { color: var(--color-acento); }
 .dressup {
   --escena: #e9cae1 url("../assets/fondos/brillos-rosa.gif");
   position: relative;                                                    /* las estrellitas de los botones salen desde acá */
-  display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: start; gap: 8px; min-height: 0; margin-top: 10px;
+  display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: start; gap: 12px; min-height: 0; margin-top: 10px;
 }
 .closet, .mimi-mode, .acciones { grid-column: 1; }
 .model { grid-column: 2; grid-row: 1 / span 3; align-self: stretch; display: grid; }   /* el escenario ocupa todo el alto de la columna de botones */
@@ -167,31 +170,48 @@ a { color: var(--color-acento); }
 .dressup[data-scene="8"] { --escena: #f0e05e url("../assets/fondos/estrellas-amarillo.gif"); }
 .closet { display: grid; gap: 8px; }
 .closet h2, .mimi-mode h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
-.fila, .mimi-mode { display: grid; justify-items: center; gap: 4px; padding: 8px 6px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(168, 36, 122, .5); }
-.parte { font-family: var(--titulo); font-size: 1.15rem; color: var(--uva); line-height: 1; }
-.prenda { min-height: 2.3em; font-size: .75rem; font-weight: 800; line-height: 1.15; }
-.pasos, .scene-btns { display: flex; gap: 6px; }
-/* Botones de juego: con relieve suave; al pasar el mouse la flecha se asoma, al apretar se hunden y rebotan */
-.paso, .scene-btns button, .mini { --hundido: 0px; border: 2px solid var(--uva); color: var(--uva); cursor: pointer; background: linear-gradient(#fff, var(--color-caja) 55%, #fdd8f6);
-  box-shadow: inset 0 -3px 0 rgba(168, 36, 122, .18), 0 4px 6px -2px rgba(168, 36, 122, .45); translate: 0 var(--hundido);
-  transition: background-color .15s, box-shadow .15s, translate .1s; -webkit-tap-highlight-color: transparent; }
-.paso, .scene-btns button { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border-radius: 50%; }
-.paso svg, .scene-btns svg { width: 20px; height: 20px; transition: translate .2s cubic-bezier(.16, 1, .3, 1); }
+
+/* Controles del dress up, estilo pixel de juego retro/anime: todo claro y de colores caramelo.
+   Las "esquinas comidas" y el relieve se dibujan con sombras de 3 px (un píxel del dibujo), sin bordes redondeados ni degradados */
+.dressup { --px: 3px; }
+.fila[data-parte="arriba"], .mimi-mode { --fill: #7fd6ff; --sombra: #3ea6e0; --borde: #2377b5; --tinta: #12527e; }
+.fila[data-parte="abajo"] { --fill: #ff8fcf; --sombra: #e2519f; --borde: #b8267a; --tinta: #7e1257; }
+.fila[data-parte="zapatos"] { --fill: #ffe36e; --sombra: #f0b72f; --borde: #b07a0a; --tinta: #6b4600; }
+.mimi-mode { --fill: #c9a2ff; --sombra: #9b6fe0; --borde: #6a3fb0; --tinta: #3f1d85; }
+#random { --fill: #8ff0b3; --sombra: #3ec97c; --borde: #1f8f55; --tinta: #0d5a34; }
+#acomodar { --fill: #ffb98a; --sombra: #f0883f; --borde: #b8561a; --tinta: #7a3208; }
+.closet { gap: 11px; }
+.acciones { gap: 12px; padding: 4px 4px 7px; }
+/* panel: crema, con borde de esquinas escalonadas del color de su parte */
+.fila, .mimi-mode { display: grid; justify-items: center; gap: 6px; padding: 12px 5px 12px; border: 0; background: #fff8fd; color: var(--color-texto); text-align: center;
+  box-shadow: 0 calc(var(--px) * -1) 0 0 var(--borde), calc(var(--px) * -1) 0 0 0 var(--borde), var(--px) 0 0 0 var(--borde), 0 calc(var(--px) * 2) 0 0 var(--borde), inset 0 0 0 var(--px) var(--fill); }
+.parte { display: inline-block; padding: 3px 8px 2px; background: var(--fill); color: var(--tinta); font-family: var(--titulo); font-size: 1.05rem; line-height: 1;
+  box-shadow: 0 calc(var(--px) * -1) 0 0 var(--borde), calc(var(--px) * -1) 0 0 0 var(--borde), var(--px) 0 0 0 var(--borde), 0 var(--px) 0 0 var(--borde); }
+.parte::before { content: none; }
+.prenda { min-height: 2.3em; margin: 4px 0 9px; font-size: .75rem; font-weight: 800; line-height: 1.15; }
+.pasos, .scene-btns { display: flex; gap: 7px; }
+.paso, .scene-btns button, .mini { --lip: 6px; border: 0; border-radius: 0; background: var(--fill); color: var(--tinta); cursor: pointer; margin-bottom: 3px;
+  box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .75), inset -3px -3px 0 var(--sombra),
+    0 -3px 0 0 var(--borde), -3px 0 0 0 var(--borde), 3px 0 0 0 var(--borde), 0 var(--lip) 0 0 var(--borde);
+  transition: translate .08s, filter .12s; -webkit-tap-highlight-color: transparent; }
+.paso, .scene-btns button { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; }
+.paso svg, .scene-btns svg { width: 21px; height: 21px; transition: translate .15s steps(2); }   /* 7 casillas × 3 px: el píxel queda entero */
 .paso[data-paso="-1"] svg { transform: scaleX(-1); }
-.paso:hover, .scene-btns button:hover, .mini:hover, .paso:focus-visible, .scene-btns button:focus-visible, .mini:focus-visible { border-color: var(--fucsia); background: linear-gradient(#fff, #fff 45%, #fde3f8); box-shadow: inset 0 -3px 0 rgba(168, 36, 122, .18), 0 6px 9px -2px rgba(168, 36, 122, .5); }
+.paso:hover, .scene-btns button:hover, .mini:hover { filter: brightness(1.07) saturate(1.1); }
+.paso:focus-visible, .scene-btns button:focus-visible, .mini:focus-visible { outline: 3px dashed var(--tinta); outline-offset: 6px; }
 .paso:hover svg, .scene-btns button:hover svg { translate: 3px 0; }
 .paso[data-paso="-1"]:hover svg, .scene-btns .scene-prev:hover svg { translate: -3px 0; }
-.paso:active, .scene-btns button:active, .mini:active { --hundido: 2px; box-shadow: inset 0 2px 3px rgba(168, 36, 122, .3), 0 1px 2px -1px rgba(168, 36, 122, .45); }
-.paso:disabled { cursor: default; opacity: .45; }
+.paso:active, .scene-btns button:active, .mini:active { --lip: 3px; translate: 0 3px; box-shadow: inset 3px 3px 0 var(--sombra), inset -3px -3px 0 rgba(255, 255, 255, .5), 0 -3px 0 0 var(--borde), -3px 0 0 0 var(--borde), 3px 0 0 0 var(--borde), 0 3px 0 0 var(--borde); }
+.paso:disabled { cursor: default; opacity: .45; filter: grayscale(.5); }
 .model { position: relative; min-width: 0; }
 .photo { position: relative; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--fucsia); border-radius: 28px; background: var(--escena); text-align: center; padding: 12px; }
 .doll { position: relative; height: 480px; aspect-ratio: 730 / 1790; margin-bottom: 26px; }
 .doll img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
 .pista { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; padding: 0 12px; font-size: .75rem; font-weight: 800; color: var(--tinta); }
 .scene-prev svg { transform: scaleX(-1); }
-.acciones { display: grid; gap: 6px; min-width: 0; }
-.mini { min-height: 44px; padding: 2px 8px; font-family: var(--titulo); font-size: 1.1rem; border-radius: 18px; }
-.room { position: relative; width: 100%; height: 30px; border: 2px solid var(--lila); border-radius: 10px; background: var(--escena); }   /* muestra chiquita del fondo elegido */
+.acciones { display: grid; min-width: 0; }
+.mini { width: 100%; min-height: 44px; padding: 2px 4px; font-family: var(--titulo); font-size: 1.1rem; }
+.room { position: relative; width: calc(100% - 6px); height: 26px; margin: 6px 0 12px; background: var(--escena); box-shadow: 0 calc(var(--px) * -1) 0 0 var(--borde), calc(var(--px) * -1) 0 0 0 var(--borde), var(--px) 0 0 0 var(--borde), 0 var(--px) 0 0 var(--borde); }   /* muestra chiquita del fondo elegido */
 
 /* ---------- Productos ---------- */
 /* Filtros de la tienda */
@@ -290,10 +310,10 @@ a { color: var(--color-acento); }
   .pie { order: 10; }
 
   /* el juego sigue lado a lado: controles a la izquierda, modelo a la derecha (entra en 360 px) */
-  .dressup { grid-template-columns: 106px minmax(0, 1fr); gap: 6px; }
+  .dressup { grid-template-columns: 114px minmax(0, 1fr); gap: 10px; }
   .dressup-titulo { font-size: 32px; }
   .closet { gap: 6px; }
-  .fila, .mimi-mode { padding: 6px 4px 8px; }
+  .fila, .mimi-mode { padding: 10px 4px 12px; }
   .mini { font-size: 1rem; }
   .doll { height: 380px; margin-bottom: 40px; }
   .pista { font-size: .75rem; }
@@ -346,8 +366,8 @@ a { color: var(--color-acento); }
 /* Juego: el botón apretado se hunde suave y suelta estrellitas; la ropa cambia con un fundido y random hace aparecer la muñeca girando a medias */
 .boing { animation: boing .3s cubic-bezier(.22, 1, .36, 1); }   /* se hunde y vuelve suave, sin pasarse de tamaño */
 @keyframes boing { from { scale: .92; } to { scale: 1; } }
-.chispa.mini-estrella { left: var(--x); top: var(--y); width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; animation-duration: .55s; }
-.chispa.mini-estrella:nth-child(4n+1) { background: var(--uva); } .chispa.mini-estrella:nth-child(4n+2) { background: var(--lila); } .chispa.mini-estrella:nth-child(4n+3) { background: #ff9aeb; }
+.chispa.mini-estrella { left: var(--x); top: var(--y); width: 8px; height: 8px; margin: -4px 0 0 -4px; clip-path: none; animation-duration: .55s; animation-timing-function: steps(6); }   /* confeti de bloques */
+.chispa.mini-estrella:nth-child(5n+1) { background: #3ea6e0; } .chispa.mini-estrella:nth-child(5n+2) { background: #e2519f; } .chispa.mini-estrella:nth-child(5n+3) { background: #f0b72f; } .chispa.mini-estrella:nth-child(5n+4) { background: #9b6fe0; } .chispa.mini-estrella:nth-child(5n) { background: #3ec97c; }
 .doll.aparece { animation: aparece-muneca .8s cubic-bezier(.45, 0, .2, 1); }   /* random: un giro a medias que termina de frente, sin rebote */
 @keyframes aparece-muneca { from { transform: perspective(900px) rotateY(-70deg); opacity: .35; } to { transform: perspective(900px) rotateY(0); opacity: 1; } }
 .doll img.saliendo { animation: sale .4s ease-out forwards; }
@@ -357,6 +377,8 @@ a { color: var(--color-acento); }
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
   .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .chispa, .boing, .doll.aparece, .doll img.saliendo, .dressup-titulo, .open .banner .logo, html:not(.splash-on) .banner .logo, .photo.flash::after, .room.flash::after { animation: none; }
+  .splash-on:not(.open) .cart { scale: none; }
+  .splash-on.open .cart { transition: opacity .8s ease 1.3s, visibility 0s 1.3s; }   /* solo se desvanece, sin agrandarse */
   .tab, .paso, .scene-btns button, .mini, .paso svg, .scene-btns svg, .doll.acomodando img { transition: none; }
   .paso:hover svg, .paso[data-paso="-1"]:hover svg, .scene-btns button:hover svg { translate: none; }   /* queda el cambio de color, sin movimiento */
 }

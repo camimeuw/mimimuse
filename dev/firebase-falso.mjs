@@ -1,6 +1,6 @@
 // Un Firebase de mentira para probar el panel y la tienda sin internet ni cuenta (solo para pruebas).
 // Imita lo que usa el panel: inicio de sesión con email, Firestore (leer, listar, guardar, borrar y "commit" con condiciones)
-// y las reglas de seguridad de firestore.rules: todos leen todo menos catalogo/admin, y solo la dueña escribe.
+// y las reglas de seguridad de firestore.rules: todos leen un documento (menos catalogo/admin), solo la dueña lista fotos y cupones, y solo ella escribe.
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
@@ -68,7 +68,7 @@ export function crear() {
 
       const [col, id] = resto.split('/');
       if (req.method === 'GET' && col && !id) {
-        if (!duena && [...docs.keys()].some((k) => k.startsWith(col + '/') && !puedeLeer(k))) return error(res, 403, 'PERMISSION_DENIED', 'Missing or insufficient permissions.');
+        if (!duena && (['fotos', 'codigos'].includes(col) || [...docs.keys()].some((k) => k.startsWith(col + '/') && !puedeLeer(k)))) return error(res, 403, 'PERMISSION_DENIED', 'Missing or insufficient permissions.');   // la lista de fotos y cupones es solo de la dueña
         const lista = [...docs.entries()].filter(([k]) => k.startsWith(col + '/') && !k.slice(col.length + 1).includes('/')).map(([k, d]) => ver(k, d));
         estado.lecturas += lista.length;
         return enviar(res, lista.length ? { documents: lista } : {});

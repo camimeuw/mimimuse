@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
+  <!-- Solo se ejecuta el código del propio panel y solo se habla con Firebase (protege la sesión guardada) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
   <title>Panel · Mimi Muse</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,6 +54,7 @@
         <button type="button" id="renombrar" class="sec">Renombrar categoría</button>
         <button type="button" id="planilla" class="sec">Planilla (Excel)</button>
         <button type="button" id="copia" class="sec">Descargar copia</button>
+        <button type="button" id="papelera" class="sec">Papelera</button>
       </div>
       <div class="resumen"><label class="todos"><input type="checkbox" id="todos"> <span id="todos-txt">Seleccionar todos</span></label><p id="resumen" class="nota" aria-live="polite"></p></div>
       <ul id="lista" class="lista"></ul>
@@ -126,6 +129,15 @@
   </dialog>
 
   <!-- Renombrar categoría o subcategoría -->
+  <dialog id="d-papelera" aria-labelledby="t-papelera">
+    <form method="dialog">
+      <h2 id="t-papelera">Papelera</h2>
+      <p class="nota">Los últimos 30 productos eliminados, con sus fotos. Cuando pasan de 30, los más viejos se borran para siempre.</p>
+      <ul id="pa-lista" class="lista"></ul>
+      <div class="botones"><button type="button" class="sec" id="pa-cerrar">Cerrar</button></div>
+    </form>
+  </dialog>
+
   <dialog id="d-ren" aria-labelledby="t-ren">
     <form id="f-ren" method="dialog">
       <h2 id="t-ren">Renombrar categoría</h2>

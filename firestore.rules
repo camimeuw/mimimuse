@@ -1,6 +1,7 @@
 // Reglas de seguridad de Firestore para Mimi Muse. Se pegan en Firebase → Firestore Database → Reglas → Publicar (ver docs/firebase.md).
 // 1) Cambiá el email de abajo por el de la dueña (el mismo con el que entra al panel).
-// 2) Todos pueden LEER los productos visibles, las fotos y los cupones (es lo que muestra la tienda).
+// 2) Todos pueden LEER los productos visibles, y una foto o un cupón si saben cuál es (es lo que usa la tienda).
+//    La LISTA completa de fotos y de cupones solo la ve la dueña (así no se ven cupones secretos ni fotos de productos ocultos).
 // 3) Solo la dueña puede ESCRIBIR, y solo ella puede leer la lista completa (con los productos ocultos).
 rules_version = '2';
 service cloud.firestore {
@@ -11,7 +12,7 @@ service cloud.firestore {
 
     match /catalogo/publico { allow read: if true; allow write: if esDuena(); }
     match /catalogo/admin   { allow read, write: if esDuena(); }
-    match /fotos/{id}       { allow read: if true; allow write: if esDuena(); }
-    match /codigos/{id}     { allow read: if true; allow write: if esDuena(); }
+    match /fotos/{id}       { allow get: if true; allow list, write: if esDuena(); }
+    match /codigos/{id}     { allow get: if true; allow list, write: if esDuena(); }
   }
 }

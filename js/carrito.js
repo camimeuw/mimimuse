@@ -12,8 +12,8 @@
 
   let lineas = leer(KEY, []).filter((l) => l && l.id != null && l.cant > 0);
   let codigo = leer(KEY_COD, '');                 // código que escribió la compradora (se vuelve a validar)
-  let codigos = null;                             // cupones de Firebase, se piden la primera vez que hacen falta
-  let pedidoCodigos = null;
+  let codigos = null;                             // el cupón escrito, leído de Firebase (la lista completa no es pública)
+  let pedidoCodigos = null, pedidoDe = '';
 
   const dialogo = $('#carrito'), boton = $('.cart'), contador = $('.cart-count');
   const mismo = (a, b) => a.id === b.id && (a.talle || '') === (b.talle || '') && (a.color || '') === (b.color || '');
@@ -25,9 +25,13 @@
     boton.setAttribute('aria-label', `Carrito, ${n} producto${n === 1 ? '' : 's'}`);
   }
 
-  // Cupones: se leen una sola vez (son pocos) y solo si hace falta
-  function cargarCodigos() {
-    if (!pedidoCodigos) pedidoCodigos = (DB.enabled() ? DB.lista('codigos') : Promise.resolve([])).then((l) => { codigos = l; }).catch(() => { codigos = []; pedidoCodigos = null; });
+  // Cupones: se pide solo el código que escribió la compradora, y solo si hace falta
+  function cargarCodigos(texto) {
+    const id = Pedido.norm(texto);
+    if (!pedidoCodigos || pedidoDe !== id) {
+      pedidoDe = id;
+      pedidoCodigos = (DB.enabled() && id ? DB.leer('codigos', id) : Promise.resolve(null)).then((c) => { codigos = c ? [c] : []; }).catch(() => { codigos = []; pedidoCodigos = null; });
+    }
     return pedidoCodigos;
   }
   const promo = () => (codigo && codigos ? Pedido.buscarCodigo(codigos, codigo) : null);
@@ -90,7 +94,7 @@
 
   async function abrir() {
     pintar(); dialogo.showModal(); dialogo.scrollTop = 0;
-    if (codigo && !codigos) { await cargarCodigos(); pintar(); }
+    if (codigo && !codigos) { await cargarCodigos(codigo); pintar(); }
   }
 
   dialogo.addEventListener('click', (e) => {
@@ -107,7 +111,7 @@
 
   // Cupón: se escribe en el carrito o llega por link (?codigo=HOLA10)
   async function aplicarCodigo(texto, silencioso) {
-    await cargarCodigos();
+    await cargarCodigos(texto);
     const r = Pedido.buscarCodigo(codigos, texto);
     if (r.error) { if (silencioso) { codigo = ''; guardar(KEY_COD, ''); } else { $('#car-cupon-msg').textContent = r.error; $('#car-cupon-msg').className = 'car-cupon-msg mal'; } return false; }
     codigo = r.codigo; guardar(KEY_COD, codigo); pintar(); return true;

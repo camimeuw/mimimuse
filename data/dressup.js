@@ -37,16 +37,10 @@ const ROPA = (() => {
       { nombre: "short lunares", src: "assets/dressup/abajo-short-lunares.png" },
       { nombre: "pollera negra", src: "assets/dressup/abajo-pollera-negra.png" },
     ],
-    zapatos: [
-      { nombre: "zapatillas", src: svg(simetrico(forma(
-        "M285 1655 L345 1655 L350 1745 Q362 1770 352 1788 L262 1788 Q250 1760 270 1735 Z", FUCSIA,
-        `<path d="M268 1760 H352" stroke="${BLANCO}" stroke-width="8"/>`))) },
-      { nombre: "botas", src: svg(simetrico(forma(
-        "M268 1540 L350 1540 L352 1745 Q364 1772 354 1788 L258 1788 Q246 1762 266 1738 Z", UVA,
-        `<path d="M268 1560 H350" stroke="${BLANCO}" stroke-width="8"/>`))) },
-      { nombre: "bailarinas", src: svg(simetrico(forma(
-        "M280 1700 L340 1700 L350 1745 Q362 1770 352 1788 L262 1788 Q250 1760 268 1738 Z", LILA,
-        `<path d="M296 1706 l-14 -12 v24z M326 1706 l14 -12 v24z" fill="${FUCSIA}" stroke="#411d4b" stroke-width="4"/>`))) },
+    zapatos: [   // zapatos de demostración (PNG de 730x1790 con cada zapato sobre su pie)
+      { nombre: "zapatos moño", src: "assets/dressup/zapatos-mona.png" },
+      { nombre: "zapatillas negras", src: "assets/dressup/zapatillas-negras.png" },
+      { nombre: "botas negras", src: "assets/dressup/botas-negras.png" },
     ],
   };
 })();

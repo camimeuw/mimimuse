@@ -21,10 +21,9 @@ const ROPA = (() => {
   const FUCSIA = "#d63fa6", LILA = "#d9a8ea", UVA = "#7b2a8e", BLANCO = "#ffffff";
 
   return {
-    arriba: [
-      { nombre: "remera corazón", src: svg(simetrico(forma(
-        "M365 425 Q320 425 305 362 L215 370 L145 410 L130 545 L195 565 L205 480 L212 810 L365 810 Z", FUCSIA,
-        `<path d="M290 600 q-30 -30 0 -50 q22 -10 30 12 q8 -22 30 -12 q30 20 0 50 l-30 30z" fill="${BLANCO}" stroke="#411d4b" stroke-width="4"/>`))) },
+    arriba: [   // remeras de demostración (PNG de 730x1790 con la prenda ya ajustada a la modelo)
+      { nombre: "remera pentagrama", src: "assets/dressup/arriba-pentagrama.png" },
+      { nombre: "remera gatitos", src: "assets/dressup/arriba-gatitos.png" },
       { nombre: "top violeta", src: svg(simetrico(forma(
         "M365 440 Q335 440 322 385 L322 362 L285 366 L268 450 L225 490 L212 700 L365 700 Z", UVA,
         `<circle cx="300" cy="620" r="12" fill="${BLANCO}"/><circle cx="260" cy="560" r="9" fill="${BLANCO}"/><circle cx="320" cy="520" r="8" fill="${BLANCO}"/>`))) },

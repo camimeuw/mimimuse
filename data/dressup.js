@@ -32,16 +32,10 @@ const ROPA = (() => {
         "M365 430 Q318 430 304 360 L215 368 L148 408 L98 690 L175 708 L205 545 L212 812 L365 812 Z", LILA,
         `<path d="M215 700 H365 M215 740 H365" stroke="${UVA}" stroke-width="10"/><path d="M130 520 L190 540 M120 590 L180 610" stroke="${UVA}" stroke-width="10"/>`))) },
     ],
-    abajo: [
-      { nombre: "pollera rosa", src: svg(simetrico(forma(
-        "M365 800 L188 800 L120 1170 L365 1170 Z", FUCSIA,
-        '<path d="M250 810 L215 1165 M300 810 L290 1165" stroke="#411d4b" stroke-width="4" fill="none"/>'))) },
-      { nombre: "short violeta", src: svg(simetrico(forma(
-        "M365 800 L188 800 L172 1040 L338 1040 L360 930 L365 930 Z", UVA,
-        `<circle cx="255" cy="900" r="10" fill="${BLANCO}"/>`))) },
-      { nombre: "pantalón lila", src: svg(simetrico(forma(
-        "M365 800 L188 800 L150 1200 L178 1655 L335 1655 L352 1010 L365 960 Z", LILA,
-        `<path d="M200 810 L170 1200" stroke="${UVA}" stroke-width="8" fill="none"/>`))) },
+    abajo: [   // prendas de demostración (PNG de 730x1790 con la prenda ya ubicada sobre la modelo)
+      { nombre: "short rosa", src: "assets/dressup/abajo-short-rosa.png" },
+      { nombre: "short lunares", src: "assets/dressup/abajo-short-lunares.png" },
+      { nombre: "pollera negra", src: "assets/dressup/abajo-pollera-negra.png" },
     ],
     zapatos: [
       { nombre: "zapatillas", src: svg(simetrico(forma(

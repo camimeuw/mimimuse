@@ -152,8 +152,8 @@ a { color: var(--color-acento); }
   position: relative;                                                    /* las estrellitas de los botones salen desde acá */
   display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: start; gap: 12px; min-height: 0; margin-top: 10px;
 }
-.closet, .mimi-mode, .acciones { grid-column: 1; }
-.model { grid-column: 2; grid-row: 1 / span 3; align-self: stretch; display: grid; }   /* el escenario ocupa todo el alto de la columna de botones */
+.closet, .mimi-mode { grid-column: 1; }
+.model { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; display: grid; }   /* el escenario ocupa todo el alto de la columna de botones */
 /* Título del juego: pixel nítido solo a múltiplos de 10 px (la fuente está dibujada a 10 px) */
 .dressup-titulo { margin: 10px 0 0; font-family: "Grape Soda", var(--titulo); font-size: 48px; font-weight: 400; line-height: 1; color: var(--color-acento); text-align: center;   /* nítida a múltiplos de 16 px */
   animation: flota 2.8s ease-in-out infinite alternate; }
@@ -178,10 +178,7 @@ a { color: var(--color-acento); }
 .fila[data-parte="abajo"] { --fill: #ff8fcf; --sombra: #e2519f; --borde: #b8267a; --tinta: #7e1257; }
 .fila[data-parte="zapatos"] { --fill: #ffe36e; --sombra: #f0b72f; --borde: #b07a0a; --tinta: #6b4600; }
 .mimi-mode { --fill: #c9a2ff; --sombra: #9b6fe0; --borde: #6a3fb0; --tinta: #3f1d85; }
-#random { --fill: #8ff0b3; --sombra: #3ec97c; --borde: #1f8f55; --tinta: #0d5a34; }
-#acomodar { --fill: #ffb98a; --sombra: #f0883f; --borde: #b8561a; --tinta: #7a3208; }
 .closet { gap: 11px; }
-.acciones { gap: 12px; padding: 4px 4px 7px; }
 /* panel: crema, con borde de esquinas escalonadas del color de su parte */
 .fila, .mimi-mode { display: grid; justify-items: center; gap: 6px; padding: 12px 5px 12px; border: 0; background: #fff8fd; color: var(--color-texto); text-align: center;
   box-shadow: 0 calc(var(--px) * -1) 0 0 var(--borde), calc(var(--px) * -1) 0 0 0 var(--borde), var(--px) 0 0 0 var(--borde), 0 calc(var(--px) * 2) 0 0 var(--borde), inset 0 0 0 var(--px) var(--fill); }
@@ -190,18 +187,18 @@ a { color: var(--color-acento); }
 .parte::before { content: none; }
 .prenda { min-height: 2.3em; margin: 4px 0 9px; font-size: .75rem; font-weight: 800; line-height: 1.15; }
 .pasos, .scene-btns { display: flex; gap: 7px; }
-.paso, .scene-btns button, .mini { --lip: 6px; border: 0; border-radius: 0; background: var(--fill); color: var(--tinta); cursor: pointer; margin-bottom: 3px;
+.paso, .scene-btns button { --lip: 6px; border: 0; border-radius: 0; background: var(--fill); color: var(--tinta); cursor: pointer; margin-bottom: 3px;
   box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .75), inset -3px -3px 0 var(--sombra),
     0 -3px 0 0 var(--borde), -3px 0 0 0 var(--borde), 3px 0 0 0 var(--borde), 0 var(--lip) 0 0 var(--borde);
   transition: translate .08s, filter .12s; -webkit-tap-highlight-color: transparent; }
 .paso, .scene-btns button { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; }
 .paso svg, .scene-btns svg { width: 21px; height: 21px; transition: translate .15s steps(2); }   /* 7 casillas × 3 px: el píxel queda entero */
 .paso[data-paso="-1"] svg { transform: scaleX(-1); }
-.paso:hover, .scene-btns button:hover, .mini:hover { filter: brightness(1.07) saturate(1.1); }
-.paso:focus-visible, .scene-btns button:focus-visible, .mini:focus-visible { outline: 3px dashed var(--tinta); outline-offset: 6px; }
+.paso:hover, .scene-btns button:hover { filter: brightness(1.07) saturate(1.1); }
+.paso:focus-visible, .scene-btns button:focus-visible { outline: 3px dashed var(--tinta); outline-offset: 6px; }
 .paso:hover svg, .scene-btns button:hover svg { translate: 3px 0; }
 .paso[data-paso="-1"]:hover svg, .scene-btns .scene-prev:hover svg { translate: -3px 0; }
-.paso:active, .scene-btns button:active, .mini:active { --lip: 3px; translate: 0 3px; box-shadow: inset 3px 3px 0 var(--sombra), inset -3px -3px 0 rgba(255, 255, 255, .5), 0 -3px 0 0 var(--borde), -3px 0 0 0 var(--borde), 3px 0 0 0 var(--borde), 0 3px 0 0 var(--borde); }
+.paso:active, .scene-btns button:active { --lip: 3px; translate: 0 3px; box-shadow: inset 3px 3px 0 var(--sombra), inset -3px -3px 0 rgba(255, 255, 255, .5), 0 -3px 0 0 var(--borde), -3px 0 0 0 var(--borde), 3px 0 0 0 var(--borde), 0 3px 0 0 var(--borde); }
 .paso:disabled { cursor: default; opacity: .45; filter: grayscale(.5); }
 .model { position: relative; min-width: 0; }
 .photo { position: relative; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--fucsia); border-radius: 28px; background: var(--escena); text-align: center; padding: 12px; }
@@ -209,8 +206,6 @@ a { color: var(--color-acento); }
 .doll img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
 .pista { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; padding: 0 12px; font-size: .75rem; font-weight: 800; color: var(--tinta); }
 .scene-prev svg { transform: scaleX(-1); }
-.acciones { display: grid; min-width: 0; }
-.mini { width: 100%; min-height: 44px; padding: 2px 4px; font-family: var(--titulo); font-size: 1.1rem; }
 .room { position: relative; width: calc(100% - 6px); height: 26px; margin: 6px 0 12px; background: var(--escena); box-shadow: 0 calc(var(--px) * -1) 0 0 var(--borde), calc(var(--px) * -1) 0 0 0 var(--borde), var(--px) 0 0 0 var(--borde), 0 var(--px) 0 0 var(--borde); }   /* muestra chiquita del fondo elegido */
 
 /* ---------- Productos ---------- */
@@ -314,7 +309,6 @@ a { color: var(--color-acento); }
   .dressup-titulo { font-size: 32px; }
   .closet { gap: 6px; }
   .fila, .mimi-mode { padding: 10px 4px 12px; }
-  .mini { font-size: 1rem; }
   .doll { height: 380px; margin-bottom: 40px; }
   .pista { font-size: .75rem; }
 
@@ -363,23 +357,20 @@ a { color: var(--color-acento); }
   background: var(--fucsia); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   animation: chispa .75s cubic-bezier(.22, 1, .36, 1) forwards; }
 @keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
-/* Juego: el botón apretado se hunde suave y suelta estrellitas; la ropa cambia con un fundido y random hace aparecer la muñeca girando a medias */
+/* Juego: el botón apretado se hunde suave y suelta estrellitas; la ropa cambia con un fundido */
 .boing { animation: boing .3s cubic-bezier(.22, 1, .36, 1); }   /* se hunde y vuelve suave, sin pasarse de tamaño */
 @keyframes boing { from { scale: .92; } to { scale: 1; } }
 .chispa.mini-estrella { left: var(--x); top: var(--y); width: 8px; height: 8px; margin: -4px 0 0 -4px; clip-path: none; animation-duration: .55s; animation-timing-function: steps(6); }   /* confeti de bloques */
 .chispa.mini-estrella:nth-child(5n+1) { background: #3ea6e0; } .chispa.mini-estrella:nth-child(5n+2) { background: #e2519f; } .chispa.mini-estrella:nth-child(5n+3) { background: #f0b72f; } .chispa.mini-estrella:nth-child(5n+4) { background: #9b6fe0; } .chispa.mini-estrella:nth-child(5n) { background: #3ec97c; }
-.doll.aparece { animation: aparece-muneca .8s cubic-bezier(.45, 0, .2, 1); }   /* random: un giro a medias que termina de frente, sin rebote */
-@keyframes aparece-muneca { from { transform: perspective(900px) rotateY(-70deg); opacity: .35; } to { transform: perspective(900px) rotateY(0); opacity: 1; } }
 .doll img.saliendo { animation: sale .4s ease-out forwards; }
 @keyframes sale { to { opacity: 0; filter: blur(2px); } }
-.doll.acomodando img { transition: translate .4s cubic-bezier(.22, 1, .36, 1); }
 
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
-  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .chispa, .boing, .doll.aparece, .doll img.saliendo, .dressup-titulo, .open .banner .logo, html:not(.splash-on) .banner .logo, .photo.flash::after, .room.flash::after { animation: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .chispa, .boing, .doll img.saliendo, .dressup-titulo, .open .banner .logo, html:not(.splash-on) .banner .logo, .photo.flash::after, .room.flash::after { animation: none; }
   .splash-on:not(.open) .cart { scale: none; }
   .splash-on.open .cart { transition: opacity .8s ease 1.3s, visibility 0s 1.3s; }   /* solo se desvanece, sin agrandarse */
-  .tab, .paso, .scene-btns button, .mini, .paso svg, .scene-btns svg, .doll.acomodando img { transition: none; }
+  .tab, .paso, .scene-btns button, .paso svg, .scene-btns svg { transition: none; }
   .paso:hover svg, .paso[data-paso="-1"]:hover svg, .scene-btns button:hover svg { translate: none; }   /* queda el cambio de color, sin movimiento */
 }
 

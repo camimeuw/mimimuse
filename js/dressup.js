@@ -5,22 +5,9 @@ const doll = dressup.querySelector('#doll');
 const anuncio = dressup.querySelector('#anuncio');
 const SCENES = 9;   // los fondos están en css/main.css (.dressup[data-scene="N"])
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
-const rnd = (n) => Math.floor(Math.random() * n);
 
 // Reinicia una animación de CSS aunque se repita seguido
 const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
-
-function burst() {
-  for (let k = 0; k < 6; k++) {
-    const c = document.createElement('i');
-    const a = (k / 6) * Math.PI * 2 + Math.random() * 0.6, d = 70 + Math.random() * 50;
-    c.className = 'chispa';
-    c.style.setProperty('--dx', `${Math.cos(a) * d}px`);
-    c.style.setProperty('--dy', `${Math.sin(a) * d}px`);
-    c.addEventListener('animationend', () => c.remove());
-    photo.appendChild(c);
-  }
-}
 
 // Estrellitas chiquitas que salen del botón apretado (en los colores de Mimi Muse)
 function estrellitas(b) {
@@ -49,7 +36,6 @@ const PARTES = ORDEN.filter((k) => ROPA[k]?.length);  // una lista vacía no rom
 const elegida = { arriba: 0, abajo: 0, zapatos: 0 };
 const off = {};                                  // cuánto se arrastró cada prenda
 const capas = {}, textos = {}, filas = {};
-let barajando = false;
 
 // Precarga: cambiar de prenda no deja la capa en blanco mientras baja el PNG
 const cache = {};
@@ -79,10 +65,9 @@ function mostrarRopa() {   // no se llama "mostrar": productos.js ya usa ese nom
   });
 }
 const mover = (k, x, y) => { off[k] = { x, y }; capas[k].style.translate = `${x}px ${y}px`; };
-const acomodar = () => PARTES.forEach((k) => mover(k, 0, 0));
 
 function cambiar(parte, d) {
-  if (barajando || !PARTES.includes(parte)) return;
+  if (!PARTES.includes(parte)) return;
   const n = ROPA[parte].length;
   elegida[parte] = (elegida[parte] + d + n) % n;   // en loop
   fundir(parte);
@@ -91,30 +76,6 @@ function cambiar(parte, d) {
   anuncio.textContent = `${parte}: ${ROPA[parte][elegida[parte]].nombre}`;
 }
 mostrarRopa();
-
-function random() {
-  if (barajando || !PARTES.length) return;
-  const sorteo = () => Object.fromEntries(PARTES.map((k) => [k, rnd(ROPA[k].length)]));
-  const combos = PARTES.reduce((n, k) => n * ROPA[k].length, 1);
-  let final = sorteo();
-  while (combos > 1 && PARTES.every((k) => final[k] === elegida[k])) final = sorteo();  // que siempre cambie algo
-  barajando = true;
-  acomodar();
-  const terminar = () => {
-    Object.assign(elegida, final);
-    mostrarRopa();
-    barajando = false;
-    anuncio.textContent = PARTES.map((k) => `${k}: ${ROPA[k][elegida[k]].nombre}`).join(', ');
-    if (!calm.matches) { restart(doll, 'aparece'); burst(); }   // random: la muñeca aparece girando suave
-  };
-  if (calm.matches) return terminar();
-  let t = 0;
-  const id = setInterval(() => {      // barajada rápida antes de elegir
-    Object.assign(elegida, sorteo());
-    mostrarRopa();
-    if (++t >= 6) { clearInterval(id); terminar(); }
-  }, 70);
-}
 
 // ---- Arrastrar prendas (la modelo no se mueve). Se escucha en todo el escenario: así una prenda que salió de la muñeca se puede volver a agarrar ----
 const px = document.createElement('canvas');
@@ -139,7 +100,6 @@ const prendaEn = (e) => [...PARTES].reverse().find((k) => toca(k, e));   // la d
 
 let drag = null;
 photo.addEventListener('pointerdown', (e) => {
-  if (barajando) return;
   const k = prendaEn(e);
   if (!k) return;                 // tocar la modelo no hace nada
   drag = { k, sx: e.clientX, sy: e.clientY, ox: off[k].x, oy: off[k].y };
@@ -147,14 +107,14 @@ photo.addEventListener('pointerdown', (e) => {
   photo.style.cursor = 'grabbing';
 });
 photo.addEventListener('pointermove', (e) => {
-  if (!drag) { if (!barajando) photo.style.cursor = prendaEn(e) ? 'grab' : 'default'; return; }
+  if (!drag) { photo.style.cursor = prendaEn(e) ? 'grab' : 'default'; return; }
   const lim = { x: photo.clientWidth, y: photo.clientHeight };
   mover(drag.k,
     Math.max(-lim.x, Math.min(lim.x, drag.ox + e.clientX - drag.sx)),
     Math.max(-lim.y, Math.min(lim.y, drag.oy + e.clientY - drag.sy)));
 });
 // Táctil: el scroll de la página solo se frena si el dedo agarra una prenda
-photo.addEventListener('touchstart', (e) => { if (!barajando && prendaEn(e.touches[0])) e.preventDefault(); }, { passive: false });
+photo.addEventListener('touchstart', (e) => { if (prendaEn(e.touches[0])) e.preventDefault(); }, { passive: false });
 
 const soltar = () => {
   if (!drag) return;
@@ -169,13 +129,8 @@ photo.addEventListener('pointercancel', soltar);
 dressup.addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
-  if (!calm.matches && !barajando) { restart(b, 'boing'); estrellitas(b); }   // el botón rebota y suelta estrellitas
+  if (!calm.matches) { restart(b, 'boing'); estrellitas(b); }   // el botón rebota y suelta estrellitas
   if (b.dataset.paso) cambiar(b.closest('.fila').dataset.parte, +b.dataset.paso);
-  if (b.id === 'random') random();
-  if (b.id === 'acomodar' && !barajando) {
-    doll.classList.add('acomodando'); setTimeout(() => doll.classList.remove('acomodando'), 450);   // las prendas vuelven a su lugar deslizando
-    acomodar();
-  }
   if (b.dataset.scene) {
     dressup.dataset.scene = (+dressup.dataset.scene + +b.dataset.scene + SCENES) % SCENES;
     if (!calm.matches) { restart(photo, 'flash'); restart(room, 'flash'); }

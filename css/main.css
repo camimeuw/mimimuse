@@ -18,7 +18,7 @@
   --ease: cubic-bezier(.22, .61, .36, 1);
 }
 * { box-sizing: border-box; }
-html { background: var(--color-fondo); }
+html { background: #ffdfef url("../assets/fondo-corazoncito.gif"); }   /* el mismo papel tapiz que el body: no se ve otro color si la página es corta */
 body {
   margin: 0; font-family: var(--fuente); font-size: .95rem; font-weight: 600; color: var(--color-texto);
   background: #ffdfef url("../assets/fondo-corazoncito.gif");   /* papel tapiz rosa con un corazoncito (gif de 33×32 que se repite) */
@@ -292,7 +292,6 @@ a { color: var(--color-acento); }
 
   /* productos: sin cajas, flotando y desparramados (diseño de la otra página) */
   #productos { display: none; background: none; border: 0; box-shadow: none; padding: 0; }
-  body.ver-productos { background: var(--color-fondo); }   /* sin el papel tapiz detrás de los productos */
   body.ver-productos #productos { display: block; }
   body.ver-productos .dressup-seccion { display: none; }
   #productos > .caja-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

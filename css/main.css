@@ -145,42 +145,47 @@ a { color: var(--color-acento); }
 .mp3-play[aria-pressed="true"] .i-pause { display: block; }
 
 
-/* ---------- Dress Up (mismo diseño de antes, en su versión angosta: closet | modelo | Mimi Mode) ---------- */
+/* ---------- Dress Up: todos los controles en una columna a la izquierda | la modelo a la derecha (también en celu) ---------- */
 .dressup {
   --escena: #e9cae1 url("../assets/fondo-modelo.gif");   /* escena 0: brillitos rosa (gif de 85×85 que se repite) */
-  display: grid; grid-template-columns: 116px minmax(0, 1fr) 58px; gap: 8px; min-height: 0; margin-top: 10px;
+  position: relative;                                                    /* las estrellitas de los botones salen desde acá */
+  display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: start; gap: 8px; min-height: 0; margin-top: 10px;
 }
+.closet, .mimi-mode, .acciones { grid-column: 1; }
+.model { grid-column: 2; grid-row: 1 / span 3; align-self: stretch; display: grid; }   /* el escenario ocupa todo el alto de la columna de botones */
 /* Título del juego: pixel nítido solo a múltiplos de 10 px (la fuente está dibujada a 10 px) */
 .dressup-titulo { margin: 10px 0 0; font-family: "Grape Soda", var(--titulo); font-size: 48px; font-weight: 400; line-height: 1; color: var(--color-acento); text-align: center;   /* nítida a múltiplos de 16 px */
   animation: flota 2.8s ease-in-out infinite alternate; }
 @keyframes flota { from { translate: 0 2px; } to { translate: 0 -6px; } }
 .dressup[data-scene="1"] { --escena: linear-gradient(var(--color-caja), var(--rosa)); }
 .dressup[data-scene="2"] { --escena: radial-gradient(var(--color-caja) 2px, transparent 2.5px) 0 0 / 18px 18px, var(--lila); }
-.closet { display: grid; align-content: start; gap: 8px; }
+.closet { display: grid; gap: 8px; }
 .closet h2, .mimi-mode h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; }
-.fila { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(168, 36, 122, .5); }
+.fila, .mimi-mode { display: grid; justify-items: center; gap: 4px; padding: 8px 6px 10px; border: 2px solid var(--lila); border-radius: 18px; background: var(--rosa); text-align: center; box-shadow: 0 6px 10px -6px rgba(168, 36, 122, .5); }
 .parte { font-family: var(--titulo); font-size: 1.15rem; color: var(--uva); line-height: 1; }
 .prenda { min-height: 2.3em; font-size: .75rem; font-weight: 800; line-height: 1.15; }
-.pasos { display: flex; gap: 6px; }
-.paso { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 2px solid var(--uva); border-radius: 50%; background: var(--color-caja); color: var(--uva); cursor: pointer; transition: scale .2s cubic-bezier(.22, 1, .36, 1); }
-.paso svg { width: 20px; height: 20px; }
+.pasos, .scene-btns { display: flex; gap: 6px; }
+/* Botones de juego: con relieve suave; al pasar el mouse la flecha se asoma, al apretar se hunden y rebotan */
+.paso, .scene-btns button, .mini { --hundido: 0px; border: 2px solid var(--uva); color: var(--uva); cursor: pointer; background: linear-gradient(#fff, var(--color-caja) 55%, #fdd8f6);
+  box-shadow: inset 0 -3px 0 rgba(168, 36, 122, .18), 0 4px 6px -2px rgba(168, 36, 122, .45); translate: 0 var(--hundido);
+  transition: background-color .15s, box-shadow .15s, translate .1s; -webkit-tap-highlight-color: transparent; }
+.paso, .scene-btns button { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border-radius: 50%; }
+.paso svg, .scene-btns svg { width: 20px; height: 20px; transition: translate .2s cubic-bezier(.16, 1, .3, 1); }
 .paso[data-paso="-1"] svg { transform: scaleX(-1); }
-.paso:hover { scale: 1.12; }
-.paso:active { scale: .94; }
-.model { position: relative; min-width: 0; display: grid; grid-template-rows: 1fr auto; gap: 6px; }
+.paso:hover, .scene-btns button:hover, .mini:hover, .paso:focus-visible, .scene-btns button:focus-visible, .mini:focus-visible { border-color: var(--fucsia); background: linear-gradient(#fff, #fff 45%, #fde3f8); box-shadow: inset 0 -3px 0 rgba(168, 36, 122, .18), 0 6px 9px -2px rgba(168, 36, 122, .5); }
+.paso:hover svg, .scene-btns button:hover svg { translate: 3px 0; }
+.paso[data-paso="-1"]:hover svg, .scene-btns .scene-prev:hover svg { translate: -3px 0; }
+.paso:active, .scene-btns button:active, .mini:active { --hundido: 2px; box-shadow: inset 0 2px 3px rgba(168, 36, 122, .3), 0 1px 2px -1px rgba(168, 36, 122, .45); }
+.paso:disabled { cursor: default; opacity: .45; }
+.model { position: relative; min-width: 0; }
 .photo { position: relative; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--fucsia); border-radius: 28px; background: var(--escena); text-align: center; padding: 12px; }
-.doll { position: relative; height: 350px; aspect-ratio: 730 / 1790; margin-bottom: 26px; }
+.doll { position: relative; height: 480px; aspect-ratio: 730 / 1790; margin-bottom: 26px; }
 .doll img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
 .pista { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; padding: 0 12px; font-size: .75rem; font-weight: 800; color: var(--tinta); }
 .scene-prev svg { transform: scaleX(-1); }
-.acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-width: 0; }
-.mini { min-height: 44px; padding: 2px 10px; font-family: var(--titulo); font-size: 1.1rem; color: var(--uva); background: var(--color-caja); border: 2px solid var(--uva); border-radius: 18px; cursor: pointer; }
-.mini:hover { background: var(--rosa); }
-.mimi-mode { display: grid; align-content: start; gap: 8px; }
-.room { aspect-ratio: 1; border: 2px solid var(--lila); border-radius: 18px; background: var(--escena); }
-.scene-btns { display: grid; gap: 6px; }
-.scene-btns button { height: 44px; display: grid; place-items: center; padding: 0; border: 2px solid var(--uva); border-radius: 18px; background: var(--color-caja); color: var(--uva); cursor: pointer; }
-.scene-btns svg { width: 20px; height: 20px; }
+.acciones { display: grid; gap: 6px; min-width: 0; }
+.mini { min-height: 44px; padding: 2px 8px; font-family: var(--titulo); font-size: 1.1rem; border-radius: 18px; }
+.room { position: relative; width: 100%; height: 30px; border: 2px solid var(--lila); border-radius: 10px; background: var(--escena); }   /* muestra chiquita del fondo elegido */
 
 /* ---------- Productos ---------- */
 /* Filtros de la tienda */
@@ -271,12 +276,14 @@ a { color: var(--color-acento); }
   .col-der > :not(.caja-musica) { order: 5; }
   .pie { order: 9; }
 
-  /* el juego en una columna: modelo, luego las 3 filas de ropa en hilera, luego Mimi Mode */
-  .dressup { grid-template-columns: 1fr; grid-template-areas: "model" "closet" "mimi"; gap: 8px; }
+  /* el juego sigue lado a lado: controles a la izquierda, modelo a la derecha (entra en 360 px) */
+  .dressup { grid-template-columns: 106px minmax(0, 1fr); gap: 6px; }
   .dressup-titulo { font-size: 32px; }
-  .model { grid-area: model; } .closet { grid-area: closet; grid-template-columns: repeat(3, 1fr); gap: 5px; } .mimi-mode { grid-area: mimi; grid-template-columns: 76px 1fr 1fr; align-items: center; }
-  .scene-btns { display: contents; }
-  .fila { padding: 6px 2px 8px; }
+  .closet { gap: 6px; }
+  .fila, .mimi-mode { padding: 6px 4px 8px; }
+  .mini { font-size: 1rem; }
+  .doll { height: 380px; margin-bottom: 40px; }
+  .pista { font-size: .75rem; }
 
   /* productos: sin cajas, flotando y desparramados (diseño de la otra página) */
   #productos { display: none; background: none; border: 0; box-shadow: none; padding: 0; }
@@ -311,7 +318,6 @@ a { color: var(--color-acento); }
 /* ---- Personalidad: capas de brillitos, pegatinas inclinadas ---- */
 @keyframes float { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 
-.mimi-mode .room { rotate: 2.5deg; }
 
 .model { isolation: isolate; }
 .photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(168, 36, 122, .55); }
@@ -327,11 +333,21 @@ a { color: var(--color-acento); }
   background: var(--fucsia); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   animation: chispa .75s cubic-bezier(.22, 1, .36, 1) forwards; }
 @keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
+/* Juego: el botón apretado rebota y suelta estrellitas; la muñeca salta al cambiar de ropa y gira con random */
+.boing { animation: boing .38s cubic-bezier(.16, 1, .3, 1); }
+@keyframes boing { 0% { scale: .84; } 45% { scale: 1.12; } 75% { scale: .97; } 100% { scale: 1; } }
+.chispa.mini-estrella { left: var(--x); top: var(--y); width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; animation-duration: .55s; }
+.chispa.mini-estrella:nth-child(4n+1) { background: var(--uva); } .chispa.mini-estrella:nth-child(4n+2) { background: var(--lila); } .chispa.mini-estrella:nth-child(4n+3) { background: #ff9aeb; }
+.doll.salta { animation: salta .48s cubic-bezier(.16, 1, .3, 1); }
+@keyframes salta { 0% { transform: none; } 30% { transform: translateY(-16px) scale(.97, 1.04); } 62% { transform: translateY(0) scale(1.05, .95); } 82% { transform: translateY(-3px); } 100% { transform: none; } }
+.doll.gira { animation: gira .7s cubic-bezier(.16, 1, .3, 1); }
+@keyframes gira { from { transform: perspective(700px) rotateY(-360deg) scale(.92); } to { transform: perspective(700px) rotateY(0) scale(1); } }
 
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
-  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .photo.flash::after, .room.flash::after { animation: none; }
-  .tab, .paso { transition: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .boing, .doll.salta, .doll.gira, .dressup-titulo, .photo.flash::after, .room.flash::after { animation: none; }
+  .tab, .paso, .scene-btns button, .mini, .paso svg, .scene-btns svg { transition: none; }
+  .paso:hover svg, .paso[data-paso="-1"]:hover svg, .scene-btns button:hover svg { translate: none; }   /* queda el cambio de color, sin movimiento */
 }
 
 /* Elegir talle y color, y agregar al carrito */

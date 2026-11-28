@@ -22,6 +22,20 @@ function burst() {
   }
 }
 
+// Estrellitas chiquitas que salen del botón apretado (en los colores de Mimi Muse)
+function estrellitas(b) {
+  const r = b.getBoundingClientRect(), base = dressup.getBoundingClientRect();
+  for (let k = 0; k < 5; k++) {
+    const c = document.createElement('i'), a = (k / 5) * Math.PI * 2 + Math.random() * 0.8, d = 26 + Math.random() * 18;
+    c.className = 'chispa mini-estrella';
+    c.style.setProperty('--x', `${r.left - base.left + r.width / 2}px`); c.style.setProperty('--y', `${r.top - base.top + r.height / 2}px`);
+    c.style.setProperty('--dx', `${Math.cos(a) * d}px`); c.style.setProperty('--dy', `${Math.sin(a) * d}px`);
+    c.addEventListener('animationend', () => c.remove());
+    dressup.appendChild(c);
+  }
+}
+const salta = () => { if (!calm.matches) { doll.classList.remove('gira'); restart(doll, 'salta'); } };   // la muñeca hace un saltito
+
 // ---- La muñeca: modelo fija + una capa por parte, todas del mismo tamaño y apiladas ----
 const ORDEN = ['abajo', 'arriba', 'zapatos'];   // de atrás hacia adelante
 const PARTES = ORDEN.filter((k) => ROPA[k]?.length);  // una lista vacía no rompe nada: esa parte se apaga
@@ -49,7 +63,7 @@ dressup.querySelectorAll('.fila').forEach((f) => {
   if (!PARTES.includes(k)) { textos[k].textContent = 'sin prendas'; f.querySelectorAll('.paso').forEach((b) => { b.disabled = true; }); }
 });
 
-function mostrar() {
+function mostrarRopa() {   // no se llama "mostrar": productos.js ya usa ese nombre y lo pisaba
   PARTES.forEach((k) => {
     const item = ROPA[k][elegida[k]];
     capas[k].src = item.src;
@@ -65,10 +79,11 @@ function cambiar(parte, d) {
   const n = ROPA[parte].length;
   elegida[parte] = (elegida[parte] + d + n) % n;   // en loop
   mover(parte, 0, 0);
-  mostrar();
+  mostrarRopa();
+  salta();
   anuncio.textContent = `${parte}: ${ROPA[parte][elegida[parte]].nombre}`;
 }
-mostrar();
+mostrarRopa();
 
 function random() {
   if (barajando || !PARTES.length) return;
@@ -80,16 +95,16 @@ function random() {
   acomodar();
   const terminar = () => {
     Object.assign(elegida, final);
-    mostrar();
+    mostrarRopa();
     barajando = false;
     anuncio.textContent = PARTES.map((k) => `${k}: ${ROPA[k][elegida[k]].nombre}`).join(', ');
-    if (!calm.matches) { restart(photo, 'swap'); burst(); }
+    if (!calm.matches) { restart(photo, 'swap'); doll.classList.remove('salta'); restart(doll, 'gira'); burst(); }   // random: la muñeca gira
   };
   if (calm.matches) return terminar();
   let t = 0;
   const id = setInterval(() => {      // barajada rápida antes de elegir
     Object.assign(elegida, sorteo());
-    mostrar();
+    mostrarRopa();
     if (++t >= 6) { clearInterval(id); terminar(); }
   }, 70);
 }
@@ -147,9 +162,10 @@ photo.addEventListener('pointercancel', soltar);
 dressup.addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
+  if (!calm.matches && !barajando) { restart(b, 'boing'); estrellitas(b); }   // el botón rebota y suelta estrellitas
   if (b.dataset.paso) cambiar(b.closest('.fila').dataset.parte, +b.dataset.paso);
   if (b.id === 'random') random();
-  if (b.id === 'acomodar' && !barajando) acomodar();
+  if (b.id === 'acomodar' && !barajando) { acomodar(); salta(); }
   if (b.dataset.scene) {
     dressup.dataset.scene = (+dressup.dataset.scene + +b.dataset.scene + SCENES) % SCENES;
     if (!calm.matches) { restart(photo, 'flash'); restart(room, 'flash'); }

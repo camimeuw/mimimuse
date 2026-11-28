@@ -81,8 +81,6 @@ a { color: var(--color-acento); }
 .codigo { width: 100%; height: 56px; resize: none; font: .7rem monospace; color: var(--color-texto); border: 2px inset var(--lila); background: var(--color-caja); }
 
 /* ---------- Columna derecha ---------- */
-.reloj { margin: 0; text-align: center; font-size: 1.9rem; font-weight: 800; color: var(--color-acento); font-variant-numeric: tabular-nums; }
-.reloj-sub { margin: 0; text-align: center; font-size: .7rem; }
 .visitas { display: flex; justify-content: center; gap: 2px; margin: 2px 0; }
 .visitas i { font-style: normal; width: 22px; height: 30px; display: grid; place-items: center; background: var(--color-texto); color: var(--rosa);
   font-family: monospace; font-size: 1.2rem; font-weight: 700; border: 2px outset var(--lila); }
@@ -251,12 +249,18 @@ a { color: var(--color-acento); }
   font-family: var(--titulo); font-size: 1.3rem; cursor: pointer; }
 .ver-mas[hidden] { display: none; }
 .pie { text-align: center; font-size: .75rem; }
+.pie a, .contacto a { color: var(--color-acento); font-weight: 800; text-underline-offset: 3px; } .pie a:hover, .contacto a:hover { color: var(--fucsia); }
+.contacto { display: none; text-align: center; font-size: .85rem; } .contacto p { margin: 4px 0; }
+.deco-celu { display: none; }
+.decos { display: none; }
 
 /* ---------- Escritorio: 3 columnas ---------- */
 @media (min-width: 1000px) {
   .cols { grid-template-columns: 204px minmax(0, 1fr) 204px; }   /* la del medio usa lo que queda: las columnas terminan justo donde el header */
   .col-izq { display: grid; }
   .dressup-seccion { display: block; }
+  .decos { display: flex; align-items: center; justify-content: center; gap: 28px; margin-top: 18px; }   /* gifs sueltos debajo de las columnas */
+  .decos img { display: block; height: auto; }
 }
 /* ---------- Celular: una columna (cabecera, productos, reproductor) ---------- */
 @keyframes floatIn { from { opacity: 0; transform: translateY(90px) scale(.96); filter: blur(8px); } 55% { opacity: 1; } to { opacity: 1; transform: none; filter: blur(0); } }
@@ -277,7 +281,9 @@ a { color: var(--color-acento); }
     font-family: var(--titulo); font-size: 1.4rem; cursor: pointer; }
   .dressup-seccion, #productos { order: 3; }
   .col-der > :not(.caja-musica) { order: 5; }
-  .pie { order: 9; }
+  .deco-celu { display: block; order: 8; margin: 6px auto 0; width: 140px; height: auto; }
+  .contacto { display: block; order: 9; }
+  .pie { order: 10; }
 
   /* el juego sigue lado a lado: controles a la izquierda, modelo a la derecha (entra en 360 px) */
   .dressup { grid-template-columns: 106px minmax(0, 1fr); gap: 6px; }

@@ -34,7 +34,14 @@ function estrellitas(b) {
     dressup.appendChild(c);
   }
 }
-const salta = () => { if (!calm.matches) { doll.classList.remove('gira'); restart(doll, 'salta'); } };   // la muñeca hace un saltito
+// Cambio de prenda suave: la prenda vieja queda un instante encima y se desvanece, mientras la nueva ya está abajo (sin rebote)
+function fundir(k) {
+  if (calm.matches) return;
+  const vieja = capas[k].cloneNode();
+  vieja.alt = ''; vieja.classList.add('saliendo');
+  vieja.addEventListener('animationend', () => vieja.remove());
+  capas[k].after(vieja);
+}
 
 // ---- La muñeca: modelo fija + una capa por parte, todas del mismo tamaño y apiladas ----
 const ORDEN = ['abajo', 'arriba', 'zapatos'];   // de atrás hacia adelante
@@ -78,9 +85,9 @@ function cambiar(parte, d) {
   if (barajando || !PARTES.includes(parte)) return;
   const n = ROPA[parte].length;
   elegida[parte] = (elegida[parte] + d + n) % n;   // en loop
+  fundir(parte);
   mover(parte, 0, 0);
   mostrarRopa();
-  salta();
   anuncio.textContent = `${parte}: ${ROPA[parte][elegida[parte]].nombre}`;
 }
 mostrarRopa();
@@ -98,7 +105,7 @@ function random() {
     mostrarRopa();
     barajando = false;
     anuncio.textContent = PARTES.map((k) => `${k}: ${ROPA[k][elegida[k]].nombre}`).join(', ');
-    if (!calm.matches) { restart(photo, 'swap'); doll.classList.remove('salta'); restart(doll, 'gira'); burst(); }   // random: la muñeca gira
+    if (!calm.matches) { restart(doll, 'aparece'); burst(); }   // random: la muñeca aparece girando suave
   };
   if (calm.matches) return terminar();
   let t = 0;
@@ -165,7 +172,10 @@ dressup.addEventListener('click', (e) => {
   if (!calm.matches && !barajando) { restart(b, 'boing'); estrellitas(b); }   // el botón rebota y suelta estrellitas
   if (b.dataset.paso) cambiar(b.closest('.fila').dataset.parte, +b.dataset.paso);
   if (b.id === 'random') random();
-  if (b.id === 'acomodar' && !barajando) { acomodar(); salta(); }
+  if (b.id === 'acomodar' && !barajando) {
+    doll.classList.add('acomodando'); setTimeout(() => doll.classList.remove('acomodando'), 450);   // las prendas vuelven a su lugar deslizando
+    acomodar();
+  }
   if (b.dataset.scene) {
     dressup.dataset.scene = (+dressup.dataset.scene + +b.dataset.scene + SCENES) % SCENES;
     if (!calm.matches) { restart(photo, 'flash'); restart(room, 'flash'); }

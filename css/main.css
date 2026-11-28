@@ -335,30 +335,29 @@ a { color: var(--color-acento); }
 .photo { position: relative; z-index: 1; box-shadow: 0 12px 18px -10px rgba(168, 36, 122, .55); }
 
 /* Cambiar de look: la foto se acomoda y salen brillitos; cambiar de fondo: destello */
-.photo.swap { animation: swap .5s cubic-bezier(.22, 1, .36, 1); }
-@keyframes swap { from { transform: scale(.94, .9) rotate(-1.5deg); } }
 .photo::after, .room::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: 0; pointer-events: none; }
 .room { position: relative; }
-.photo.flash::after, .room.flash::after { animation: flash .5s ease-out; }
-@keyframes flash { from { opacity: .85; } }
+.photo.flash::after, .room.flash::after { animation: flash .7s ease-out; }
+@keyframes flash { from { opacity: .4; } }
 .chispa { position: absolute; left: 50%; top: 50%; z-index: 3; width: 16px; height: 16px; margin: -8px 0 0 -8px; pointer-events: none;
   background: var(--fucsia); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   animation: chispa .75s cubic-bezier(.22, 1, .36, 1) forwards; }
 @keyframes chispa { from { transform: scale(0); opacity: 1; } 40% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(90deg); opacity: 0; } }
-/* Juego: el botón apretado rebota y suelta estrellitas; la muñeca salta al cambiar de ropa y gira con random */
-.boing { animation: boing .38s cubic-bezier(.16, 1, .3, 1); }
-@keyframes boing { 0% { scale: .84; } 45% { scale: 1.12; } 75% { scale: .97; } 100% { scale: 1; } }
+/* Juego: el botón apretado se hunde suave y suelta estrellitas; la ropa cambia con un fundido y random hace aparecer la muñeca girando a medias */
+.boing { animation: boing .3s cubic-bezier(.22, 1, .36, 1); }   /* se hunde y vuelve suave, sin pasarse de tamaño */
+@keyframes boing { from { scale: .92; } to { scale: 1; } }
 .chispa.mini-estrella { left: var(--x); top: var(--y); width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; animation-duration: .55s; }
 .chispa.mini-estrella:nth-child(4n+1) { background: var(--uva); } .chispa.mini-estrella:nth-child(4n+2) { background: var(--lila); } .chispa.mini-estrella:nth-child(4n+3) { background: #ff9aeb; }
-.doll.salta { animation: salta .48s cubic-bezier(.16, 1, .3, 1); }
-@keyframes salta { 0% { transform: none; } 30% { transform: translateY(-16px) scale(.97, 1.04); } 62% { transform: translateY(0) scale(1.05, .95); } 82% { transform: translateY(-3px); } 100% { transform: none; } }
-.doll.gira { animation: gira .7s cubic-bezier(.16, 1, .3, 1); }
-@keyframes gira { from { transform: perspective(700px) rotateY(-360deg) scale(.92); } to { transform: perspective(700px) rotateY(0) scale(1); } }
+.doll.aparece { animation: aparece-muneca .8s cubic-bezier(.45, 0, .2, 1); }   /* random: un giro a medias que termina de frente, sin rebote */
+@keyframes aparece-muneca { from { transform: perspective(900px) rotateY(-70deg); opacity: .35; } to { transform: perspective(900px) rotateY(0); opacity: 1; } }
+.doll img.saliendo { animation: sale .4s ease-out forwards; }
+@keyframes sale { to { opacity: 0; filter: blur(2px); } }
+.doll.acomodando img { transition: translate .4s cubic-bezier(.22, 1, .36, 1); }
 
 @media (prefers-reduced-motion: reduce) {
   .chip-f { transition: none; }
-  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .photo.swap, .chispa, .boing, .doll.salta, .doll.gira, .dressup-titulo, .open .banner .logo, html:not(.splash-on) .banner .logo, .photo.flash::after, .room.flash::after { animation: none; }
-  .tab, .paso, .scene-btns button, .mini, .paso svg, .scene-btns svg { transition: none; }
+  .marquee span, .tarjeta, .tarjeta .float, .pix, .pix.bota, .pix.gira, .pix.late, .pix.parp, .nuevo, .caen svg, .parp, .chispa, .boing, .doll.aparece, .doll img.saliendo, .dressup-titulo, .open .banner .logo, html:not(.splash-on) .banner .logo, .photo.flash::after, .room.flash::after { animation: none; }
+  .tab, .paso, .scene-btns button, .mini, .paso svg, .scene-btns svg, .doll.acomodando img { transition: none; }
   .paso:hover svg, .paso[data-paso="-1"]:hover svg, .scene-btns button:hover svg { translate: none; }   /* queda el cambio de color, sin movimiento */
 }
 

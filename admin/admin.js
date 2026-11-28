@@ -1,6 +1,7 @@
 const $ = (s) => document.querySelector(s);
 let rev = 0;
 let items = [];
+let papelera = [];        // productos eliminados que se pueden recuperar
 let edit = null;          // copia del producto que se está editando
 let editandoIdx = -1;     // -1 = producto nuevo
 
@@ -55,15 +56,15 @@ $('#olvide').addEventListener('click', async () => {
 
 async function cargar() {
   const d = await api('ver');
-  rev = d.rev; items = d.items; mostrar(true); pintar();
+  rev = d.rev; items = d.items; papelera = d.papelera; mostrar(true); pintar();
 }
-const recargarLista = async () => { const d = await api('ver'); rev = d.rev; items = d.items; };
+const recargarLista = async () => { const d = await api('ver'); rev = d.rev; items = d.items; papelera = d.papelera; };
 
 // Mientras se guarda, los botones quedan apagados: así un doble toque no manda dos guardados a la vez
 let ocupado = false;
 function bloquear(on) {
   document.body.classList.toggle('guardando', on);
-  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-masiva button, #d-import button, #masivo button, #codigos button, #codigos input, #pestanas button, #salir').forEach((b) => {
+  document.querySelectorAll('#panel button, #panel input, #editor button, #d-ren button, #d-papelera button, #d-masiva button, #d-import button, #masivo button, #codigos button, #codigos input, #pestanas button, #salir').forEach((b) => {
     if (on) { b.dataset.estaba = b.disabled ? '1' : ''; b.disabled = true; } else { b.disabled = b.dataset.estaba === '1'; delete b.dataset.estaba; }
   });
 }
@@ -75,7 +76,7 @@ async function guardarTodo(msg, { cambios, vacio = false } = {}) {
   ocupado = true; bloquear(true); aviso('Guardando…');
   try {
     const d = await api('cambios', { rev, cambios, confirmarVacio: vacio });
-    rev = d.rev;
+    rev = d.rev; papelera = d.papelera;
     const porId = new Map(items.filter((p) => p.id != null).map((p) => [p.id, p]));
     for (const p of d.puestos) porId.set(p.id, p);          // lo que se guardó ya viene limpio y con su número
     const nuevos = d.orden.map((id) => porId.get(id));
@@ -162,11 +163,23 @@ function mover(p, vecino) {
   return reordenar(copia);
 }
 async function eliminar(p) {
-  if (!confirm(`¿Eliminar "${p.nombre}"? No se puede deshacer.`)) return;
+  if (!confirm(`¿Eliminar "${p.nombre}"? Va a la papelera: lo podés recuperar desde «Papelera».`)) return;
   const antes = items;
   items = items.filter((x) => x !== p);
   try { await guardarTodo('Producto eliminado.', { cambios: [{ op: 'quitar', ids: [p.id] }], vacio: !items.length }); } catch (err) { items = antes; pintar(); aviso(err.message, true); }
 }
+// ---------- Papelera: los últimos productos eliminados, con sus fotos ----------
+function pintarPapelera() {
+  $('#pa-lista').replaceChildren(...(papelera.length ? papelera.map((p) => {
+    const b = el('button', { type: 'button', textContent: 'Recuperar' });
+    b.addEventListener('click', async () => {
+      try { await guardarTodo(`Recuperado «${p.nombre}»`, { cambios: [{ op: 'recuperar', ids: [p.id] }] }); pintarPapelera(); } catch (err) { aviso(err.message, true); }
+    });
+    return el('li', { className: 'item' }, el('div', {}, el('h3', { textContent: p.nombre }), el('p', { textContent: `${soles(p.precio)} · eliminado el ${new Date(p.borrado).toLocaleDateString('es-PE')}` })), el('div', { className: 'acciones' }, b));
+  }) : [el('li', { className: 'nota', textContent: 'La papelera está vacía.' })]));
+}
+$('#papelera').addEventListener('click', () => { pintarPapelera(); $('#d-papelera').showModal(); });
+$('#pa-cerrar').addEventListener('click', () => $('#d-papelera').close());
 $('#buscar').addEventListener('input', () => { mostrados = PAGINA; pintar(); });
 $('#f-cat').addEventListener('change', () => { mostrados = PAGINA; pintar(); });
 $('#mas').addEventListener('click', () => { mostrados += PAGINA; pintar(); });
@@ -215,7 +228,7 @@ $('#masivo').addEventListener('click', (e) => {
   else if (m === 'cat' || m === 'of') abrirMasivo(m);
   else if (m === 'eliminar') {
     const n = sel.size;
-    if (!confirm(`¿Eliminar ${n} producto${n === 1 ? '' : 's'}? No se puede deshacer.`)) return;
+    if (!confirm(`¿Eliminar ${n} producto${n === 1 ? '' : 's'}? Van a la papelera: los podés recuperar desde «Papelera».`)) return;
     const antes = items, ids = [...sel]; items = items.filter((p) => !sel.has(p.id));
     guardarTodo(`Eliminados (${n})`, { cambios: [{ op: 'quitar', ids }], vacio: !items.length }).then(() => { sel.clear(); pintar(); }, (err) => { items = antes; pintar(); aviso(err.message, true); });
   }

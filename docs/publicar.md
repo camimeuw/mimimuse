@@ -9,7 +9,7 @@ La tienda (`/`) y el panel (`/admin/`) salen del mismo repositorio. Los datos es
 - **Framework preset:** None.
 - **Comando de compilación** (en una sola línea):
   ```
-  mkdir dist && cp -r index.html admin assets css data js dist/
+  mkdir dist && cp -r index.html admin assets css data js _headers dist/
   ```
 - **Directorio de salida:** `dist`.
 - **Root directory:** vacío.
@@ -22,7 +22,7 @@ Cloudflare no acepta `/` ni `.` como directorio de salida; por eso el comando ar
 - `https://TU-PROYECTO.pages.dev/js/firebase.js` baja el archivo (no una página HTML).
 
 ## Si se agrega una carpeta nueva a la tienda
-Hay que sumarla al comando: `cp -r index.html admin assets css data js CARPETA dist/`.
+Hay que sumarla al comando: `cp -r index.html admin assets css data js _headers CARPETA dist/`.
 
 ## Cambiar de link
 No hay que tocar Firebase. La clienta entra de nuevo al panel nuevo con el mismo email y clave (la sesión se guarda por dirección). Opcional: agregar el dominio en Firebase → Authentication → Configuración → Dominios autorizados.

@@ -8,6 +8,7 @@
 (() => {
   'use strict';
   const MAX_FOTOS = 8, MAX_JSON = 900000;           // Firestore guarda hasta ~1 MB por documento
+  const MAX_PAPELERA = 30;                          // productos eliminados que se pueden recuperar (con sus fotos)
   const RE_FOTO = /^f[a-z0-9]{12,40}$/;
   const fallo = (msg, estado) => Object.assign(new Error(msg), estado ? { status: estado } : {});
 
@@ -56,7 +57,7 @@
   // Aplica los cambios ({op:'poner'|'quitar'|'orden'}) a un documento {rev,nextId,items}. Devuelve el documento nuevo y lo que hay que avisar.
   function calcular(doc, { cambios, confirmarVacio }) {
     if (!Array.isArray(cambios) || !cambios.length || cambios.length > 50) throw fallo('Pedido inválido.');
-    let items = doc.items.slice();
+    let items = doc.items.slice(), papelera = (doc.papelera || []).slice();
     const puestos = [];                              // los productos que llegaron, para devolverlos ya limpios
     for (const c of cambios) {
       if (c?.op === 'poner') {
@@ -68,7 +69,12 @@
         }
       } else if (c?.op === 'quitar') {
         const ids = new Set(Array.isArray(c.ids) ? c.ids : []);
+        papelera = [...items.filter((p) => ids.has(p.id)).map((p) => ({ ...p, borrado: Date.now() })), ...papelera];   // van a la papelera, no se pierden
         items = items.filter((p) => !ids.has(p.id));
+      } else if (c?.op === 'recuperar') {
+        const ids = new Set(Array.isArray(c.ids) ? c.ids : []);
+        items.push(...papelera.filter((p) => ids.has(p.id)).map(({ borrado, ...p }) => p));
+        papelera = papelera.filter((p) => !ids.has(p.id));
       } else if (c?.op === 'orden') {
         const pos = new Map((Array.isArray(c.ids) ? c.ids : []).map((id, i) => [id, i]));
         items = items.map((p, i) => [p, pos.has(p.id) ? pos.get(p.id) : 1e9 + i]).sort((x, y) => x[1] - y[1]).map((x) => x[0]);
@@ -78,37 +84,38 @@
     if (!limpios.length && doc.items.length && !confirmarVacio) throw fallo('Esto dejaría la tienda sin ningún producto. Si es lo que querés, confirmalo.');
     let siguiente = Math.max(doc.nextId || 1, ...limpios.map((p) => (p.id || 0) + 1));
     limpios.forEach((p) => { if (!p.id) p.id = siguiente++; });
-    return { doc: { rev: doc.rev + 1, nextId: siguiente, items: limpios }, orden: limpios.map((p) => p.id), puestos: puestos.map((r) => limpios[items.indexOf(r)]).filter(Boolean) };
+    return { doc: { rev: doc.rev + 1, nextId: siguiente, items: limpios, papelera: papelera.slice(0, MAX_PAPELERA) }, orden: limpios.map((p) => p.id), puestos: puestos.map((r) => limpios[items.indexOf(r)]).filter(Boolean) };
   }
   const fotosDe = (items) => new Set(items.flatMap((p) => [...p.imgs, ...p.thumbs].filter(Boolean)));
 
   // ---------- Firebase ----------
-  const vacio = () => ({ rev: 0, nextId: 1, items: [] });
+  const vacio = () => ({ rev: 0, nextId: 1, items: [], papelera: [] });
+  const enUso = (doc) => fotosDe([...doc.items, ...doc.papelera]);   // las fotos de la papelera también se guardan
   let actual = { doc: vacio(), updateTime: null };   // lo último que se leyó o se guardó: sirve para detectar un cambio ajeno
 
   async function ver() {
     const d = await DB.leer('catalogo', 'admin', true);
-    actual = d ? { doc: { rev: d.rev || 0, nextId: d.nextId || 1, items: JSON.parse(d.json || '[]') }, updateTime: d.updateTime } : { doc: vacio(), updateTime: null };
-    return { rev: actual.doc.rev, items: structuredClone(actual.doc.items) };     // copia: el panel cambia sus productos sin tocar los nuestros
+    actual = d ? { doc: { rev: d.rev || 0, nextId: d.nextId || 1, items: JSON.parse(d.json || '[]'), papelera: JSON.parse(d.papelera || '[]') }, updateTime: d.updateTime } : { doc: vacio(), updateTime: null };
+    return { rev: actual.doc.rev, items: structuredClone(actual.doc.items), papelera: structuredClone(actual.doc.papelera) };     // copia: el panel cambia sus productos sin tocar los nuestros
   }
 
   async function cambios(body) {
     if (body.rev !== actual.doc.rev) throw fallo('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409);
     const r = calcular(actual.doc, body);
-    const json = JSON.stringify(r.doc.items), publico = JSON.stringify(r.doc.items.filter((p) => p.activo));
-    if (json.length > MAX_JSON) throw fallo('La lista de productos ya no entra en un solo documento de Firebase (máximo unos 400 productos con descripciones largas). Avisale a quien armó la tienda.');
+    const json = JSON.stringify(r.doc.items), publico = JSON.stringify(r.doc.items.filter((p) => p.activo)), papelera = JSON.stringify(r.doc.papelera);
+    if (json.length + papelera.length > MAX_JSON) throw fallo('La lista de productos ya no entra en un solo documento de Firebase (máximo unos 400 productos con descripciones largas). Avisale a quien armó la tienda.');
     const fecha = Date.now();
     const escrituras = [
-      { update: { name: DB.nombre('catalogo', 'admin'), fields: DB.campos({ rev: r.doc.rev, nextId: r.doc.nextId, json, fecha }) }, currentDocument: actual.updateTime ? { updateTime: actual.updateTime } : { exists: false } },
+      { update: { name: DB.nombre('catalogo', 'admin'), fields: DB.campos({ rev: r.doc.rev, nextId: r.doc.nextId, json, papelera, fecha }) }, currentDocument: actual.updateTime ? { updateTime: actual.updateTime } : { exists: false } },
       { update: { name: DB.nombre('catalogo', 'publico'), fields: DB.campos({ rev: r.doc.rev, json: publico, fecha }) } },
     ];
     let resultado;
     try { resultado = await DB.confirmar(escrituras); }
     catch (e) { if (/FAILED_PRECONDITION|ABORTED|ALREADY_EXISTS/.test(e.codigo || '')) throw fallo('Alguien guardó cambios antes que vos. Recargá la página para ver lo último.', 409); throw e; }
-    const antes = fotosDe(actual.doc.items);
+    const antes = enUso(actual.doc);
     actual = { doc: r.doc, updateTime: resultado.writeResults?.[0]?.updateTime || null };
     await limpiarFotos(antes);                       // las fotos que ya no usa ningún producto se borran (si falla, solo queda una foto de más)
-    return { rev: r.doc.rev, orden: r.orden, puestos: structuredClone(r.puestos) };
+    return { rev: r.doc.rev, orden: r.orden, puestos: structuredClone(r.puestos), papelera: structuredClone(r.doc.papelera) };
   }
 
   const idFoto = () => 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -119,13 +126,13 @@
   }
   // Borra fotos que ya no usa ningún producto (se llama después de guardar)
   async function limpiarFotos(candidatas) {
-    const usadas = fotosDe(actual.doc.items);
+    const usadas = enUso(actual.doc);
     for (const id of new Set(candidatas)) if (id && !usadas.has(id)) { try { await DB.borrar('fotos', id); DB.olvidarFoto(id); } catch { /* si no se puede, queda una foto de más */ } }
   }
 
   // ---------- Cupones ----------
   const normCodigo = (s) => String(s ?? '').toUpperCase().replace(/\s+/g, '');
-  const codigos = async () => (await DB.lista('codigos')).sort((a, b) => a.id.localeCompare(b.id));
+  const codigos = async () => (await DB.lista('codigos', true)).sort((a, b) => a.id.localeCompare(b.id));
   function validarCodigo(c) {
     const id = normCodigo(c.id), pct = Math.round(Number(c.porcentaje));
     if (!/^[A-Z0-9_-]{3,24}$/.test(id)) throw fallo('El código debe tener entre 3 y 24 letras o números, sin espacios ni tildes.');

@@ -39,9 +39,13 @@
 
   /* ---- sesión de la dueña (email + clave) ---- */
   const KEY = 'mimi-admin-sesion';
-  let sesion = null;                          // { email, idToken, refreshToken, exp }
-  try { sesion = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* sin almacenamiento: la sesión dura lo que la página */ }
-  const guardarSesion = () => { try { sesion ? localStorage.setItem(KEY, JSON.stringify(sesion)) : localStorage.removeItem(KEY); } catch { /* nada */ } };
+  let sesion = null;                          // { email, idToken, refreshToken, exp, usado }
+  const DIAS_SIN_USO = 14;                    // la sesión se cierra sola si el panel no se usa en 14 días
+  try {
+    sesion = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (sesion && !(Date.now() - (sesion.usado || 0) < DIAS_SIN_USO * 864e5)) { sesion = null; localStorage.removeItem(KEY); }
+  } catch { /* sin almacenamiento: la sesión dura lo que la página */ }
+  const guardarSesion = () => { try { if (sesion) sesion.usado = Date.now(); sesion ? localStorage.setItem(KEY, JSON.stringify(sesion)) : localStorage.removeItem(KEY); } catch { /* nada */ } };
   const errorEntrar = (codigo) => {
     const c = String(codigo || '');
     if (/EMAIL_NOT_FOUND|INVALID_PASSWORD|INVALID_LOGIN_CREDENTIALS|USER_NOT_FOUND/.test(c)) return 'El email o la clave no son correctos.';
@@ -77,7 +81,7 @@
   }
   async function token() {
     if (!sesion) throw vencida();
-    if (Date.now() > sesion.exp - 60000) await renovar();
+    if (Date.now() > sesion.exp - 60000) await renovar(); else if (Date.now() - (sesion.usado || 0) > 36e5) guardarSesion();   // marca el uso (como mucho 1 vez por hora)
     return sesion.idToken;
   }
   const salir = () => { sesion = null; guardarSesion(); };

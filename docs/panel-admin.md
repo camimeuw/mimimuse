@@ -9,7 +9,9 @@ Guarda en Firebase (ver `docs/firebase.md`). Pensado para una persona que carga 
 - **Códigos de descuento:** pestaña «Códigos de descuento». Se crea un nombre (por ejemplo `HOLA10`), un porcentaje y, si se quiere, una fecha de vencimiento. Se pueden apagar, prender y eliminar. En la tienda se escriben en el carrito, o llegan por link: `…/?codigo=HOLA10` lo aplica solo.
 - **Entrar:** email y clave (Firebase). «Olvidé mi clave» manda un mail.
 
-No hay «Volver atrás»: eliminar y los cambios en varios productos no se pueden deshacer. «Descargar copia» baja un JSON con los productos (sin las fotos).
+**Papelera:** lo que se elimina va a la «Papelera» con sus fotos y se recupera con un botón (guarda los últimos 30; al pasarse, los más viejos se borran para siempre). Los cambios en varios productos (ofertas, categorías, etc.) no se deshacen. «Descargar copia» baja un JSON con los productos (sin las fotos).
+
+**Seguridad:** solo el email de la dueña (en `firestore.rules`) puede escribir y ver la lista completa de fotos y cupones; la tienda lee un cupón solo si sabe cuál es. La sesión del panel se cierra sola tras 14 días sin usarlo. El panel solo ejecuta su propio código (`Content-Security-Policy` en `admin/index.html`) y no se puede mostrar dentro de otra página (`_headers`, que el comando de publicación tiene que copiar a `dist`).
 
 ## Cómo funciona por dentro
 - `catalogo/admin` (solo la dueña lo lee): todos los productos. `catalogo/publico`: solo los visibles; es lo que lee la tienda (1 lectura por visita). Los dos se escriben juntos o ninguno.

@@ -78,7 +78,7 @@ test('entrar: clave mala da un mensaje claro y la buena abre la sesión', async 
 });
 
 test('guardar productos: rev sube, el público solo recibe los visibles y todo se lee de vuelta', async () => {
-  assert.deepEqual(await Datos.ver(), { rev: 0, items: [] });
+  assert.deepEqual(await Datos.ver(), { rev: 0, items: [], papelera: [] });
   const r = await cambios([{ op: 'poner', productos: [P({ nombre: 'Visible' }), P({ nombre: 'Oculta', activo: false, imgs: [F1], thumbs: [T1] })] }]);
   assert.deepEqual([r.rev, r.orden], [1, [1, 2]]);
   const admin = await Datos.ver();
@@ -111,11 +111,26 @@ test('fotos: se suben como documentos, se leen, y se borran solas cuando ningún
   assert.equal(await existe(id1), false); assert.equal(await existe(mini), false);
 });
 
-test('borrar un producto borra sus fotos', async () => {
+test('borrar un producto lo manda a la papelera con sus fotos, y se puede recuperar', async () => {
   const id = await Datos.subir(Buffer.from('x').toString('base64'));
   const r = await cambios([{ op: 'poner', productos: [P({ nombre: 'Con foto', imgs: [id], thumbs: [] })] }]);
-  assert.equal(!!(await DB.leer('fotos', id)), true);
-  await cambios([{ op: 'quitar', ids: r.puestos.map((p) => p.id) }]);
+  const pid = r.puestos[0].id;
+  const q = await cambios([{ op: 'quitar', ids: [pid] }]);
+  assert.equal(q.papelera[0].nombre, 'Con foto'); assert.ok(q.papelera[0].borrado);
+  assert.ok(!(await Datos.ver()).items.some((p) => p.id === pid));
+  assert.equal(!!(await DB.leer('fotos', id)), true, 'la foto se guarda mientras está en la papelera');
+  const v = await cambios([{ op: 'recuperar', ids: [pid] }]);
+  assert.ok(v.orden.includes(pid)); assert.ok(!v.papelera.some((p) => p.id === pid));
+  assert.deepEqual((await Datos.ver()).items.find((p) => p.id === pid).imgs, [id]);
+});
+
+test('papelera: guarda como mucho 30 y al pasarse se borran las fotos de los más viejos', async () => {
+  const id = await Datos.subir(Buffer.from('vieja').toString('base64'));
+  const r = await cambios([{ op: 'poner', productos: [P({ nombre: 'Viejo', imgs: [id], thumbs: [] }), ...Array.from({ length: 30 }, (_, i) => P({ nombre: `Tanda ${i}` }))] }]);
+  const [viejo, ...tanda] = r.puestos.map((p) => p.id);
+  await cambios([{ op: 'quitar', ids: [viejo] }]);
+  const q = await cambios([{ op: 'quitar', ids: tanda }]);
+  assert.equal(q.papelera.length, 30); assert.ok(!q.papelera.some((p) => p.id === viejo));
   assert.equal(await DB.leer('fotos', id), null);
 });
 
@@ -133,7 +148,9 @@ test('cupones: se validan, se leen sin entrar y solo la dueña los cambia', asyn
   assert.deepEqual(await Datos.guardarCodigo({ id: ' hola 10 ', porcentaje: '10', vence: '2026-12-31' }), { id: 'HOLA10', porcentaje: 10, activo: true, vence: '2026-12-31' });
   await Datos.guardarCodigo({ id: 'VERANO', porcentaje: 25, activo: false });
   const sesion = DB.sesion(); DB.salir();
-  assert.deepEqual((await DB.lista('codigos')).map((c) => [c.id, c.porcentaje, c.activo]), [['HOLA10', 10, true], ['VERANO', 25, false]]);   // la tienda los lee sin entrar
+  assert.deepEqual([await DB.leer('codigos', 'HOLA10'), await DB.leer('codigos', 'VERANO')].map((c) => [c.id, c.porcentaje, c.activo]), [['HOLA10', 10, true], ['VERANO', 25, false]]);   // la tienda lee un cupón sin entrar
+  await assert.rejects(() => DB.lista('codigos'), /permiso|Firebase no te dejó/i);   // pero la lista completa no
+  await assert.rejects(() => DB.lista('fotos'), /permiso|Firebase no te dejó/i);
   await assert.rejects(() => Datos.guardarCodigo({ id: 'LADRON', porcentaje: 99 }), /sesión venció/);
   await DB.entrar(DUENA.email, DUENA.clave);
   await Datos.borrarCodigo('VERANO');

@@ -1,0 +1,5 @@
+# Cabeceras para Cloudflare Pages (tiene que copiarse a dist: ver docs/publicar.md)
+# El panel no se puede mostrar dentro de otra página (evita que te hagan tocar botones sin darte cuenta)
+/admin/*
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
